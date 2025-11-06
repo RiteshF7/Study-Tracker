@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useFormStatus } from "react-dom";
 import { getScheduleRecommendation, SchedulerState } from "@/lib/actions";
 import { Activity, Problem } from "@/lib/types";
 import { Button } from "./ui/button";
@@ -51,7 +51,7 @@ export function AiScheduler() {
   const { data: activities } = useCollection<Activity>(activitiesCollection);
   const { data: problems } = useCollection<Problem>(problemsCollection);
 
-  const [state, formAction] = useFormState(getScheduleRecommendation, initialState);
+  const [state, formAction] = useActionState(getScheduleRecommendation, initialState);
   const { toast } = useToast();
 
   useEffect(() => {
