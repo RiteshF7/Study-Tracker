@@ -62,17 +62,14 @@ export function AppNav() {
             <SidebarMenuItem key={item.href}>
               <Link href={item.href} passHref>
                 <SidebarMenuButton
-                  asChild
                   isActive={pathname === item.href}
                   className={cn("w-full justify-start", {
                     "bg-primary/10 text-primary hover:bg-primary/20":
                       pathname === item.href,
                   })}
                 >
-                  <>
-                    <item.icon className="mr-2 h-5 w-5" />
-                    <span>{item.label}</span>
-                  </>
+                  <item.icon className="mr-2 h-5 w-5" />
+                  <span>{item.label}</span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
