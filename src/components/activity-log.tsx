@@ -94,7 +94,13 @@ export function ActivityLog() {
     deleteDocumentNonBlocking(docRef);
   }
   
-  const sortedActivities = activities ? [...activities].sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime()) : [];
+  const sortedActivities = activities
+    ? [...activities].sort((a, b) => {
+        const timeA = a.createdAt?.toDate?.().getTime() || Date.now();
+        const timeB = b.createdAt?.toDate?.().getTime() || Date.now();
+        return timeB - timeA;
+      })
+    : [];
 
   return (
     <Card>

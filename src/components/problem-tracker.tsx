@@ -94,7 +94,13 @@ export function ProblemTracker() {
     deleteDocumentNonBlocking(docRef);
   }
 
-  const sortedProblems = problems ? [...problems].sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime()) : [];
+  const sortedProblems = problems
+    ? [...problems].sort((a, b) => {
+        const timeA = a.createdAt?.toDate?.().getTime() || Date.now();
+        const timeB = b.createdAt?.toDate?.().getTime() || Date.now();
+        return timeB - timeA;
+      })
+    : [];
 
 
   return (
