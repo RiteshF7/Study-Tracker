@@ -2,23 +2,18 @@
  * @fileoverview Firestore Security Rules for StudyTrack Journal application.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model. Each user has full control over their profile and associated journal entries, activities, and problems solved.
+ * This ruleset enforces a strict user-ownership model. Each user has full control over their profile and associated activities and problems.
  *
  * Data Structure:
- * The data is structured under the `/users/{userId}` path, with subcollections for journal entries, activities, and problems solved.
+ * The data is structured under the `/users/{userId}` path, with subcollections for activities and problems.
  * /users/{userId} - User profile information
- * /users/{userId}/journalEntries/{journalEntryId} - Journal entries for each user
- * /users/{userId}/journalEntries/{journalEntryId}/activities/{activityId} - Activities associated with a journal entry
- * /users/{userId}/journalEntries/{journalEntryId}/problemsSolved/{problemSolvedId} - Problems solved associated with a journal entry
+ * /users/{userId}/activities/{activityId} - Activities for each user
+ * /users/{userId}/problems/{problemId} - Problems solved by each user
  *
  * Key Security Decisions:
  * - Users can only access their own data.
  * - No listing of all users is allowed.
  * - Data access is controlled through path-based rules.
- * - The rules do not enforce strict data validation during this prototyping phase.
- *
- * Denormalization for Authorization:
- * The Firestore structure already supports path-based ownership, so no additional denormalization is required.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -43,17 +38,17 @@ service cloud.firestore {
     }
 
     /**
-     * @description Controls access to journal entries for each user.
-     * @path /users/{userId}/journalEntries/{journalEntryId}
-     * @allow (create) User with ID 'user_abc' can create a journal entry under their ID: request.auth.uid == 'user_abc'
-     * @allow (get) User with ID 'user_abc' can read a journal entry under their ID: request.auth.uid == 'user_abc'
-     * @allow (update) User with ID 'user_abc' can update a journal entry under their ID: request.auth.uid == 'user_abc'
-     * @allow (delete) User with ID 'user_abc' can delete a journal entry under their ID: request.auth.uid == 'user_abc'
-     * @allow (list) User with ID 'user_abc' can list their journal entries: request.auth.uid == 'user_abc'
-     * @deny (create) User with ID 'user_xyz' cannot create a journal entry for 'user_abc': request.auth.uid != 'user_abc'
+     * @description Controls access to activities for each user.
+     * @path /users/{userId}/activities/{activityId}
+     * @allow (create) User with ID 'user_abc' can create an activity under their ID: request.auth.uid == 'user_abc'
+     * @allow (get) User with ID 'user_abc' can read an activity under their ID: request.auth.uid == 'user_abc'
+     * @allow (update) User with ID 'user_abc' can update an activity under their ID: request.auth.uid == 'user_abc'
+     * @allow (delete) User with ID 'user_abc' can delete an activity under their ID: request.auth.uid == 'user_abc'
+     * @allow (list) User with ID 'user_abc' can list their activities: request.auth.uid == 'user_abc'
+     * @deny (create) User with ID 'user_xyz' cannot create an activity for 'user_abc': request.auth.uid != 'user_abc'
      * @principle Enforces document ownership for writes; allows owner to read and list.
      */
-    match /users/{userId}/journalEntries/{journalEntryId} {
+    match /users/{userId}/activities/{activityId} {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
@@ -62,40 +57,21 @@ service cloud.firestore {
     }
 
     /**
-     * @description Controls access to activities associated with a journal entry.
-     * @path /users/{userId}/journalEntries/{journalEntryId}/activities/{activityId}
-     * @allow (create) User with ID 'user_abc' can create an activity under their journal entry: request.auth.uid == 'user_abc'
-     * @allow (get) User with ID 'user_abc' can read an activity under their journal entry: request.auth.uid == 'user_abc'
-     * @allow (update) User with ID 'user_abc' can update an activity under their journal entry: request.auth.uid == 'user_abc'
-     * @allow (delete) User with ID 'user_abc' can delete an activity under their journal entry: request.auth.uid == 'user_abc'
-     * @allow (list) User with ID 'user_abc' can list activities under their journal entry: request.auth.uid == 'user_abc'
-     * @deny (create) User with ID 'user_xyz' cannot create an activity for 'user_abc': request.auth.uid != 'user_abc'
+     * @description Controls access to problems solved for each user.
+     * @path /users/{userId}/problems/{problemId}
+     * @allow (create) User with ID 'user_abc' can create a problem log under their ID: request.auth.uid == 'user_abc'
+     * @allow (get) User with ID 'user_abc' can read a problem log under their ID: request.auth.uid == 'user_abc'
+     * @allow (update) User with ID 'user_abc' can update a problem log under their ID: request.auth.uid == 'user_abc'
+     * @allow (delete) User with ID 'user_abc' can delete a problem log under their ID: request.auth.uid == 'user_abc'
+     * @allow (list) User with ID 'user_abc' can list their problem logs: request.auth.uid == 'user_abc'
+     * @deny (create) User with ID 'user_xyz' cannot create a problem log for 'user_abc': request.auth.uid != 'user_abc'
      * @principle Enforces document ownership for writes; allows owner to read and list.
      */
-    match /users/{userId}/journalEntries/{journalEntryId}/activities/{activityId} {
+    match /users/{userId}/problems/{problemId} {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.journalEntryId == journalEntryId;
-      allow update: if isExistingOwner(userId) && request.resource.data.journalEntryId == journalEntryId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Controls access to problems solved associated with a journal entry.
-     * @path /users/{userId}/journalEntries/{journalEntryId}/problemsSolved/{problemSolvedId}
-     * @allow (create) User with ID 'user_abc' can create a problem solved under their journal entry: request.auth.uid == 'user_abc'
-     * @allow (get) User with ID 'user_abc' can read a problem solved under their journal entry: request.auth.uid == 'user_abc'
-     * @allow (update) User with ID 'user_abc' can update a problem solved under their journal entry: request.auth.uid == 'user_abc'
-     * @allow (delete) User with ID 'user_abc' can delete a problem solved under their journal entry: request.auth.uid == 'user_abc'
-     * @allow (list) User with ID 'user_abc' can list problems solved under their journal entry: request.auth.uid == 'user_abc'
-     * @deny (create) User with ID 'user_xyz' cannot create a problem solved for 'user_abc': request.auth.uid != 'user_abc'
-     * @principle Enforces document ownership for writes; allows owner to read and list.
-     */
-    match /users/{userId}/journalEntries/{journalEntryId}/problemsSolved/{problemSolvedId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.journalEntryId == journalEntryId;
-      allow update: if isExistingOwner(userId) && request.resource.data.journalEntryId == journalEntryId;
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(userId);
     }
   }
@@ -110,6 +86,6 @@ service cloud.firestore {
   }
 
   function isExistingOwner(userId) {
-    return isOwner(userId) && resource != null;
+    return isOwner(userId) && exists(/databases/$(database)/documents/users/$(userId));
   }
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useLocalStorage } from "@/hooks/use-local-storage";
 import type { Problem } from "@/lib/types";
 import { problemSubjects } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -45,6 +44,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
+import { collection, serverTimestamp, doc } from "firebase/firestore";
+import { addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 const problemSchema = z.object({
   subject: z.string().min(1, "Subject is required."),
@@ -54,8 +56,14 @@ const problemSchema = z.object({
 });
 
 export function ProblemTracker() {
-  const [problems, setProblems] = useLocalStorage<Problem[]>("problems", []);
   const [open, setOpen] = useState(false);
+  const { firestore, user } = useFirebase();
+
+  const problemsCollection = useMemoFirebase(() =>
+    user ? collection(firestore, "users", user.uid, "problems") : null
+  , [firestore, user]);
+
+  const { data: problems, isLoading } = useCollection<Problem>(problemsCollection);
 
   const form = useForm<z.infer<typeof problemSchema>>({
     resolver: zodResolver(problemSchema),
@@ -68,19 +76,26 @@ export function ProblemTracker() {
   });
 
   function onSubmit(values: z.infer<typeof problemSchema>) {
-    const newProblem: Problem = {
-      id: crypto.randomUUID(),
+    if (!problemsCollection || !user) return;
+    const newProblem: Omit<Problem, 'id' | 'createdAt'> & { createdAt: any } = {
       ...values,
       notes: values.notes || "",
+      userId: user.uid,
+      createdAt: serverTimestamp(),
     };
-    setProblems([...problems, newProblem]);
+    addDocumentNonBlocking(problemsCollection, newProblem);
     form.reset();
     setOpen(false);
   }
 
   function deleteProblem(id: string) {
-    setProblems(problems.filter(p => p.id !== id));
+    if (!problemsCollection) return;
+    const docRef = doc(problemsCollection, id);
+    deleteDocumentNonBlocking(docRef);
   }
+
+  const sortedProblems = problems ? [...problems].sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime()) : [];
+
 
   return (
     <Card>
@@ -185,15 +200,21 @@ export function ProblemTracker() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {problems.length > 0 ? (
-              [...problems].reverse().map((problem) => (
+             {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  Loading problems...
+                </TableCell>
+              </TableRow>
+            ) : sortedProblems.length > 0 ? (
+              sortedProblems.map((problem) => (
                 <TableRow key={problem.id}>
                   <TableCell>{problem.date}</TableCell>
                   <TableCell className="font-medium">{problem.subject}</TableCell>
                   <TableCell>{problem.count}</TableCell>
                   <TableCell className="text-muted-foreground truncate max-w-xs">{problem.notes}</TableCell>
                    <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => deleteProblem(problem.id)}>
+                    <Button variant="ghost" size="icon" onClick={() => deleteProblem(problem.id!)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>

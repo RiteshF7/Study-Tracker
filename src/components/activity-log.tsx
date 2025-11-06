@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useLocalStorage } from "@/hooks/use-local-storage";
 import type { Activity } from "@/lib/types";
 import { activityTypes } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -44,6 +43,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
+import { collection, serverTimestamp, doc, Timestamp } from "firebase/firestore";
+import { addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 const activitySchema = z.object({
   name: z.string().min(1, "Activity name is required."),
@@ -55,8 +57,14 @@ const activitySchema = z.object({
 });
 
 export function ActivityLog() {
-  const [activities, setActivities] = useLocalStorage<Activity[]>("activities", []);
   const [open, setOpen] = useState(false);
+  const { firestore, user } = useFirebase();
+
+  const activitiesCollection = useMemoFirebase(() => 
+    user ? collection(firestore, "users", user.uid, "activities") : null
+  , [firestore, user]);
+
+  const { data: activities, isLoading } = useCollection<Activity>(activitiesCollection);
 
   const form = useForm<z.infer<typeof activitySchema>>({
     resolver: zodResolver(activitySchema),
@@ -69,18 +77,24 @@ export function ActivityLog() {
   });
 
   function onSubmit(values: z.infer<typeof activitySchema>) {
-    const newActivity: Activity = {
-      id: crypto.randomUUID(),
+    if (!activitiesCollection || !user) return;
+    const newActivity: Omit<Activity, 'id' | 'createdAt'> & { createdAt: any } = {
       ...values,
+      userId: user.uid,
+      createdAt: serverTimestamp(),
     };
-    setActivities([...activities, newActivity]);
+    addDocumentNonBlocking(activitiesCollection, newActivity);
     form.reset();
     setOpen(false);
   }
 
   function deleteActivity(id: string) {
-    setActivities(activities.filter(a => a.id !== id));
+    if (!activitiesCollection) return;
+    const docRef = doc(activitiesCollection, id);
+    deleteDocumentNonBlocking(docRef);
   }
+  
+  const sortedActivities = activities ? [...activities].sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime()) : [];
 
   return (
     <Card>
@@ -185,15 +199,21 @@ export function ActivityLog() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {activities.length > 0 ? (
-              [...activities].reverse().map((activity) => (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  Loading activities...
+                </TableCell>
+              </TableRow>
+            ) : sortedActivities.length > 0 ? (
+              sortedActivities.map((activity) => (
                 <TableRow key={activity.id}>
                   <TableCell>{activity.date}</TableCell>
                   <TableCell className="font-medium">{activity.name}</TableCell>
                   <TableCell>{activity.type}</TableCell>
                   <TableCell>{activity.duration}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => deleteActivity(activity.id)}>
+                    <Button variant="ghost" size="icon" onClick={() => deleteActivity(activity.id!)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>

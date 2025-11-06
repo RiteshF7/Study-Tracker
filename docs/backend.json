@@ -22,50 +22,7 @@
       },
       "required": [
         "id",
-        "email",
-        "name"
-      ]
-    },
-    "JournalEntry": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "JournalEntry",
-      "type": "object",
-      "description": "Represents a single journal entry made by a student.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the JournalEntry entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N JournalEntry)"
-        },
-        "date": {
-          "type": "string",
-          "description": "Date of the journal entry.",
-          "format": "date-time"
-        },
-        "activities": {
-          "type": "array",
-          "description": "References to Activity. (Relationship: JournalEntry 1:N Activity)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "problemsSolved": {
-          "type": "array",
-          "description": "References to ProblemSolved. (Relationship: JournalEntry 1:N ProblemSolved)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "date",
-        "activities",
-        "problemsSolved"
+        "email"
       ]
     },
     "Activity": {
@@ -78,40 +35,51 @@
           "type": "string",
           "description": "Unique identifier for the Activity entity."
         },
-        "journalEntryId": {
+        "userId": {
           "type": "string",
-          "description": "Reference to JournalEntry. (Relationship: JournalEntry 1:N Activity)"
+          "description": "Reference to User. (Relationship: User 1:N Activity)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the activity."
         },
         "type": {
           "type": "string",
-          "description": "Type of activity (e.g., 'Study Session', 'Class', 'Break')."
+          "description": "Type of activity (e.g., 'Study', 'Class', 'Break', 'Other').",
+          "enum": [
+            "Study",
+            "Class",
+            "Break",
+            "Other"
+          ]
         },
-        "startTime": {
+        "duration": {
+          "type": "number",
+          "description": "Duration of the activity in minutes."
+        },
+        "date": {
           "type": "string",
-          "description": "Start time of the activity.",
+          "description": "Date of the activity in YYYY-MM-DD format.",
+          "format": "date"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the activity was created.",
           "format": "date-time"
-        },
-        "endTime": {
-          "type": "string",
-          "description": "End time of the activity.",
-          "format": "date-time"
-        },
-        "description": {
-          "type": "string",
-          "description": "Description of the activity."
         }
       },
       "required": [
-        "id",
-        "journalEntryId",
+        "userId",
+        "name",
         "type",
-        "startTime",
-        "endTime"
+        "duration",
+        "date",
+        "createdAt"
       ]
     },
-    "ProblemSolved": {
+    "Problem": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ProblemSolved",
+      "title": "Problem",
       "type": "object",
       "description": "Represents a problem solved by the student.",
       "properties": {
@@ -119,24 +87,39 @@
           "type": "string",
           "description": "Unique identifier for the ProblemSolved entity."
         },
-        "journalEntryId": {
+        "userId": {
           "type": "string",
-          "description": "Reference to JournalEntry. (Relationship: JournalEntry 1:N ProblemSolved)"
+          "description": "Reference to User. (Relationship: User 1:N Problem)"
         },
-        "category": {
+        "subject": {
           "type": "string",
           "description": "Category of the problem (e.g., 'Math', 'Science', 'History')."
         },
-        "response": {
+        "count": {
+          "type": "number",
+          "description": "Number of problems solved."
+        },
+        "notes": {
           "type": "string",
           "description": "Short text response to the problem."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the problem log in YYYY-MM-DD format.",
+          "format": "date"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the problem was logged.",
+          "format": "date-time"
         }
       },
       "required": [
-        "id",
-        "journalEntryId",
-        "category",
-        "response"
+        "userId",
+        "subject",
+        "count",
+        "date",
+        "createdAt"
       ]
     }
   },
@@ -165,41 +148,17 @@
         }
       },
       {
-        "path": "/users/{userId}/journalEntries/{journalEntryId}",
-        "definition": {
-          "entityName": "JournalEntry",
-          "schema": {
-            "$ref": "#/backend/entities/JournalEntry"
-          },
-          "description": "Stores journal entries for each user. Path-based ownership. ",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "journalEntryId",
-              "description": "The unique identifier of the journal entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/journalEntries/{journalEntryId}/activities/{activityId}",
+        "path": "/users/{userId}/activities/{activityId}",
         "definition": {
           "entityName": "Activity",
           "schema": {
             "$ref": "#/backend/entities/Activity"
           },
-          "description": "Stores activities associated with a journal entry. Path-based ownership.",
+          "description": "Stores activities associated with a user. Path-based ownership.",
           "params": [
             {
               "name": "userId",
               "description": "The unique identifier of the user."
-            },
-            {
-              "name": "journalEntryId",
-              "description": "The unique identifier of the journal entry."
             },
             {
               "name": "activityId",
@@ -209,30 +168,26 @@
         }
       },
       {
-        "path": "/users/{userId}/journalEntries/{journalEntryId}/problemsSolved/{problemSolvedId}",
+        "path": "/users/{userId}/problems/{problemId}",
         "definition": {
-          "entityName": "ProblemSolved",
+          "entityName": "Problem",
           "schema": {
-            "$ref": "#/backend/entities/ProblemSolved"
+            "$ref": "#/backend/entities/Problem"
           },
-          "description": "Stores problems solved associated with a journal entry. Path-based ownership.",
+          "description": "Stores problems solved associated with a user. Path-based ownership.",
           "params": [
             {
               "name": "userId",
               "description": "The unique identifier of the user."
             },
             {
-              "name": "journalEntryId",
-              "description": "The unique identifier of the journal entry."
-            },
-            {
-              "name": "problemSolvedId",
-              "description": "The unique identifier of the problem solved."
+              "name": "problemId",
+              "description": "The unique identifier of the problem."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to support the StudyTrack Journal application, prioritizing security, scalability, and debuggability by adhering to the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). Authorization Independence is achieved through structural denormalization.  The structure uses path-based ownership for user-owned data to simplify security rules and ensure efficient data retrieval. Every collection is designed to have a homogeneous security posture.\n\nSpecifically, each user's journal entries, activities, and problems solved are stored under their respective user ID, enabling direct and secure access control using Firebase Authentication. No `get()` calls are necessary for security rules.\n\nQAPs are supported because `list` operations can be secured based on the path structure; a user can only `list` JournalEntries, Activities, and ProblemsSolved under their own `/users/{userId}` path. Data segregation ensures that there are no mixed security requirements within a single collection.\n\nDenormalization: No denormalization is required, as all data is owned by the user and accessed via path-based rules."
+    "reasoning": "The Firestore data structure is designed to support the StudyTrack Journal application, prioritizing security, scalability, and debuggability by adhering to the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). Authorization Independence is achieved through structural denormalization.  The structure uses path-based ownership for user-owned data to simplify security rules and ensure efficient data retrieval. Every collection is designed to have a homogeneous security posture.\n\nSpecifically, each user's activities and problems solved are stored under their respective user ID, enabling direct and secure access control using Firebase Authentication. No `get()` calls are necessary for security rules.\n\nQAPs are supported because `list` operations can be secured based on the path structure; a user can only `list` Activities, and ProblemsSolved under their own `/users/{userId}` path. Data segregation ensures that there are no mixed security requirements within a single collection.\n\nDenormalization: No denormalization is required, as all data is owned by the user and accessed via path-based rules."
   }
 }

@@ -2,7 +2,6 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { getScheduleRecommendation, SchedulerState } from "@/lib/actions";
-import { useLocalStorage } from "@/hooks/use-local-storage";
 import { Activity, Problem } from "@/lib/types";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
@@ -11,6 +10,8 @@ import { Textarea } from "./ui/textarea";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Wand2 } from "lucide-react";
+import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
 
 const initialState: SchedulerState = {
   recommendation: null,
@@ -37,8 +38,19 @@ function SubmitButton() {
 }
 
 export function AiScheduler() {
-  const [activities] = useLocalStorage<Activity[]>("activities", []);
-  const [problems] = useLocalStorage<Problem[]>("problems", []);
+  const { firestore, user } = useFirebase();
+
+  const activitiesCollection = useMemoFirebase(() => 
+    user ? collection(firestore, "users", user.uid, "activities") : null
+  , [firestore, user]);
+
+  const problemsCollection = useMemoFirebase(() =>
+    user ? collection(firestore, "users", user.uid, "problems") : null
+  , [firestore, user]);
+
+  const { data: activities } = useCollection<Activity>(activitiesCollection);
+  const { data: problems } = useCollection<Problem>(problemsCollection);
+
   const [state, formAction] = useFormState(getScheduleRecommendation, initialState);
   const { toast } = useToast();
 
@@ -63,8 +75,8 @@ export function AiScheduler() {
         </CardHeader>
         <form action={formAction}>
           <CardContent className="space-y-4">
-            <input type="hidden" name="activities" value={JSON.stringify(activities)} />
-            <input type="hidden" name="problems" value={JSON.stringify(problems)} />
+            <input type="hidden" name="activities" value={JSON.stringify(activities || [])} />
+            <input type="hidden" name="problems" value={JSON.stringify(problems || [])} />
             <div className="space-y-2">
               <Label htmlFor="preferredStudyTimes">Preferred Study Times & Constraints</Label>
               <Textarea

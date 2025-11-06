@@ -1,6 +1,5 @@
 "use client";
 
-import { useLocalStorage } from "@/hooks/use-local-storage";
 import type { Activity, Problem } from "@/lib/types";
 import {
   Card,
@@ -13,8 +12,6 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from "@/components/ui/chart";
 import {
   BarChart,
@@ -31,12 +28,25 @@ import { format, subDays } from "date-fns";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { BarChart3, Clock, Target, TrendingUp } from "lucide-react";
+import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
 
 export function DashboardClient() {
-  const [activities] = useLocalStorage<Activity[]>("activities", []);
-  const [problems] = useLocalStorage<Problem[]>("problems", []);
+  const { firestore, user } = useFirebase();
+  
+  const activitiesCollection = useMemoFirebase(() => 
+    user ? collection(firestore, "users", user.uid, "activities") : null
+  , [firestore, user]);
+  
+  const problemsCollection = useMemoFirebase(() =>
+    user ? collection(firestore, "users", user.uid, "problems") : null
+  , [firestore, user]);
+
+  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesCollection);
+  const { data: problems, isLoading: isLoadingProblems } = useCollection<Problem>(problemsCollection);
 
   const { activityData, totalDuration } = useMemo(() => {
+    if (!activities) return { activityData: [], totalDuration: 0 };
     const last7Days = Array.from({ length: 7 }, (_, i) =>
       format(subDays(new Date(), i), "yyyy-MM-dd")
     ).reverse();
@@ -56,6 +66,7 @@ export function DashboardClient() {
   }, [activities]);
 
   const problemData = useMemo(() => {
+    if (!problems) return [];
     const subjectMap = new Map<string, number>();
     problems.forEach((p) => {
       subjectMap.set(p.subject, (subjectMap.get(p.subject) || 0) + p.count);
@@ -67,14 +78,25 @@ export function DashboardClient() {
   }, [problems]);
 
   const totalProblemsSolved = useMemo(() => {
+    if (!problems) return 0;
     return problems.reduce((sum, p) => sum + p.count, 0);
   }, [problems]);
 
   const emptyStateImage = PlaceHolderImages.find(
     (img) => img.id === "empty-dashboard"
   );
+  
+  const isLoading = isLoadingActivities || isLoadingProblems;
 
-  if (activities.length === 0 && problems.length === 0) {
+  if (isLoading) {
+      return (
+          <div className="flex items-center justify-center text-center py-16">
+                <p className="text-muted-foreground">Loading dashboard...</p>
+          </div>
+      )
+  }
+
+  if (!activities || !problems || (activities.length === 0 && problems.length === 0)) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-16">
         {emptyStateImage && (
