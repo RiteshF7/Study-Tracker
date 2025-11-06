@@ -12,6 +12,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  type ChartConfig,
 } from "@/components/ui/chart";
 import {
   BarChart,
@@ -30,6 +31,21 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { BarChart3, Clock, Target, TrendingUp } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
+
+const activityChartConfig = {
+  duration: {
+    label: "Duration (min)",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig;
+
+const problemChartConfig = {
+  count: {
+    label: "Count",
+    color: "hsl(var(--accent))",
+  },
+} satisfies ChartConfig;
+
 
 export function DashboardClient() {
   const { firestore, user } = useFirebase();
@@ -174,26 +190,36 @@ export function DashboardClient() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={activityData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
+            <ChartContainer config={activityChartConfig} className="h-[300px] w-full">
+              <LineChart
+                  accessibilityLayer
+                  data={activityData}
+                  margin={{
+                    left: 12,
+                    right: 12,
+                  }}
+                >
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) => value.slice(0, 3)}
+                />
                 <ChartTooltip
-                  content={<ChartTooltipContent />}
-                  cursor={{ fill: "hsl(var(--accent) / 0.1)" }}
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
                 />
                 <Line
-                  type="monotone"
                   dataKey="duration"
-                  stroke="hsl(var(--primary))"
+                  type="natural"
+                  stroke="var(--color-duration)"
                   strokeWidth={2}
-                  dot={{ fill: "hsl(var(--primary))", r: 4 }}
-                  activeDot={{ r: 6 }}
-                  name="Duration (min)"
+                  dot={false}
                 />
               </LineChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </CardContent>
         </Card>
         <Card>
@@ -204,14 +230,15 @@ export function DashboardClient() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={problemData}>
+            <ChartContainer config={problemChartConfig} className="h-[300px] w-full">
+              <BarChart accessibilityLayer data={problemData}>
                 <XAxis
                   dataKey="subject"
                   tickLine={false}
                   axisLine={false}
                   stroke="#888888"
                   fontSize={12}
+                  tickFormatter={(value) => value.slice(0,3)}
                 />
                 <YAxis
                   stroke="#888888"
@@ -221,12 +248,12 @@ export function DashboardClient() {
                   tickFormatter={(value) => `${value}`}
                 />
                 <ChartTooltip
-                  content={<ChartTooltipContent />}
-                  cursor={{ fill: "hsl(var(--accent) / 0.1)" }}
+                  content={<ChartTooltipContent hideLabel />}
+                  cursor={false}
                 />
-                <Bar dataKey="count" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="count" fill="var(--color-count)" radius={4} />
               </BarChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
