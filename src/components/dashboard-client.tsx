@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Activity, Problem } from "@/lib/types";
@@ -25,7 +26,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useMemo } from "react";
-import { format, subDays } from "date-fns";
+import { format, subDays, parseISO } from "date-fns";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { BarChart3, Clock, Target, TrendingUp } from "lucide-react";
@@ -73,7 +74,7 @@ export function DashboardClient() {
         (sum, a) => sum + a.duration,
         0
       );
-      return { date: format(new Date(date), "MMM d"), duration: totalDuration };
+      return { date: format(parseISO(date), "d"), duration: totalDuration };
     });
 
     const totalDuration = activities.reduce((sum, a) => sum + a.duration, 0);
@@ -190,33 +191,29 @@ export function DashboardClient() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={activityChartConfig} className="h-[300px] w-full">
+            <ChartContainer config={activityChartConfig}>
               <LineChart
-                  accessibilityLayer
-                  data={activityData}
-                  margin={{
-                    left: 12,
-                    right: 12,
-                  }}
-                >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) => value.slice(0, 3)}
-                />
+                data={activityData}
+                margin={{
+                  top: 5,
+                  right: 20,
+                  left: -10,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" tickMargin={10} />
+                <YAxis />
                 <ChartTooltip
+                  content={<ChartTooltipContent />}
                   cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
                 />
                 <Line
+                  type="monotone"
                   dataKey="duration"
-                  type="natural"
-                  stroke="var(--color-duration)"
+                  stroke="hsl(var(--primary))"
                   strokeWidth={2}
-                  dot={false}
+                  activeDot={{ r: 8 }}
                 />
               </LineChart>
             </ChartContainer>
@@ -230,28 +227,32 @@ export function DashboardClient() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={problemChartConfig} className="h-[300px] w-full">
-              <BarChart accessibilityLayer data={problemData}>
+            <ChartContainer config={problemChartConfig}>
+              <BarChart data={problemData} margin={{ left: -20, bottom: 5 }}>
                 <XAxis
                   dataKey="subject"
                   tickLine={false}
                   axisLine={false}
                   stroke="#888888"
                   fontSize={12}
-                  tickFormatter={(value) => value.slice(0,3)}
+                  tickFormatter={(value) => value.slice(0, 3)}
+                  tickMargin={10}
                 />
                 <YAxis
                   stroke="#888888"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(value) => `${value}`}
                 />
                 <ChartTooltip
-                  content={<ChartTooltipContent hideLabel />}
+                  content={<ChartTooltipContent />}
                   cursor={false}
                 />
-                <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+                <Bar
+                  dataKey="count"
+                  fill="hsl(var(--primary))"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ChartContainer>
           </CardContent>
