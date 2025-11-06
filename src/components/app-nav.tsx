@@ -50,7 +50,9 @@ export function AppNav() {
     <>
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 p-2">
-          <BookOpenCheck className="w-8 h-8 text-primary" />
+          <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
+            <BookOpenCheck className="w-5 h-5 text-white" />
+          </div>
           <h1 className="text-xl font-semibold font-headline">StudyTrack</h1>
         </div>
       </SidebarHeader>
