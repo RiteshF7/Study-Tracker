@@ -3,8 +3,8 @@
     {
       "id": "empty-dashboard",
       "description": "An illustration showing charts and graphs, representing an empty state for the dashboard.",
-      "imageUrl": "https://images.unsplash.com/photo-1543286386-71314a478335?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxhbmFseXRpY3N8ZW58MHx8fHwxNzMyMDY5MjM4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "empty analytics"
+      "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhbmFseXRpY3N8ZW58MHx8fHwxNzMyMDY5MjM4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "data analytics"
     }
   ]
 }
