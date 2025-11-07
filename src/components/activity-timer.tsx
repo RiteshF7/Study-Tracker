@@ -44,7 +44,7 @@ type TimerState = {
   startTime: number | null;
 };
 
-const CIRCLE_RADIUS = 105;
+const CIRCLE_RADIUS = 75;
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 export function ActivityTimer() {
@@ -166,15 +166,15 @@ export function ActivityTimer() {
   const strokeDashoffset = CIRCLE_CIRCUMFERENCE - (progressInLoop / totalSecondsForLoop) * CIRCLE_CIRCUMFERENCE;
 
   return (
-    <div className="h-screen w-screen bg-background relative">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md text-center p-4">
+    <div className="flex h-screen w-screen items-center justify-center bg-background">
+      <div className="w-full max-w-md text-center p-4">
         {timerState.isTiming ? (
           <div className="space-y-8 flex flex-col items-center">
             <p className="text-2xl text-muted-foreground">Timing session for:</p>
             <h1 className="text-6xl font-bold font-headline">{timerState.subject}</h1>
             
-            <div className="relative w-[224px] h-[224px]">
-                <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 224 224">
+            <div className="relative w-[160px] h-[160px]">
+                <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 164 164">
                     <defs>
                         <linearGradient id="progressGradientGreen" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style={{stopColor: '#4ade80', stopOpacity: 0.8}} />
@@ -187,8 +187,8 @@ export function ActivityTimer() {
                         strokeWidth="10"
                         fill="transparent"
                         r={CIRCLE_RADIUS}
-                        cx="112"
-                        cy="112"
+                        cx="82"
+                        cy="82"
                     />
                     <circle
                         stroke="url(#progressGradientGreen)"
@@ -196,8 +196,8 @@ export function ActivityTimer() {
                         strokeLinecap="round"
                         fill="transparent"
                         r={CIRCLE_RADIUS}
-                        cx="112"
-                        cy="112"
+                        cx="82"
+                        cy="82"
                         style={{
                             strokeDasharray: CIRCLE_CIRCUMFERENCE,
                             strokeDashoffset: strokeDashoffset,
@@ -206,7 +206,7 @@ export function ActivityTimer() {
                     />
                 </svg>
                  <div className="absolute inset-0 flex items-center justify-center">
-                    <p className="font-mono text-5xl font-bold tabular-nums tracking-tighter">
+                    <p className="font-mono text-4xl font-bold tabular-nums tracking-tighter">
                         {formatTime(timerState.elapsedTime)}
                     </p>
                 </div>
