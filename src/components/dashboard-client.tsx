@@ -283,9 +283,15 @@ export function DashboardClient() {
     }));
   }, [problems]);
 
-  const totalProblemsSolved = useMemo(() => {
-    if (!problems) return 0;
-    return problems.reduce((sum, p) => sum + p.count, 0);
+  const problemsPerDay = useMemo(() => {
+    if (!problems || problems.length === 0) return 0;
+    
+    const total = problems.reduce((sum, p) => sum + p.count, 0);
+    const uniqueDays = new Set(problems.map(p => p.date)).size;
+
+    if (uniqueDays === 0) return 0;
+
+    return total / uniqueDays;
   }, [problems]);
 
   const emptyStateImage = PlaceHolderImages.find(
@@ -357,12 +363,12 @@ export function DashboardClient() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Problems Solved</CardTitle>
+                <CardTitle className="text-sm font-medium">Problems Solved per Day</CardTitle>
                 <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{totalProblemsSolved}</div>
-                <p className="text-xs text-muted-foreground">Across all subjects</p>
+                <div className="text-2xl font-bold">{problemsPerDay.toFixed(1)}</div>
+                <p className="text-xs text-muted-foreground">Average on days you solved problems</p>
             </CardContent>
         </Card>
         <Card>
