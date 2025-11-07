@@ -26,7 +26,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useMemo } from "react";
-import { format, subDays, parseISO } from "date-fns";
+import { format, subDays, parseISO, startOfDay } from "date-fns";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { BarChart3, Clock, Target, TrendingUp } from "lucide-react";
@@ -36,14 +36,12 @@ import { collection } from "firebase/firestore";
 const activityChartConfig = {
   duration: {
     label: "Duration (min)",
-    color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig;
 
 const problemChartConfig = {
   count: {
     label: "Count",
-    color: "hsl(var(--accent))",
   },
 } satisfies ChartConfig;
 
@@ -62,24 +60,37 @@ export function DashboardClient() {
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesCollection);
   const { data: problems, isLoading: isLoadingProblems } = useCollection<Problem>(problemsCollection);
 
-  const { activityData, totalDuration } = useMemo(() => {
-    if (!activities) return { activityData: [], totalDuration: 0 };
-    const last7Days = Array.from({ length: 7 }, (_, i) =>
-      format(subDays(new Date(), i), "yyyy-MM-dd")
-    ).reverse();
+  const { activityData, totalDuration, productivityTrend } = useMemo(() => {
+    if (!activities) return { activityData: [], totalDuration: 0, productivityTrend: null };
 
-    const data = last7Days.map((date) => {
+    const today = startOfDay(new Date());
+
+    // Last 7 days
+    const last7Days = Array.from({ length: 7 }, (_, i) => format(subDays(today, i), "yyyy-MM-dd")).reverse();
+    const last7DaysData = last7Days.map((date) => {
       const dailyActivities = activities.filter((a) => a.date === date);
-      const totalDuration = dailyActivities.reduce(
-        (sum, a) => sum + a.duration,
-        0
-      );
+      const totalDuration = dailyActivities.reduce((sum, a) => sum + a.duration, 0);
       return { date: format(parseISO(date), "d"), duration: totalDuration };
     });
+    const last7DaysTotal = last7DaysData.reduce((sum, d) => sum + d.duration, 0);
 
+    // Previous 7 days (days 8-14 ago)
+    const prev7Days = Array.from({ length: 7 }, (_, i) => format(subDays(today, i + 7), "yyyy-MM-dd"));
+    const prev7DaysTotal = prev7Days.reduce((total, date) => {
+      const dailyActivities = activities.filter((a) => a.date === date);
+      return total + dailyActivities.reduce((sum, a) => sum + a.duration, 0);
+    }, 0);
+    
+    let trend: { percentage: number; hourDiff: number } | null = null;
+    if (prev7DaysTotal > 0) {
+      const percentage = ((last7DaysTotal - prev7DaysTotal) / prev7DaysTotal) * 100;
+      const hourDiff = (last7DaysTotal - prev7DaysTotal) / 60;
+      trend = { percentage, hourDiff };
+    }
+    
     const totalDuration = activities.reduce((sum, a) => sum + a.duration, 0);
 
-    return { activityData: data, totalDuration };
+    return { activityData: last7DaysData, totalDuration, productivityTrend: trend };
   }, [activities]);
 
   const problemData = useMemo(() => {
@@ -166,8 +177,21 @@ export function DashboardClient() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">+12%</div>
-                <p className="text-xs text-muted-foreground">From last week (mock data)</p>
+              {productivityTrend ? (
+                <>
+                  <div className="text-2xl font-bold">
+                    {productivityTrend.percentage.toFixed(0)}%
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {`${productivityTrend.hourDiff.toFixed(1)} hours ${productivityTrend.hourDiff >= 0 ? 'more' : 'less'} than last week`}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold">N/A</div>
+                  <p className="text-xs text-muted-foreground">Not enough data</p>
+                </>
+              )}
             </CardContent>
         </Card>
         <Card>
@@ -191,31 +215,33 @@ export function DashboardClient() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={activityChartConfig}>
-              <LineChart
-                data={activityData}
-                margin={{
-                  top: 5,
-                  right: 20,
-                  left: -10,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="date" tickMargin={10} />
-                <YAxis />
-                <ChartTooltip
-                  content={<ChartTooltipContent />}
-                  cursor={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="duration"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  activeDot={{ r: 8 }}
-                />
-              </LineChart>
+            <ChartContainer config={activityChartConfig} className="min-h-[200px] w-full">
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={activityData}
+                  margin={{
+                    top: 5,
+                    right: 20,
+                    left: -10,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="date" tickMargin={10} />
+                  <YAxis />
+                  <ChartTooltip
+                    content={<ChartTooltipContent />}
+                    cursor={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="duration"
+                    stroke="hsl(var(--chart-1))"
+                    strokeWidth={2}
+                    activeDot={{ r: 8 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
         </Card>
@@ -227,33 +253,35 @@ export function DashboardClient() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={problemChartConfig}>
-              <BarChart data={problemData} margin={{ left: -20, bottom: 5 }}>
-                <XAxis
-                  dataKey="subject"
-                  tickLine={false}
-                  axisLine={false}
-                  stroke="#888888"
-                  fontSize={12}
-                  tickFormatter={(value) => value.slice(0, 3)}
-                  tickMargin={10}
-                />
-                <YAxis
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <ChartTooltip
-                  content={<ChartTooltipContent />}
-                  cursor={false}
-                />
-                <Bar
-                  dataKey="count"
-                  fill="hsl(var(--primary))"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
+             <ChartContainer config={problemChartConfig} className="min-h-[200px] w-full">
+               <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={problemData} margin={{ left: -20, bottom: 5 }}>
+                  <XAxis
+                    dataKey="subject"
+                    tickLine={false}
+                    axisLine={false}
+                    stroke="#888888"
+                    fontSize={12}
+                    tickFormatter={(value) => value.slice(0, 3)}
+                    tickMargin={10}
+                  />
+                  <YAxis
+                    stroke="#888888"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <ChartTooltip
+                    content={<ChartTooltipContent />}
+                    cursor={false}
+                  />
+                  <Bar
+                    dataKey="count"
+                    fill="hsl(var(--chart-2))"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
         </Card>
