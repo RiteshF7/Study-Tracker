@@ -19,6 +19,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -52,7 +53,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <Link href="/settings">
+                <DropdownMenuItem>Settings</DropdownMenuItem>
+              </Link>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Logout</DropdownMenuItem>
