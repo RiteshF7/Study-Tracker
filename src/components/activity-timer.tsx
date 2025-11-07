@@ -168,8 +168,8 @@ export function ActivityTimer() {
   const strokeDashoffset = CIRCLE_CIRCUMFERENCE - (progressInLoop / totalSecondsForLoop) * CIRCLE_CIRCUMFERENCE;
 
   return (
-    <div className="h-screen w-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md text-center">
+    <div className="h-screen w-screen bg-background relative">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md text-center p-4">
         {timerState.isTiming ? (
           <div className="space-y-8 flex flex-col items-center">
             <p className="text-2xl text-muted-foreground">Timing session for:</p>
@@ -241,7 +241,7 @@ export function ActivityTimer() {
                     <Select onValueChange={(v) => setTimerState(prev => ({...prev, type: v as Activity['type']}))} defaultValue={timerState.type}>
                         <SelectTrigger id="type-select" className="py-6 text-lg">
                             <SelectValue placeholder="Select an activity type" />
-                        </SelectTrigger>
+                        </Trigger>
                         <SelectContent>
                             {activityTypes.map((t) => (
                             <SelectItem key={t} value={t} className="text-lg">{t}</SelectItem>
