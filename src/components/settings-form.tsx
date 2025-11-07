@@ -30,6 +30,7 @@ import { useEffect, useState } from "react";
 import { Textarea } from "./ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { courses, CourseName, YearName } from "@/lib/types";
+import { ThemeToggle } from "./theme-toggle";
 
 const profileSchema = z.object({
   name: z.string().min(2, {
@@ -123,6 +124,7 @@ export function SettingsForm() {
   }
 
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle>Profile</CardTitle>
@@ -182,7 +184,7 @@ export function SettingsForm() {
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select your year" />
-                          </SelectTrigger>
+                          </Trigger>
                         </FormControl>
                         <SelectContent>
                           {availableYears.map((year) => (
@@ -224,5 +226,17 @@ export function SettingsForm() {
         </form>
       </Form>
     </Card>
+    <Card>
+      <CardHeader>
+        <CardTitle>Theme</CardTitle>
+        <CardDescription>
+          Choose how you want the application to look.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ThemeToggle />
+      </CardContent>
+    </Card>
+    </>
   );
 }
