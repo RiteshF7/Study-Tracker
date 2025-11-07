@@ -1,7 +1,7 @@
 
 import { subDays, format } from 'date-fns';
 import type { Activity, Problem } from './types';
-import { activityTypes, problemSubjects } from './types';
+import { activityTypes, defaultSubjects } from './types';
 import { Timestamp } from 'firebase/firestore';
 
 function getRandomElement<T>(arr: T[]): T {
@@ -24,7 +24,7 @@ export function generateMockActivities(days: number): Activity[] {
     for (let j = 0; j < numActivities; j++) {
       const type = getRandomElement(activityTypes as unknown as string[]);
       const duration = getRandomNumber(20, 120); // 20 to 120 minutes
-      const subject = getRandomElement(problemSubjects);
+      const subject = getRandomElement(defaultSubjects);
       
       activities.push({
         id: `mock-activity-${i}-${j}`,
@@ -49,7 +49,7 @@ export function generateMockProblems(days: number): Problem[] {
     const numEntries = getRandomNumber(0, 2); // 0 to 2 problem entries per day
 
     for (let j = 0; j < numEntries; j++) {
-      const subject = getRandomElement(problemSubjects);
+      const subject = getRandomElement(defaultSubjects);
       const count = getRandomNumber(3, 15); // 3 to 15 problems
 
       problems.push({
