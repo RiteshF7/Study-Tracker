@@ -143,6 +143,49 @@ export const courses = {
       "None"
     ]
   },
+  "BAMS": {
+    "First Professional Year": [
+      "Padartha Vigyan & Ayurveda Itihas",
+      "Sanskrit",
+      "Kriya Sharir (Physiology)",
+      "Rachana Sharir (Anatomy)",
+      "Ashtanga Hridaya (Sutrasthan)",
+      "Maulika Siddhanta & Samhita",
+      "None"
+    ],
+    "Second Professional Year": [
+      "Dravyaguna Vigyan (Ayurvedic Pharmacology)",
+      "Rasashastra & Bhaishajya Kalpana (Pharmaceuticals)",
+      "Roga Nidana & Vikriti Vigyan (Pathology)",
+      "Charaka Samhita (Nidanasthan)",
+      "None"
+    ],
+    "Third Professional Year": [
+      "Agadtantra (Toxicology & Jurisprudence)",
+      "Swasthavritta (Preventive & Social Medicine)",
+      "Prasuti Tantra & Stri Roga (Obstetrics & Gynecology)",
+      "Kaumarbhritya (Pediatrics)",
+      "Charaka Samhita (Chikitsasthan)",
+      "None"
+    ],
+    "Final Professional Year": [
+      "Kayachikitsa (General Medicine)",
+      "Panchakarma (Detoxification Therapies)",
+      "Shalya Tantra (Surgery)",
+      "Shalakya Tantra (ENT & Ophthalmology)",
+      "Research Methodology & Medical Ethics",
+      "None"
+    ],
+    "Internship": [
+      "Kayachikitsa",
+      "Shalya & Shalakya Tantra",
+      "Panchakarma",
+      "Prasuti & Kaumarbhritya",
+      "Community Health",
+      "Dispensary & Hospital Practice",
+      "None"
+    ]
+  },
   "BSc": {
     "All Subjects": ["Physics", "Chemistry", "Biology", "Mathematics", "Computer Science", "Botany", "Zoology", "Statistics", "Other", "None"],
   },
@@ -151,9 +194,6 @@ export const courses = {
   },
   "BDS": {
     "All Subjects": ["Dental Anatomy", "Oral Pathology", "Periodontology", "Orthodontics", "Prosthodontics", "Endodontics", "Oral Surgery", "Community Dentistry", "Other", "None"],
-  },
-  "BAMS": {
-    "All Subjects": ["Ayurvedic Principles", "Dravyaguna", "Rasa Shastra", "Panchakarma", "Shalya Tantra", "Shalakya Tantra", "Prasuti Tantra", "Kaumarabhritya", "Other", "None"],
   },
   "General Studies": {
     "All Subjects": defaultSubjects,
