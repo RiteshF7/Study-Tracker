@@ -176,7 +176,7 @@ export function DashboardClient() {
 
   }, [activities]);
 
-  const { activityData, totalDuration, productivityTrend } = useMemo(() => {
+  const { activityData, productivityTrend } = useMemo(() => {
     if (!activities) return { activityData: [], totalDuration: 0, productivityTrend: null };
 
     const productiveActivities = activities.filter(
@@ -266,10 +266,16 @@ export function DashboardClient() {
         trend = { percentage: 100, hourDiff: last7DaysTotal / 60 };
     }
     
-    const totalDuration = productiveActivities.reduce((sum, a) => sum + a.duration, 0);
-
-    return { activityData: { data: groupedData, formatter: tickFormatter }, totalDuration, productivityTrend: trend };
+    return { activityData: { data: groupedData, formatter: tickFormatter }, productivityTrend: trend };
   }, [activities, timeRange]);
+  
+  const studyTimeToday = useMemo(() => {
+    if (!activities) return 0;
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    return activities
+      .filter(a => a.date === todayStr && (a.type === 'Study' || a.type === 'Class'))
+      .reduce((sum, a) => sum + a.duration, 0);
+  }, [activities]);
 
   const problemData = useMemo(() => {
     if (!problems) return [];
@@ -370,12 +376,12 @@ export function DashboardClient() {
         </Card>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Study Time</CardTitle>
+                <CardTitle className="text-sm font-medium">Study Time Today</CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{(totalDuration / 60).toFixed(1)} hours</div>
-                <p className="text-xs text-muted-foreground">Total time logged</p>
+                <div className="text-2xl font-bold">{(studyTimeToday / 60).toFixed(1)} hours</div>
+                <p className="text-xs text-muted-foreground">Productive time logged today</p>
             </CardContent>
         </Card>
         <Card>
