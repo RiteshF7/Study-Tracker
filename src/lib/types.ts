@@ -21,29 +21,38 @@ export type Problem = {
 };
 
 export const defaultSubjects = [
-  "Mathematics",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "Computer Science",
-  "History",
-  "Literature",
-  "Other",
+  "Anatomy",
+  "Physiology",
+  "Biochemistry",
+  "Pharmacology",
+  "Pathology",
+  "Microbiology",
+  "Forensic Medicine",
+  "Community Medicine",
 ];
 
 export const courses = {
-  "General Studies": {
-    subjects: defaultSubjects,
+  "BPT": {
+    subjects: ["Anatomy", "Physiology", "Biomechanics", "Exercise Therapy", "Electrotherapy", "Orthopaedics", "Neurology", "Cardiopulmonary", "Other"],
   },
-  "Pre-Med": {
-    subjects: ["Biology", "Chemistry", "Organic Chemistry", "Physics", "Biochemistry", "Psychology", "Sociology", "Other"],
+  "MPT": {
+    subjects: ["Advanced Physiotherapy", "Research Methodology", "Biomechanics", "Manual Therapy", "Sports Physiotherapy", "Neuro-rehabilitation", "Cardio-rehabilitation", "Other"],
   },
-  "Computer Science": {
-    subjects: ["Data Structures", "Algorithms", "Operating Systems", "Computer Networks", "Database Systems", "Artificial Intelligence", "Mathematics", "Other"],
+  "MBBS": {
+    subjects: ["Anatomy", "Physiology", "Biochemistry", "Pharmacology", "Pathology", "Microbiology", "Forensic Medicine", "Ophthalmology", "Surgery", "Pediatrics", "Other"],
   },
-  "History Major": {
-    subjects: ["World History", "American History", "European History", "Ancient Civilizations", "Political Science", "Art History", "Literature", "Other"],
-  }
+  "BSc": {
+    subjects: ["Physics", "Chemistry", "Biology", "Mathematics", "Computer Science", "Botany", "Zoology", "Statistics", "Other"],
+  },
+  "MSc": {
+    subjects: ["Advanced Physics", "Organic Chemistry", "Molecular Biology", "Applied Mathematics", "Data Science", "Environmental Science", "Biotechnology", "Other"],
+  },
+  "BDS": {
+    subjects: ["Dental Anatomy", "Oral Pathology", "Periodontology", "Orthodontics", "Prosthodontics", "Endodontics", "Oral Surgery", "Community Dentistry", "Other"],
+  },
+  "BAMS": {
+    subjects: ["Ayurvedic Principles", "Dravyaguna", "Rasa Shastra", "Panchakarma", "Shalya Tantra", "Shalakya Tantra", "Prasuti Tantra", "Kaumarabhritya", "Other"],
+  },
 };
 
 export type CourseName = keyof typeof courses;
