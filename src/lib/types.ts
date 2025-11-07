@@ -197,9 +197,9 @@ export const courses = {
     "All Subjects": ["Dental Anatomy", "Oral Pathology", "Periodontology", "Orthodontics", "Prosthodontics", "Endodontics", "Oral Surgery", "Community Dentistry", "Other", "None"],
   },
   "NEET": {
-    "11th": ["Physics", "Chemistry", "Biology", "None"],
-    "12th": ["Physics", "Chemistry", "Biology", "None"],
-    "dropper": ["Physics", "Chemistry", "Biology", "None"],
+    "11TH": ["Physics", "Chemistry", "Biology", "None"],
+    "12TH": ["Physics", "Chemistry", "Biology", "None"],
+    "DROPPER": ["Physics", "Chemistry", "Biology", "None"],
   },
   "General Studies": {
     "All Subjects": defaultSubjects,
