@@ -206,7 +206,7 @@ export function ActivityTimer() {
                     />
                 </svg>
                  <div className="absolute inset-0 flex items-center justify-center">
-                    <p className="font-mono text-4xl font-bold tabular-nums tracking-tighter">
+                    <p className="font-mono text-5xl font-bold tabular-nums tracking-widest drop-shadow-sm">
                         {formatTime(timerState.elapsedTime)}
                     </p>
                 </div>
