@@ -397,7 +397,7 @@ export function DashboardClient() {
                     {productivityTrend.percentage >= 0 ? "+" : ""}
                     {productivityTrend.percentage.toFixed(0)}%
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-foreground/80">
                     {`${productivityTrend.hourDiff.toFixed(1)} hours ${productivityTrend.hourDiff >= 0 ? 'more' : 'less'} than last week`}
                   </p>
                 </>
