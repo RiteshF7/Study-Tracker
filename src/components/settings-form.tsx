@@ -14,6 +14,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -21,39 +22,56 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useFirebase, useUser } from "@/firebase";
+import { useDoc, useFirebase, useUser } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { doc } from "firebase/firestore";
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useEffect } from "react";
+import { Textarea } from "./ui/textarea";
 
 const profileSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
   }),
+  email: z.string().email().optional(),
+  learningGoals: z.string().optional(),
 });
+
+type UserProfile = {
+    name?: string;
+    learningGoals?: string;
+}
 
 export function SettingsForm() {
   const { user } = useUser();
   const { firestore } = useFirebase();
   const { toast } = useToast();
 
+  const userDocRef = user ? doc(firestore, "users", user.uid) : null;
+  const { data: userProfile } = useDoc<UserProfile>(userDocRef);
+
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user?.displayName || "",
+      name: "",
+      email: "",
+      learningGoals: "",
     },
   });
   
   useEffect(() => {
-    if (user?.displayName) {
-      form.reset({ name: user.displayName });
+    if (user) {
+      form.reset({ 
+          name: userProfile?.name || user.displayName || "",
+          email: user.email || "",
+          learningGoals: userProfile?.learningGoals || ""
+      });
     }
-  }, [user, form]);
+  }, [user, userProfile, form]);
 
 
   function onSubmit(values: z.infer<typeof profileSchema>) {
-    if (!user) {
+    if (!userDocRef) {
         toast({
             variant: "destructive",
             title: "Error",
@@ -62,15 +80,14 @@ export function SettingsForm() {
         return;
     }
     
-    // The user's profile is stored in the 'users' collection with their UID as the document ID.
-    const userDocRef = doc(firestore, "users", user.uid);
-    
-    // We update the document. The 'name' field matches our User entity in backend.json.
-    setDocumentNonBlocking(userDocRef, { name: values.name }, { merge: true });
+    setDocumentNonBlocking(userDocRef, { 
+        name: values.name,
+        learningGoals: values.learningGoals 
+    }, { merge: true });
 
     toast({
       title: "Profile Updated",
-      description: "Your name has been successfully updated.",
+      description: "Your settings have been successfully updated.",
     });
   }
 
@@ -79,12 +96,12 @@ export function SettingsForm() {
       <CardHeader>
         <CardTitle>Profile</CardTitle>
         <CardDescription>
-          This is how others will see you on the site.
+          This is your personal information and learning preferences.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent>
+          <CardContent className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -94,6 +111,42 @@ export function SettingsForm() {
                   <FormControl>
                     <Input placeholder="Your name" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Your email" {...field} disabled />
+                  </FormControl>
+                  <FormDescription>
+                    Your email address cannot be changed.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="learningGoals"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Learning Goals</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                        placeholder="e.g., 'Master calculus concepts for my final exam' or 'Finish my history thesis.'" 
+                        {...field}
+                        rows={4}
+                    />
+                  </FormControl>
+                   <FormDescription>
+                    What are you hoping to achieve in your studies?
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

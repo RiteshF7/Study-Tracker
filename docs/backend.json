@@ -18,6 +18,10 @@
         "name": {
           "type": "string",
           "description": "Full name of the user."
+        },
+        "learningGoals": {
+          "type": "string",
+          "description": "The user's long-term learning goals and aspirations."
         }
       },
       "required": [
