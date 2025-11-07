@@ -365,7 +365,7 @@ export function DashboardClient() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{problemsSolvedToday}</div>
-            <p className="text-xs text-muted-foreground">Across all subjects</p>
+            
           </CardContent>
         </Card>
         <Card>
