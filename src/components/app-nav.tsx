@@ -8,6 +8,7 @@ import {
   ListTodo,
   Target,
   BookOpenCheck,
+  LogOut,
 } from "lucide-react";
 import {
   SidebarHeader,
@@ -16,6 +17,7 @@ import {
   SidebarMenuButton,
   SidebarContent,
   SidebarFooter,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
@@ -76,8 +78,18 @@ export function AppNav() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter>
-        <div className="p-4 text-xs text-muted-foreground">
+      <SidebarFooter className="p-2">
+        <SidebarSeparator />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            {/* In a real app, this would trigger a logout function */}
+            <SidebarMenuButton className="w-full justify-start text-muted-foreground hover:text-destructive">
+              <LogOut className="mr-2 h-5 w-5" />
+              <span>Logout</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+        <div className="p-4 text-center text-xs text-muted-foreground/50">
           <p>&copy; 2024 StudyTrack Journal</p>
         </div>
       </SidebarFooter>
