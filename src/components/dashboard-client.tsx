@@ -39,6 +39,7 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 
 const activityChartConfig = {
   duration: {
@@ -492,121 +493,153 @@ export function DashboardClient() {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <div className="flex flex-wrap justify-between items-center gap-4">
-              <div>
-                <CardTitle>Activity Trends</CardTitle>
-                <CardDescription>
-                  Total minutes spent on logged activities.
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" onClick={() => handleDateNavigation('prev', activityTimeRange, activityEndDate, setActivityEndDate)}>
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Select value={activityTimeRange} onValueChange={(value) => setActivityTimeRange(value as TimeRangeKey)}>
-                    <SelectTrigger className="w-auto">
-                        <SelectValue placeholder="Select a range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {Object.entries(timeRangeOptions).map(([value, label]) => (
-                            <SelectItem key={value} value={value}>{label}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                 <Button variant="outline" size="icon" onClick={() => handleDateNavigation('next', activityTimeRange, activityEndDate, setActivityEndDate)} disabled={isToday(activityEndDate)}>
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={activityChartConfig} className="min-h-[200px] w-full">
-                <LineChart
-                  data={activityData.data}
-                  margin={{
-                    top: 5,
-                    right: 20,
-                    left: -10,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" tickMargin={10} tickFormatter={activityData.formatter}/>
-                  <YAxis />
-                  <ChartTooltip
-                    content={<ChartTooltipContent />}
-                    cursor={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="duration"
-                    stroke="var(--color-duration)"
-                    strokeWidth={2}
-                    activeDot={{ r: 8 }}
-                  />
-                </LineChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <div className="flex flex-wrap justify-between items-center gap-4">
-              <div>
-                <CardTitle>Problems Solved</CardTitle>
-                <CardDescription>
-                  Your problem-solving trend.
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" onClick={() => handleDateNavigation('prev', problemTimeRange, problemEndDate, setProblemEndDate)}>
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Select value={problemTimeRange} onValueChange={(value) => setProblemTimeRange(value as TimeRangeKey)}>
-                    <SelectTrigger className="w-auto">
-                    <SelectValue placeholder="Select a range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                    {Object.entries(timeRangeOptions).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>{label}</SelectItem>
-                    ))}
-                    </SelectContent>
-                </Select>
-                <Button variant="outline" size="icon" onClick={() => handleDateNavigation('next', problemTimeRange, problemEndDate, setProblemEndDate)} disabled={isToday(problemEndDate)}>
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={problemChartConfig} className="min-h-[200px] w-full">
-              <BarChart
-                data={problemsPerDayData.data}
-                margin={{
-                  top: 5,
-                  right: 20,
-                  left: -10,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="date" tickMargin={10} tickFormatter={problemsPerDayData.formatter}/>
-                <YAxis />
-                <ChartTooltip
-                  content={<ChartTooltipContent />}
-                  cursor={false}
-                />
-                <Bar
-                  dataKey="count"
-                  fill="var(--color-count)"
-                  radius={4}
-                />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Dialog>
+            <DialogTrigger asChild>
+                <Card className="cursor-pointer">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Activity Trends</CardTitle>
+                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{activityData.data.reduce((acc, item) => acc + item.duration, 0)} min</div>
+                        <p className="text-xs text-muted-foreground">Total in selected period</p>
+                    </CardContent>
+                </Card>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl">
+                 <Card className="shadow-none border-none">
+                    <CardHeader>
+                        <div className="flex flex-wrap justify-between items-center gap-4">
+                        <div>
+                            <CardTitle>Activity Trends</CardTitle>
+                            <CardDescription>
+                            Total minutes spent on logged activities.
+                            </CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="icon" onClick={() => handleDateNavigation('prev', activityTimeRange, activityEndDate, setActivityEndDate)}>
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <Select value={activityTimeRange} onValueChange={(value) => setActivityTimeRange(value as TimeRangeKey)}>
+                                <SelectTrigger className="w-auto">
+                                    <SelectValue placeholder="Select a range" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Object.entries(timeRangeOptions).map(([value, label]) => (
+                                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Button variant="outline" size="icon" onClick={() => handleDateNavigation('next', activityTimeRange, activityEndDate, setActivityEndDate)} disabled={isToday(activityEndDate)}>
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={activityChartConfig} className="min-h-[300px] w-full">
+                            <LineChart
+                            data={activityData.data}
+                            margin={{
+                                top: 5,
+                                right: 20,
+                                left: -10,
+                                bottom: 5,
+                            }}
+                            >
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="date" tickMargin={10} tickFormatter={activityData.formatter}/>
+                            <YAxis />
+                            <ChartTooltip
+                                content={<ChartTooltipContent />}
+                                cursor={false}
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="duration"
+                                stroke="var(--color-duration)"
+                                strokeWidth={2}
+                                activeDot={{ r: 8 }}
+                            />
+                            </LineChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+            </DialogContent>
+        </Dialog>
+         <Dialog>
+            <DialogTrigger asChild>
+                 <Card className="cursor-pointer">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Problems Solved</CardTitle>
+                        <Target className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{problemsPerDayData.data.reduce((acc, item) => acc + item.count, 0)}</div>
+                        <p className="text-xs text-muted-foreground">Total in selected period</p>
+                    </CardContent>
+                </Card>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl">
+                 <Card className="shadow-none border-none">
+                    <CardHeader>
+                        <div className="flex flex-wrap justify-between items-center gap-4">
+                        <div>
+                            <CardTitle>Problems Solved</CardTitle>
+                            <CardDescription>
+                            Your problem-solving trend.
+                            </CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="icon" onClick={() => handleDateNavigation('prev', problemTimeRange, problemEndDate, setProblemEndDate)}>
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <Select value={problemTimeRange} onValueChange={(value) => setProblemTimeRange(value as TimeRangeKey)}>
+                                <SelectTrigger className="w-auto">
+                                <SelectValue placeholder="Select a range" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                {Object.entries(timeRangeOptions).map(([value, label]) => (
+                                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                                ))}
+                                </SelectContent>
+                            </Select>
+                            <Button variant="outline" size="icon" onClick={() => handleDateNavigation('next', problemTimeRange, problemEndDate, setProblemEndDate)} disabled={isToday(problemEndDate)}>
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={problemChartConfig} className="min-h-[300px] w-full">
+                        <BarChart
+                            data={problemsPerDayData.data}
+                            margin={{
+                            top: 5,
+                            right: 20,
+                            left: -10,
+                            bottom: 5,
+                            }}
+                        >
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="date" tickMargin={10} tickFormatter={problemsPerDayData.formatter}/>
+                            <YAxis />
+                            <ChartTooltip
+                            content={<ChartTooltipContent />}
+                            cursor={false}
+                            />
+                            <Bar
+                            dataKey="count"
+                            fill="var(--color-count)"
+                            radius={4}
+                            />
+                        </BarChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+            </DialogContent>
+        </Dialog>
       </div>
 
        {!userProfile?.learningGoals && (
@@ -636,4 +669,5 @@ export function DashboardClient() {
       )}
     </div>
   );
-}
+
+    
