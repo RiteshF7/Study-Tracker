@@ -30,8 +30,7 @@ import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useEffect, useState } from "react";
 import { Textarea } from "./ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { courses, CourseName, YearName } from "@/lib/types";
-import { ThemeToggle } from "./theme-toggle";
+import { courses, CourseName } from "@/lib/types";
 
 const profileSchema = z.object({
   name: z.string().min(2, {
@@ -79,8 +78,9 @@ export function SettingsForm() {
       const years = Object.keys(courses[selectedCourse]);
       setAvailableYears(years);
       // Reset year if the new course doesn't have the previously selected year
-      if (!years.includes(form.getValues("year") || "")) {
-        form.setValue("year", years[0]);
+      const currentYear = form.getValues("year");
+      if (!currentYear || !years.includes(currentYear)) {
+        form.setValue("year", years[0] || "");
       }
     } else {
       setAvailableYears([]);
@@ -127,7 +127,6 @@ export function SettingsForm() {
   }
 
   return (
-    <>
     <Card>
       <CardHeader>
         <CardTitle>Profile</CardTitle>
@@ -157,7 +156,7 @@ export function SettingsForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Course</FormLabel>
-                  <Select onValuechange={field.onChange} value={field.value} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select your course of study" />
@@ -229,17 +228,5 @@ export function SettingsForm() {
         </form>
       </Form>
     </Card>
-    <Card>
-      <CardHeader>
-        <CardTitle>Theme</CardTitle>
-        <CardDescription>
-          Choose how you want the application to look.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ThemeToggle />
-      </CardContent>
-    </Card>
-    </>
   );
 }
