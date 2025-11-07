@@ -507,7 +507,7 @@ export function DashboardClient() {
           </CardHeader>
           <CardContent>
             <ChartContainer config={problemChartConfig} className="min-h-[200px] w-full">
-              <LineChart
+              <BarChart
                 data={problemsPerDayData.data}
                 margin={{
                   top: 5,
@@ -523,14 +523,12 @@ export function DashboardClient() {
                   content={<ChartTooltipContent />}
                   cursor={false}
                 />
-                <Line
-                  type="monotone"
+                <Bar
                   dataKey="count"
-                  stroke="var(--color-count)"
-                  strokeWidth={2}
-                  activeDot={{ r: 8 }}
+                  fill="var(--color-count)"
+                  radius={4}
                 />
-              </LineChart>
+              </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
@@ -563,6 +561,8 @@ export function DashboardClient() {
       )}
     </div>
   );
+
+    
 
     
 
