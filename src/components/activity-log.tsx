@@ -83,7 +83,7 @@ export function ActivityLog() {
     if (courseName && courses[courseName]) {
       return courses[courseName].subjects;
     }
-    return courses["General Studies"].subjects;
+    return defaultSubjects;
   }, [userProfile]);
 
 

@@ -80,13 +80,13 @@ export function ProblemTracker() {
     if (courseName && courses[courseName]) {
       return courses[courseName].subjects;
     }
-    return courses["General Studies"].subjects;
+    return defaultSubjects;
   }, [userProfile]);
 
   const form = useForm<z.infer<typeof problemSchema>>({
     resolver: zodResolver(problemSchema),
     defaultValues: {
-      subject: problemSubjects[0],
+      subject: "",
       count: 10,
       notes: "",
       date: new Date().toISOString().split("T")[0],
