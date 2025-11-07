@@ -163,8 +163,9 @@ export function ActivityTimer() {
     router.push('/activities');
   };
   
-  const secondsForRing = timerState.elapsedTime % 60;
-  const strokeDashoffset = CIRCLE_CIRCUMFERENCE - (secondsForRing / 60) * CIRCLE_CIRCUMFERENCE;
+  const totalSecondsForLoop = 30 * 60; // 30 minutes in seconds
+  const progressInLoop = timerState.elapsedTime % totalSecondsForLoop;
+  const strokeDashoffset = CIRCLE_CIRCUMFERENCE - (progressInLoop / totalSecondsForLoop) * CIRCLE_CIRCUMFERENCE;
 
   return (
     <div className="h-screen w-screen bg-background flex flex-col items-center justify-center p-4">
