@@ -383,8 +383,8 @@ export function DashboardClient() {
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
@@ -502,5 +502,3 @@ export function DashboardClient() {
     </div>
   );
 }
-
-    
