@@ -26,10 +26,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useMemo, useState } from "react";
-import { format, subDays, parseISO, startOfDay, parse, eachDayOfInterval, startOfWeek, isSameWeek, endOfWeek, eachWeekOfInterval, addDays, getWeek, subMonths } from "date-fns";
+import { format, subDays, parseISO, startOfDay, parse, eachDayOfInterval, startOfWeek, isSameWeek, endOfWeek, eachWeekOfInterval, addDays, getWeek, subMonths, differenceInDays } from "date-fns";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle, ChevronDown } from "lucide-react";
+import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle, ChevronDown, Flame } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import { generateMockActivities, generateMockProblems } from "@/lib/mock-data";
@@ -147,6 +147,34 @@ export function DashboardClient() {
     return { activities: realActivities, problems: realProblems };
   }, [realActivities, realProblems, isLoadingActivities, isLoadingProblems, isLoadingProfile]);
 
+
+  const studyStreak = useMemo(() => {
+    if (!activities || activities.length === 0) return 0;
+    
+    const uniqueDates = [...new Set(activities.map(a => a.date))].map(d => startOfDay(parseISO(d))).sort((a, b) => b.getTime() - a.getTime());
+
+    if (uniqueDates.length === 0) return 0;
+
+    let streak = 0;
+    const today = startOfDay(new Date());
+    const firstDate = uniqueDates[0];
+
+    // Check if the most recent activity was today or yesterday
+    if (differenceInDays(today, firstDate) <= 1) {
+      streak = 1;
+      for (let i = 1; i < uniqueDates.length; i++) {
+        const diff = differenceInDays(uniqueDates[i-1], uniqueDates[i]);
+        if (diff === 1) {
+          streak++;
+        } else {
+          break; // Streak is broken
+        }
+      }
+    }
+    
+    return streak;
+
+  }, [activities]);
 
   const { activityData, totalDuration, productivityTrend } = useMemo(() => {
     if (!activities) return { activityData: [], totalDuration: 0, productivityTrend: null };
@@ -349,6 +377,16 @@ export function DashboardClient() {
         </Card>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
+                <Flame className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{studyStreak} days</div>
+                <p className="text-xs text-muted-foreground">Consecutive days of activity</p>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Productivity Trend</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -369,16 +407,6 @@ export function DashboardClient() {
                   <p className="text-xs text-muted-foreground">Not enough data</p>
                 </>
               )}
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Focus Areas</CardTitle>
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{problemData.length} Subjects</div>
-                <p className="text-xs text-muted-foreground">Currently being tracked</p>
             </CardContent>
         </Card>
       </div>
@@ -502,3 +530,5 @@ export function DashboardClient() {
     </div>
   );
 }
+
+    
