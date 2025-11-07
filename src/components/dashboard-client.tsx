@@ -277,16 +277,31 @@ export function DashboardClient() {
       .reduce((sum, a) => sum + a.duration, 0);
   }, [activities]);
 
-  const problemData = useMemo(() => {
-    if (!problems) return [];
-    const subjectMap = new Map<string, number>();
-    problems.forEach((p) => {
-      subjectMap.set(p.subject, (subjectMap.get(p.subject) || 0) + p.count);
+  const problemsPerDayData = useMemo(() => {
+    if (!problems) return { data: [], formatter: (value: string) => value };
+    
+    const today = startOfDay(new Date());
+    const startDate = subDays(today, 6); // Always show last 7 days for this chart
+
+    const relevantProblems = problems.filter(p => parseISO(p.date) >= startDate);
+    
+    const dayMap = new Map<string, number>();
+    relevantProblems.forEach(problem => {
+        dayMap.set(problem.date, (dayMap.get(problem.date) || 0) + problem.count);
     });
-    return Array.from(subjectMap.entries()).map(([subject, count]) => ({
-      subject,
-      count,
-    }));
+    
+    const days = eachDayOfInterval({ start: startDate, end: today });
+    const data = days.map(day => {
+        const dateStr = format(day, 'yyyy-MM-dd');
+        return {
+            date: format(day, 'd MMM'),
+            count: dayMap.get(dateStr) || 0
+        };
+    });
+
+    const formatter = (value: string) => format(parse(value, "d MMM", new Date()), 'EEE');
+
+    return { data, formatter };
   }, [problems]);
 
   const problemsSolvedToday = useMemo(() => {
@@ -385,7 +400,6 @@ export function DashboardClient() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{problemsSolvedToday}</div>
-            
           </CardContent>
         </Card>
         <Card>
@@ -395,7 +409,6 @@ export function DashboardClient() {
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{formattedStudyTime}</div>
-                
             </CardContent>
         </Card>
         <Card>
@@ -487,39 +500,37 @@ export function DashboardClient() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Problems Solved by Subject</CardTitle>
+            <CardTitle>Problems Solved Per Day</CardTitle>
             <CardDescription>
-              A breakdown of all problems you've tracked.
+              Your problem-solving trend for the last 7 days.
             </CardDescription>
           </CardHeader>
           <CardContent>
-             <ChartContainer config={problemChartConfig} className="min-h-[200px] w-full">
-                <BarChart data={problemData} margin={{ left: -20, bottom: 5 }}>
-                  <XAxis
-                    dataKey="subject"
-                    tickLine={false}
-                    axisLine={false}
-                    stroke="#888888"
-                    fontSize={12}
-                    tickFormatter={(value) => value.slice(0, 3)}
-                    tickMargin={10}
-                  />
-                  <YAxis
-                    stroke="#888888"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <ChartTooltip
-                    content={<ChartTooltipContent />}
-                    cursor={false}
-                  />
-                  <Bar
-                    dataKey="count"
-                    fill="var(--color-count)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
+            <ChartContainer config={problemChartConfig} className="min-h-[200px] w-full">
+              <LineChart
+                data={problemsPerDayData.data}
+                margin={{
+                  top: 5,
+                  right: 20,
+                  left: -10,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" tickMargin={10} tickFormatter={problemsPerDayData.formatter}/>
+                <YAxis />
+                <ChartTooltip
+                  content={<ChartTooltipContent />}
+                  cursor={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke="var(--color-count)"
+                  strokeWidth={2}
+                  activeDot={{ r: 8 }}
+                />
+              </LineChart>
             </ChartContainer>
           </CardContent>
         </Card>
@@ -552,5 +563,7 @@ export function DashboardClient() {
       )}
     </div>
   );
+
+    
 
     
