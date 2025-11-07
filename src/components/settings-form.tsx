@@ -35,7 +35,6 @@ const profileSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
   }),
-  email: z.string().email().optional(),
   learningGoals: z.string().optional(),
   course: z.string().optional(),
 });
@@ -61,7 +60,6 @@ export function SettingsForm() {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: "",
-      email: "",
       learningGoals: "",
       course: "General Studies",
     },
@@ -71,7 +69,6 @@ export function SettingsForm() {
     if (user) {
       form.reset({ 
           name: userProfile?.name || user.displayName || "",
-          email: user.email || "",
           learningGoals: userProfile?.learningGoals || "",
           course: userProfile?.course || "General Studies",
       });
@@ -121,22 +118,6 @@ export function SettingsForm() {
                   <FormControl>
                     <Input placeholder="Your name" {...field} />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your email" {...field} disabled />
-                  </FormControl>
-                  <FormDescription>
-                    Your email address cannot be changed.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
