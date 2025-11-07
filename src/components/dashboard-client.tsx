@@ -40,6 +40,7 @@ import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 
 const activityChartConfig = {
   duration: {
@@ -100,23 +101,23 @@ function TodaysGoal() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>What is your goal for today?</CardTitle>
-        <CardDescription>Set a short-term objective to guide your study session.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex gap-2">
-          <Input 
-            placeholder="e.g., 'Finish chapter 3 of Anatomy'"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-          />
-          <Button onClick={handleSave} disabled={!inputValue.trim()}>Save Goal</Button>
-        </div>
-      </CardContent>
-    </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>What is your goal for today?</CardTitle>
+          <CardDescription>Set a short-term objective to guide your study session.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <Input 
+              placeholder="e.g., 'Finish chapter 3 of Anatomy'"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+            />
+            <Button onClick={handleSave} disabled={!inputValue.trim()}>Save Goal</Button>
+          </div>
+        </CardContent>
+      </Card>
   );
 }
 
@@ -295,12 +296,15 @@ export function DashboardClient() {
     return { activityData: { data: groupedData, formatter: tickFormatter }, productivityTrend: trend, activityDateRange: dateRangeStr };
   }, [activities, activityTimeRange, activityEndDate]);
   
-  const studyTimeToday = useMemo(() => {
-    if (!activities) return 0;
+  const { studyTimeToday, todaysActivities } = useMemo(() => {
+    if (!activities) return { studyTimeToday: 0, todaysActivities: [] };
     const todayStr = format(new Date(), 'yyyy-MM-dd');
-    return activities
-      .filter(a => a.date === todayStr && (a.type === 'Study' || a.type === 'Class'))
-      .reduce((sum, a) => sum + a.duration, 0);
+    const todaysProductiveActivities = activities
+      .filter(a => a.date === todayStr && (a.type === 'Study' || a.type === 'Class'));
+    
+    const totalMinutes = todaysProductiveActivities.reduce((sum, a) => sum + a.duration, 0);
+
+    return { studyTimeToday: totalMinutes, todaysActivities: todaysProductiveActivities };
   }, [activities]);
 
   const { problemsPerDayData, problemDateRange } = useMemo(() => {
@@ -452,15 +456,51 @@ export function DashboardClient() {
             <div className="text-2xl font-bold">{problemsSolvedToday}</div>
           </CardContent>
         </Card>
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Study Time Today</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{formattedStudyTime}</div>
-            </CardContent>
-        </Card>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Card className="cursor-pointer">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Study Time Today</CardTitle>
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                  <div className="text-2xl font-bold">{formattedStudyTime}</div>
+              </CardContent>
+            </Card>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Today's Study Activities</DialogTitle>
+              <DialogDescription>
+                A breakdown of your productive sessions for today.
+              </DialogDescription>
+            </DialogHeader>
+            {todaysActivities.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Activity</TableHead>
+                      <TableHead className="text-right">Duration</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {todaysActivities.map((activity, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{activity.name}</TableCell>
+                        <TableCell className="text-right">{activity.duration} min</TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="font-bold border-t">
+                       <TableCell>Total</TableCell>
+                       <TableCell className="text-right">{studyTimeToday} min</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-8">No study sessions logged for today.</p>
+            )}
+          </DialogContent>
+        </Dialog>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
@@ -675,8 +715,4 @@ export function DashboardClient() {
       )}
     </div>
   );
-
-    
-
-    
-
+}
