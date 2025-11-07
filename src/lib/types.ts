@@ -195,6 +195,9 @@ export const courses = {
   "BDS": {
     "All Subjects": ["Dental Anatomy", "Oral Pathology", "Periodontology", "Orthodontics", "Prosthodontics", "Endodontics", "Oral Surgery", "Community Dentistry", "Other", "None"],
   },
+  "NEET": {
+    "All Subjects": ["Physics", "Chemistry", "Biology", "None"],
+  },
   "General Studies": {
     "All Subjects": defaultSubjects,
   }
