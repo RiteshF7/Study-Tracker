@@ -381,7 +381,7 @@ export function DashboardClient() {
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{(studyTimeToday / 60).toFixed(1)} hours</div>
-                <p className="text-xs text-muted-foreground">Productive time logged today</p>
+                
             </CardContent>
         </Card>
         <Card>
