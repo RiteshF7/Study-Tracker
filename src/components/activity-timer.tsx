@@ -44,7 +44,7 @@ type TimerState = {
   startTime: number | null;
 };
 
-const CIRCLE_RADIUS = 150;
+const CIRCLE_RADIUS = 105;
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 export function ActivityTimer() {
@@ -175,8 +175,8 @@ export function ActivityTimer() {
             <p className="text-2xl text-muted-foreground">Timing session for:</p>
             <h1 className="text-6xl font-bold font-headline">{timerState.subject}</h1>
             
-            <div className="relative w-[320px] h-[320px]">
-                <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 320 320">
+            <div className="relative w-[224px] h-[224px]">
+                <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 224 224">
                     <defs>
                         <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 0.8}} />
@@ -189,8 +189,8 @@ export function ActivityTimer() {
                         strokeWidth="10"
                         fill="transparent"
                         r={CIRCLE_RADIUS}
-                        cx="160"
-                        cy="160"
+                        cx="112"
+                        cy="112"
                     />
                     <circle
                         stroke="url(#progressGradient)"
@@ -198,8 +198,8 @@ export function ActivityTimer() {
                         strokeLinecap="round"
                         fill="transparent"
                         r={CIRCLE_RADIUS}
-                        cx="160"
-                        cy="160"
+                        cx="112"
+                        cy="112"
                         style={{
                             strokeDasharray: CIRCLE_CIRCUMFERENCE,
                             strokeDashoffset: strokeDashoffset,
@@ -208,13 +208,13 @@ export function ActivityTimer() {
                     />
                 </svg>
                  <div className="absolute inset-0 flex items-center justify-center">
-                    <p className="font-mono text-7xl font-bold tabular-nums tracking-tighter">
+                    <p className="font-mono text-5xl font-bold tabular-nums tracking-tighter">
                         {formatTime(timerState.elapsedTime)}
                     </p>
                 </div>
             </div>
 
-             <Button size="lg" variant="destructive" onClick={handleStop} className="w-full py-8 text-2xl">
+             <Button size="lg" variant="default" onClick={handleStop} className="w-full py-8 text-2xl">
                 <Square className="mr-4 h-8 w-8" /> Stop & Save
             </Button>
           </div>
