@@ -32,16 +32,19 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { BarChart3, Clock, Target, TrendingUp } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
+import { generateMockActivities, generateMockProblems } from "@/lib/mock-data";
 
 const activityChartConfig = {
   duration: {
     label: "Duration (min)",
+    color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig;
 
 const problemChartConfig = {
   count: {
     label: "Count",
+    color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig;
 
@@ -57,8 +60,20 @@ export function DashboardClient() {
     user ? collection(firestore, "users", user.uid, "problems") : null
   , [firestore, user]);
 
-  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesCollection);
-  const { data: problems, isLoading: isLoadingProblems } = useCollection<Problem>(problemsCollection);
+  const { data: realActivities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesCollection);
+  const { data: realProblems, isLoading: isLoadingProblems } = useCollection<Problem>(problemsCollection);
+
+  const { activities, problems } = useMemo(() => {
+    const noRealData = (!realActivities || realActivities.length === 0) && (!realProblems || realProblems.length === 0);
+    if (process.env.NODE_ENV === 'development' && noRealData && !isLoadingActivities && !isLoadingProblems) {
+      return {
+        activities: generateMockActivities(30),
+        problems: generateMockProblems(30)
+      };
+    }
+    return { activities: realActivities, problems: realProblems };
+  }, [realActivities, realProblems, isLoadingActivities, isLoadingProblems]);
+
 
   const { activityData, totalDuration, productivityTrend } = useMemo(() => {
     if (!activities) return { activityData: [], totalDuration: 0, productivityTrend: null };
@@ -70,7 +85,7 @@ export function DashboardClient() {
     const last7DaysData = last7Days.map((date) => {
       const dailyActivities = activities.filter((a) => a.date === date);
       const totalDuration = dailyActivities.reduce((sum, a) => sum + a.duration, 0);
-      return { date: format(parseISO(date), "d"), duration: totalDuration };
+      return { date: format(parseISO(date), "d MMM"), duration: totalDuration };
     });
     const last7DaysTotal = last7DaysData.reduce((sum, d) => sum + d.duration, 0);
 
@@ -86,6 +101,8 @@ export function DashboardClient() {
       const percentage = ((last7DaysTotal - prev7DaysTotal) / prev7DaysTotal) * 100;
       const hourDiff = (last7DaysTotal - prev7DaysTotal) / 60;
       trend = { percentage, hourDiff };
+    } else if (last7DaysTotal > 0) {
+        trend = { percentage: 100, hourDiff: last7DaysTotal / 60 };
     }
     
     const totalDuration = activities.reduce((sum, a) => sum + a.duration, 0);
@@ -180,6 +197,7 @@ export function DashboardClient() {
               {productivityTrend ? (
                 <>
                   <div className="text-2xl font-bold">
+                    {productivityTrend.percentage >= 0 ? "+" : ""}
                     {productivityTrend.percentage.toFixed(0)}%
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -216,7 +234,6 @@ export function DashboardClient() {
           </CardHeader>
           <CardContent>
             <ChartContainer config={activityChartConfig} className="min-h-[200px] w-full">
-              <ResponsiveContainer width="100%" height={300}>
                 <LineChart
                   data={activityData}
                   margin={{
@@ -227,7 +244,7 @@ export function DashboardClient() {
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" tickMargin={10} />
+                  <XAxis dataKey="date" tickMargin={10} tickFormatter={(value) => format(parseISO(`2000-01-${value.split(' ')[0]}`), 'EEE d')}/>
                   <YAxis />
                   <ChartTooltip
                     content={<ChartTooltipContent />}
@@ -236,12 +253,11 @@ export function DashboardClient() {
                   <Line
                     type="monotone"
                     dataKey="duration"
-                    stroke="hsl(var(--chart-1))"
+                    stroke="var(--color-duration)"
                     strokeWidth={2}
                     activeDot={{ r: 8 }}
                   />
                 </LineChart>
-              </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
         </Card>
@@ -254,7 +270,6 @@ export function DashboardClient() {
           </CardHeader>
           <CardContent>
              <ChartContainer config={problemChartConfig} className="min-h-[200px] w-full">
-               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={problemData} margin={{ left: -20, bottom: 5 }}>
                   <XAxis
                     dataKey="subject"
@@ -277,11 +292,10 @@ export function DashboardClient() {
                   />
                   <Bar
                     dataKey="count"
-                    fill="hsl(var(--chart-2))"
+                    fill="var(--color-count)"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
-              </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
         </Card>
