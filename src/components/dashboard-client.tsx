@@ -29,10 +29,12 @@ import { useMemo } from "react";
 import { format, subDays, parseISO, startOfDay, parse } from "date-fns";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { BarChart3, Clock, Target, TrendingUp } from "lucide-react";
-import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { BarChart3, Clock, Target, TrendingUp, Goal } from "lucide-react";
+import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
+import { collection, doc } from "firebase/firestore";
 import { generateMockActivities, generateMockProblems } from "@/lib/mock-data";
+import Link from "next/link";
+import { Button } from "./ui/button";
 
 const activityChartConfig = {
   duration: {
@@ -48,9 +50,18 @@ const problemChartConfig = {
   },
 } satisfies ChartConfig;
 
+type UserProfile = {
+  name?: string;
+  learningGoals?: string;
+}
 
 export function DashboardClient() {
   const { firestore, user } = useFirebase();
+  
+  const userDocRef = useMemoFirebase(() => 
+    user ? doc(firestore, "users", user.uid) : null
+  , [firestore, user]);
+  const { data: userProfile, isLoading: isLoadingProfile } = useDoc<UserProfile>(userDocRef);
   
   const activitiesCollection = useMemoFirebase(() => 
     user ? collection(firestore, "users", user.uid, "activities") : null
@@ -65,14 +76,14 @@ export function DashboardClient() {
 
   const { activities, problems } = useMemo(() => {
     const noRealData = (!realActivities || realActivities.length === 0) && (!realProblems || realProblems.length === 0);
-    if (process.env.NODE_ENV === 'development' && noRealData && !isLoadingActivities && !isLoadingProblems) {
+    if (process.env.NODE_ENV === 'development' && noRealData && !isLoadingActivities && !isLoadingProblems && !isLoadingProfile) {
       return {
         activities: generateMockActivities(30),
         problems: generateMockProblems(30)
       };
     }
     return { activities: realActivities, problems: realProblems };
-  }, [realActivities, realProblems, isLoadingActivities, isLoadingProblems]);
+  }, [realActivities, realProblems, isLoadingActivities, isLoadingProblems, isLoadingProfile]);
 
 
   const { activityData, totalDuration, productivityTrend } = useMemo(() => {
@@ -135,7 +146,7 @@ export function DashboardClient() {
     (img) => img.id === "empty-dashboard"
   );
   
-  const isLoading = isLoadingActivities || isLoadingProblems;
+  const isLoading = isLoadingActivities || isLoadingProblems || isLoadingProfile;
 
   if (isLoading) {
       return (
@@ -171,6 +182,30 @@ export function DashboardClient() {
 
   return (
     <div className="space-y-6">
+        <div className="mb-6">
+            <h2 className="text-2xl font-bold text-foreground">
+                Welcome back, {userProfile?.name || 'Student'}!
+            </h2>
+            <p className="text-muted-foreground">Here's a snapshot of your progress.</p>
+        </div>
+
+        {userProfile?.learningGoals && (
+          <Card className="bg-primary/5 border-primary/20">
+              <CardHeader className="flex flex-row items-start gap-4">
+                  <Goal className="w-6 h-6 text-primary mt-1" />
+                  <div>
+                      <CardTitle className="text-primary">Your Main Goal</CardTitle>
+                      <CardDescription className="text-primary/80">Keep this in mind to stay motivated.</CardDescription>
+                  </div>
+              </CardHeader>
+              <CardContent>
+                  <p className="text-lg font-semibold text-foreground">
+                      {userProfile.learningGoals}
+                  </p>
+              </CardContent>
+          </Card>
+        )}
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -304,8 +339,32 @@ export function DashboardClient() {
           </CardContent>
         </Card>
       </div>
+
+       {!userProfile?.learningGoals && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Set Your Learning Goal</CardTitle>
+            <CardDescription>
+              Define your primary objective to stay focused and motivated.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-4">
+              <div className="flex-shrink-0">
+                <Goal className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <div className="flex-1">
+                <p className="text-muted-foreground">
+                  You haven't set a learning goal yet. Head over to the settings page to add one.
+                </p>
+              </div>
+              <Button asChild>
+                <Link href="/settings">Go to Settings</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
-
-    
