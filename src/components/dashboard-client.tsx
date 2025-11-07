@@ -283,15 +283,12 @@ export function DashboardClient() {
     }));
   }, [problems]);
 
-  const problemsPerDay = useMemo(() => {
-    if (!problems || problems.length === 0) return 0;
-    
-    const total = problems.reduce((sum, p) => sum + p.count, 0);
-    const uniqueDays = new Set(problems.map(p => p.date)).size;
-
-    if (uniqueDays === 0) return 0;
-
-    return total / uniqueDays;
+  const problemsSolvedToday = useMemo(() => {
+    if (!problems) return 0;
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    return problems
+      .filter(p => p.date === todayStr)
+      .reduce((sum, p) => sum + p.count, 0);
   }, [problems]);
 
   const emptyStateImage = PlaceHolderImages.find(
@@ -334,42 +331,42 @@ export function DashboardClient() {
 
   return (
     <div className="space-y-6">
-        <div className="mb-6">
-            <h2 className="text-2xl font-bold text-foreground">
-                Welcome back, {userProfile?.name || 'Student'}!
-            </h2>
-            <p className="text-muted-foreground">Here's a snapshot of your progress.</p>
-        </div>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-foreground">
+            Welcome back, {userProfile?.name || 'Student'}!
+        </h2>
+        <p className="text-muted-foreground">Here's a snapshot of your progress.</p>
+      </div>
 
-        {userProfile?.learningGoals && (
-          <Card className="bg-primary/5 border-primary/20">
-              <CardHeader className="flex flex-row items-start gap-4">
-                  <Goal className="w-6 h-6 text-primary mt-1" />
-                  <div>
-                      <CardTitle className="text-primary">Your Main Goal</CardTitle>
-                      <CardDescription className="text-primary/80">Keep this in mind to stay motivated.</CardDescription>
-                  </div>
-              </CardHeader>
-              <CardContent>
-                  <p className="text-lg font-semibold text-foreground">
-                      {userProfile.learningGoals}
-                  </p>
-              </CardContent>
-          </Card>
-        )}
+      {userProfile?.learningGoals && (
+        <Card className="bg-primary/5 border-primary/20">
+            <CardHeader className="flex flex-row items-start gap-4">
+                <Goal className="w-6 h-6 text-primary mt-1" />
+                <div>
+                    <CardTitle className="text-primary">Your Main Goal</CardTitle>
+                    <CardDescription className="text-primary/80">Keep this in mind to stay motivated.</CardDescription>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <p className="text-lg font-semibold text-foreground">
+                    {userProfile.learningGoals}
+                </p>
+            </CardContent>
+        </Card>
+      )}
 
-        <TodaysGoal />
+      <TodaysGoal />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Problems Solved per Day</CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{problemsPerDay.toFixed(1)}</div>
-                <p className="text-xs text-muted-foreground">Average on days you solved problems</p>
-            </CardContent>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Problems Solved Today</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{problemsSolvedToday}</div>
+            <p className="text-xs text-muted-foreground">Across all subjects</p>
+          </CardContent>
         </Card>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
