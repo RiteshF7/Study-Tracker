@@ -1,3 +1,4 @@
+
 import { Timestamp } from "firebase/firestore";
 
 export type Activity = {
@@ -94,7 +95,7 @@ export const courses = {
       "Physiology",
       "Biochemistry",
       "Early Clinical Exposure",
-      "AETCOM Module",
+      "AETCOM",
       "None"
     ],
     "Second Year": [
@@ -103,7 +104,7 @@ export const courses = {
       "Pharmacology",
       "Forensic Medicine & Toxicology",
       "Community Medicine",
-      "AETCOM Module",
+      "AETCOM",
       "Early Clinical Exposure",
       "None"
     ],
@@ -115,7 +116,7 @@ export const courses = {
       "ENT",
       "Ophthalmology",
       "Community Medicine",
-      "AETCOM Module",
+      "AETCOM",
       "None"
     ],
     "Final Year": [
@@ -128,7 +129,7 @@ export const courses = {
       "Anesthesiology",
       "Radiology",
       "Emergency Medicine",
-      "AETCOM Module",
+      "AETCOM",
       "None"
     ],
     "Internship": [
@@ -196,7 +197,9 @@ export const courses = {
     "All Subjects": ["Dental Anatomy", "Oral Pathology", "Periodontology", "Orthodontics", "Prosthodontics", "Endodontics", "Oral Surgery", "Community Dentistry", "Other", "None"],
   },
   "NEET": {
-    "All Subjects": ["Physics", "Chemistry", "Biology", "None"],
+    "11th": ["Physics", "Chemistry", "Biology", "None"],
+    "12th": ["Physics", "Chemistry", "Biology", "None"],
+    "dropper": ["Physics", "Chemistry", "Biology", "None"],
   },
   "General Studies": {
     "All Subjects": defaultSubjects,
