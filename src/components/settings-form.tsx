@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useDoc, useFirebase, useUser } from "@/firebase";
+import { useDoc, useFirebase, useUser, useMemoFirebase } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { doc } from "firebase/firestore";
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
@@ -47,7 +47,10 @@ export function SettingsForm() {
   const { firestore } = useFirebase();
   const { toast } = useToast();
 
-  const userDocRef = user ? doc(firestore, "users", user.uid) : null;
+  const userDocRef = useMemoFirebase(() => 
+    user ? doc(firestore, "users", user.uid) : null
+  , [firestore, user]);
+  
   const { data: userProfile } = useDoc<UserProfile>(userDocRef);
 
   const form = useForm<z.infer<typeof profileSchema>>({

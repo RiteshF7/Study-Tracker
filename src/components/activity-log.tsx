@@ -105,13 +105,14 @@ export function ActivityLog() {
     );
   }, [activities, subjectFilter]);
   
-  const sortedActivities = filteredActivities
-    ? [...filteredActivities].sort((a, b) => {
-        const timeA = a.createdAt?.toDate?.().getTime() || Date.now();
-        const timeB = b.createdAt?.toDate?.().getTime() || Date.now();
+  const sortedActivities = useMemo(() => {
+    if (!filteredActivities) return [];
+    return [...filteredActivities].sort((a, b) => {
+        const timeA = a.createdAt?.toDate?.().getTime() || 0;
+        const timeB = b.createdAt?.toDate?.().getTime() || 0;
         return timeB - timeA;
       })
-    : [];
+  },[filteredActivities]);
 
   return (
     <Card>

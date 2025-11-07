@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Problem } from "@/lib/types";
 import { problemSubjects } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -94,13 +94,14 @@ export function ProblemTracker() {
     deleteDocumentNonBlocking(docRef);
   }
 
-  const sortedProblems = problems
-    ? [...problems].sort((a, b) => {
-        const timeA = a.createdAt?.toDate?.().getTime() || Date.now();
-        const timeB = b.createdAt?.toDate?.().getTime() || Date.now();
+  const sortedProblems = useMemo(() => {
+    if (!problems) return [];
+    return [...problems].sort((a, b) => {
+        const timeA = a.createdAt?.toDate?.().getTime() || 0;
+        const timeB = b.createdAt?.toDate?.().getTime() || 0;
         return timeB - timeA;
       })
-    : [];
+  }, [problems]);
 
 
   return (
