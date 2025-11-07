@@ -89,7 +89,59 @@ export const courses = {
     ]
   },
   "MBBS": {
-    "All Subjects": ["Anatomy", "Physiology", "Biochemistry", "Pharmacology", "Pathology", "Microbiology", "Forensic Medicine", "Ophthalmology", "Surgery", "Pediatrics", "Other", "None"],
+    "First Year": [
+      "Anatomy",
+      "Physiology",
+      "Biochemistry",
+      "Early Clinical Exposure",
+      "AETCOM Module I",
+      "None"
+    ],
+    "Second Year": [
+      "Pathology",
+      "Microbiology",
+      "Pharmacology",
+      "Forensic Medicine & Toxicology",
+      "Community Medicine (Part I)",
+      "AETCOM Module II",
+      "Early Clinical Exposure",
+      "None"
+    ],
+    "Third Year": [
+      "General Medicine (Part I)",
+      "General Surgery (Part I)",
+      "Obstetrics & Gynecology (Part I)",
+      "Pediatrics (Part I)",
+      "ENT (Otorhinolaryngology)",
+      "Ophthalmology",
+      "Community Medicine (Part II)",
+      "AETCOM Module III",
+      "None"
+    ],
+    "Final Year": [
+      "General Medicine (Part II)",
+      "General Surgery (Part II)",
+      "Obstetrics & Gynecology (Part II)",
+      "Pediatrics (Part II)",
+      "Dermatology, Venereology & Leprosy",
+      "Psychiatry",
+      "Anesthesiology",
+      "Radiology",
+      "Emergency Medicine",
+      "AETCOM Module IV",
+      "None"
+    ],
+    "Internship": [
+      "Medicine",
+      "Surgery",
+      "Obstetrics & Gynecology",
+      "Pediatrics",
+      "Community Medicine",
+      "Emergency & Casualty",
+      "Elective Posting",
+      "ENT / Ophthalmology / Orthopedics",
+      "None"
+    ]
   },
   "BSc": {
     "All Subjects": ["Physics", "Chemistry", "Biology", "Mathematics", "Computer Science", "Botany", "Zoology", "Statistics", "Other", "None"],
