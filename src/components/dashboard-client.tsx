@@ -302,6 +302,20 @@ export function DashboardClient() {
   );
   
   const isLoading = isLoadingActivities || isLoadingProblems || isLoadingProfile;
+  
+  const formattedStudyTime = useMemo(() => {
+    if (studyTimeToday === 0) return "0m";
+    const hours = Math.floor(studyTimeToday / 60);
+    const minutes = studyTimeToday % 60;
+    let timeString = "";
+    if (hours > 0) {
+      timeString += `${hours}h `;
+    }
+    if (minutes > 0 || hours === 0) {
+      timeString += `${minutes}m`;
+    }
+    return timeString.trim();
+  }, [studyTimeToday]);
 
   if (isLoading) {
       return (
@@ -380,7 +394,7 @@ export function DashboardClient() {
                 <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{(studyTimeToday / 60).toFixed(1)} hours</div>
+                <div className="text-2xl font-bold">{formattedStudyTime}</div>
                 
             </CardContent>
         </Card>
@@ -538,4 +552,5 @@ export function DashboardClient() {
       )}
     </div>
   );
-}
+
+    
