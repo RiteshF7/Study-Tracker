@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -23,6 +24,14 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Form,
   FormControl,
   FormField,
@@ -41,12 +50,11 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, ListFilter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, serverTimestamp, doc, Timestamp } from "firebase/firestore";
 import { addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
-import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
 
 const activitySchema = z.object({
@@ -88,7 +96,6 @@ export function ActivityLog() {
       if (yearName && courseData[yearName as keyof typeof courseData]) {
         return courseData[yearName as keyof typeof courseData];
       }
-      // If no year or invalid year, return all subjects for the course by flattening the years
       return Object.values(courseData).flat();
     }
     
@@ -135,8 +142,6 @@ export function ActivityLog() {
   const filteredActivities = useMemo(() => {
     if (!activities) return [];
     if (selectedSubjects.length === 0) return activities;
-    // This is a simple text search. 
-    // A more robust solution might involve adding a 'subject' field to the Activity type.
     return activities.filter(activity => 
       selectedSubjects.some(subject => activity.name.toLowerCase().includes(subject.toLowerCase()))
     );
@@ -156,6 +161,27 @@ export function ActivityLog() {
       <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-4">
           <CardTitle>Your Activities</CardTitle>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <ListFilter className="mr-2 h-4 w-4" />
+                Filter by Subject ({selectedSubjects.length})
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>Filter by subject</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {problemSubjects.map((subject) => (
+                <DropdownMenuCheckboxItem
+                  key={subject}
+                  checked={selectedSubjects.includes(subject)}
+                  onCheckedChange={() => handleSubjectChange(subject)}
+                >
+                  {subject}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
          <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -245,19 +271,6 @@ export function ActivityLog() {
         </Dialog>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-wrap gap-4 p-4 border-b">
-            <Label className="font-semibold self-center">Filter by subject:</Label>
-            {problemSubjects.map((subject) => (
-                <div key={subject} className="flex items-center space-x-2">
-                    <Checkbox
-                        id={`subject-${subject}`}
-                        checked={selectedSubjects.includes(subject)}
-                        onCheckedChange={() => handleSubjectChange(subject)}
-                    />
-                    <Label htmlFor={`subject-${subject}`} className="font-normal">{subject}</Label>
-                </div>
-            ))}
-        </div>
         <Table>
           <TableHeader>
             <TableRow>
