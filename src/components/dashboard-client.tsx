@@ -81,10 +81,10 @@ function TodaysGoal() {
   
   if (dailyGoal) {
     return (
-      <Card className="bg-primary/10 border-primary/20">
+      <Card className="bg-primary border-primary/20">
         <CardHeader>
-          <CardTitle className="text-primary-foreground/90">Today's Focus</CardTitle>
-          <CardDescription className="text-primary-foreground/70">Your main objective for today.</CardDescription>
+          <CardTitle className="text-primary-foreground">Today's Focus</CardTitle>
+          <CardDescription className="text-primary-foreground/80">Your main objective for today.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
@@ -220,8 +220,8 @@ export function DashboardClient() {
     setEndDate(newEndDate);
   };
 
-  const { activityData, productivityTrend } = useMemo(() => {
-    if (!activities) return { activityData: [], totalDuration: 0, productivityTrend: null };
+  const { activityData, productivityTrend, activityDateRange } = useMemo(() => {
+    if (!activities) return { activityData: { data: [], formatter: (v: string) => v }, totalDuration: 0, productivityTrend: null, activityDateRange: '' };
 
     const productiveActivities = activities.filter(
       (a) => a.type === 'Study' || a.type === 'Class'
@@ -290,7 +290,9 @@ export function DashboardClient() {
         trend = { percentage: 100, hourDiff: last7DaysTotal / 60 };
     }
     
-    return { activityData: { data: groupedData, formatter: tickFormatter }, productivityTrend: trend };
+    const dateRangeStr = `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
+
+    return { activityData: { data: groupedData, formatter: tickFormatter }, productivityTrend: trend, activityDateRange: dateRangeStr };
   }, [activities, activityTimeRange, activityEndDate]);
   
   const studyTimeToday = useMemo(() => {
@@ -301,8 +303,8 @@ export function DashboardClient() {
       .reduce((sum, a) => sum + a.duration, 0);
   }, [activities]);
 
-  const problemsPerDayData = useMemo(() => {
-    if (!problems) return { data: [], formatter: (value: string) => value };
+  const { problemsPerDayData, problemDateRange } = useMemo(() => {
+    if (!problems) return { problemsPerDayData: { data: [], formatter: (v: string) => v }, problemDateRange: '' };
 
     const { start: startDate, end: endDate } = getInterval(problemEndDate, problemTimeRange);
     let tickFormatter: (value: string) => string = (value) => value;
@@ -347,7 +349,9 @@ export function DashboardClient() {
          tickFormatter = (value) => value;
     }
     
-    return { data: groupedData, formatter: tickFormatter };
+    const dateRangeStr = `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
+
+    return { problemsPerDayData: { data: groupedData, formatter: tickFormatter }, problemDateRange: dateRangeStr };
   }, [problems, problemTimeRange, problemEndDate]);
 
   const problemsSolvedToday = useMemo(() => {
@@ -517,7 +521,7 @@ export function DashboardClient() {
                  <Card className="shadow-none border-none">
                     <CardHeader>
                         <div className="flex flex-wrap justify-between items-center gap-4">
-                        <div/>
+                        <div className="text-sm text-muted-foreground">{activityDateRange}</div>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="icon" onClick={() => handleDateNavigation('prev', activityTimeRange, activityEndDate, setActivityEndDate)}>
                                 <ChevronLeft className="h-4 w-4" />
@@ -592,7 +596,7 @@ export function DashboardClient() {
                  <Card className="shadow-none border-none">
                     <CardHeader>
                         <div className="flex flex-wrap justify-between items-center gap-4">
-                        <div/>
+                        <div className="text-sm text-muted-foreground">{problemDateRange}</div>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="icon" onClick={() => handleDateNavigation('prev', problemTimeRange, problemEndDate, setProblemEndDate)}>
                                 <ChevronLeft className="h-4 w-4" />
@@ -675,3 +679,4 @@ export function DashboardClient() {
     
 
     
+
