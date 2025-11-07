@@ -52,8 +52,10 @@ export async function getScheduleRecommendation(
       subjects: subjectsToStudy || "No problems tracked yet. Base schedule on general good study habits.",
     });
     return { recommendation: result, error: null, message: "Successfully generated schedule!" };
-  } catch (e) {
+  } catch (e: any) {
     console.error(e);
-    return { ...prevState, error: "Failed to generate schedule. Please try again." };
+    // Genkit can sometimes wrap errors, so we'll check for a more specific message
+    const errorMessage = e.cause?.message || e.message || "Failed to generate schedule. Please try again.";
+    return { ...prevState, error: errorMessage };
   }
 }

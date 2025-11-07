@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Wand2 } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 
 const initialState: SchedulerState = {
   recommendation: null,
@@ -110,7 +111,22 @@ export function AiScheduler() {
                 <CardTitle>Reasoning</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-wrap text-sm text-muted-foreground">{state.recommendation.reasoning}</p>
+                 <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[150px]">Point</TableHead>
+                      <TableHead>Explanation</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {state.recommendation.reasoning.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{item.point}</TableCell>
+                        <TableCell className="text-muted-foreground">{item.explanation}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </>

@@ -33,13 +33,15 @@ export type IntelligentScheduleRecommendationInput = z.infer<
   typeof IntelligentScheduleRecommendationInputSchema
 >;
 
+const ReasoningItemSchema = z.object({
+  point: z.string().describe("The core principle or strategy behind the recommendation (e.g., 'Morning Focus', 'Strategic Breaks')."),
+  explanation: z.string().describe("A detailed explanation of why this point is important for the student's schedule."),
+});
+
+
 const IntelligentScheduleRecommendationOutputSchema = z.object({
-  scheduleRecommendation: z.string().describe('Recommended study schedule.'),
-  reasoning: z
-    .string()
-    .describe(
-      'Explanation of why the schedule was recommended, based on the activity history and preferred study times.'
-    ),
+  scheduleRecommendation: z.string().describe('Recommended study schedule in a clear, easy-to-read format.'),
+  reasoning: z.array(ReasoningItemSchema).describe('A structured array of key points explaining the reasoning behind the schedule.'),
 });
 
 export type IntelligentScheduleRecommendationOutput = z.infer<
@@ -64,9 +66,9 @@ Activity History: {{{activityHistory}}}
 Preferred Study Times: {{{preferredStudyTimes}}}
 Subjects: {{{subjects}}}
 
-Provide a schedule recommendation that maximizes learning efficiency and maintains a balanced schedule. Explain the reasoning behind the recommendations.
-
-Schedule Recommendation:`,
+Provide a schedule recommendation that maximizes learning efficiency and maintains a balanced schedule. 
+Then, provide a structured list of reasons for your recommendations. Each reason should have a key point and a detailed explanation.
+`,
 });
 
 const intelligentScheduleRecommendationFlow = ai.defineFlow(
