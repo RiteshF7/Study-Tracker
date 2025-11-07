@@ -47,7 +47,7 @@ type TimerState = {
   isFinished: boolean;
 };
 
-const CIRCLE_RADIUS = 75;
+const CIRCLE_RADIUS = 100;
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 export function ActivityTimer() {
@@ -218,31 +218,31 @@ export function ActivityTimer() {
             <p className="text-2xl text-muted-foreground">{timerState.isFinished ? "Session Finished!" : "Timing session for:"}</p>
             <h1 className="text-6xl font-bold font-headline">{timerState.subject}</h1>
             
-            <div className="relative w-[180px] h-[180px]">
-                <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 180 180">
+            <div className="relative w-[220px] h-[220px]">
+                <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 220 220">
                     <defs>
-                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 0.8}} />
-                            <stop offset="100%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 1}} />
+                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style={{stopColor: '#4ade80'}} />
+                            <stop offset="100%" style={{stopColor: '#16a34a'}} />
                         </linearGradient>
                     </defs>
                     <circle
                         className="text-border"
                         stroke="currentColor"
-                        strokeWidth="10"
+                        strokeWidth="12"
                         fill="transparent"
                         r={CIRCLE_RADIUS}
-                        cx="90"
-                        cy="90"
+                        cx="110"
+                        cy="110"
                     />
                     <circle
                         stroke={timerState.isFinished ? "hsl(var(--destructive))" : "url(#progressGradient)"}
-                        strokeWidth="10"
+                        strokeWidth="12"
                         strokeLinecap="round"
                         fill="transparent"
                         r={CIRCLE_RADIUS}
-                        cx="90"
-                        cy="90"
+                        cx="110"
+                        cy="110"
                         style={{
                             strokeDasharray: CIRCLE_CIRCUMFERENCE,
                             strokeDashoffset: strokeDashoffset,
