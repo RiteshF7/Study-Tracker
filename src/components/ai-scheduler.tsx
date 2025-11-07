@@ -1,25 +1,26 @@
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";
-import { getScheduleRecommendation, SchedulerState } from "@/lib/actions";
+import { getScheduleRecommendation, refineScheduleAction, SchedulerState } from "@/lib/actions";
 import type { Activity, Problem } from "@/lib/types";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2, Sparkles } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
+import { Input } from "./ui/input";
 
 const initialState: SchedulerState = {
   recommendation: null,
   error: null,
 };
 
-function SubmitButton() {
+function SubmitButton({ text, icon: Icon }: { text: string; icon: React.ElementType }) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full">
@@ -30,8 +31,8 @@ function SubmitButton() {
         </>
       ) : (
         <>
-          <Wand2 className="mr-2 h-4 w-4" />
-          Generate Schedule
+          <Icon className="mr-2 h-4 w-4" />
+          {text}
         </>
       )}
     </Button>
@@ -40,6 +41,7 @@ function SubmitButton() {
 
 export function AiScheduler() {
   const { firestore, user } = useFirebase();
+  const editFormRef = useRef<HTMLFormElement>(null);
 
   const activitiesCollection = useMemoFirebase(() => 
     user ? collection(firestore, "users", user.uid, "activities") : null
@@ -53,50 +55,96 @@ export function AiScheduler() {
   const { data: problems } = useCollection<Problem>(problemsCollection);
 
   const [state, formAction] = useFormState(getScheduleRecommendation, initialState);
+  const [editState, editFormAction] = useFormState(refineScheduleAction, state);
+  
   const { toast } = useToast();
 
+  const finalState = state.recommendation ? editState : state;
+
   useEffect(() => {
-    if (state.error) {
+    if (finalState.error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: state.error,
+        description: finalState.error,
       });
     }
-  }, [state.error, toast]);
+  }, [finalState.error, toast]);
+  
+  useEffect(() => {
+    // If the main form generates a new schedule, apply it to the edit state
+    // and reset the edit form's input.
+    if(state.recommendation) {
+        editState.recommendation = state.recommendation;
+        if (editFormRef.current) {
+            editFormRef.current.reset();
+        }
+    }
+  }, [state.recommendation, editState]);
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Intelligent Scheduler</CardTitle>
-          <CardDescription>
-            Let AI create an optimized study schedule for you based on your activity history and preferences.
-          </CardDescription>
-        </CardHeader>
-        <form action={formAction}>
-          <CardContent className="space-y-4">
-            <input type="hidden" name="activities" value={JSON.stringify(activities || [])} />
-            <input type="hidden" name="problems" value={JSON.stringify(problems || [])} />
-            <div className="space-y-2">
-              <Label htmlFor="preferredStudyTimes">Preferred Study Times & Constraints</Label>
-              <Textarea
-                id="preferredStudyTimes"
-                name="preferredStudyTimes"
-                placeholder="e.g., I prefer studying in the morning from 9 AM to 12 PM. I have classes on Mondays and Wednesdays from 2 PM to 4 PM. I want to take a break on Friday evenings."
-                rows={4}
-                required
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <SubmitButton />
-          </CardFooter>
-        </form>
-      </Card>
-      
+    <div className="grid md:grid-cols-2 gap-8 items-start">
       <div className="space-y-6">
-        {state.recommendation ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Intelligent Scheduler</CardTitle>
+            <CardDescription>
+              Let AI create an optimized study schedule for you based on your activity history and preferences.
+            </CardDescription>
+          </CardHeader>
+          <form action={formAction}>
+            <CardContent className="space-y-4">
+              <input type="hidden" name="activities" value={JSON.stringify(activities || [])} />
+              <input type="hidden" name="problems" value={JSON.stringify(problems || [])} />
+              <div className="space-y-2">
+                <Label htmlFor="preferredStudyTimes">Preferred Study Times & Constraints</Label>
+                <Textarea
+                  id="preferredStudyTimes"
+                  name="preferredStudyTimes"
+                  placeholder="e.g., I prefer studying in the morning from 9 AM to 12 PM. I have classes on Mondays and Wednesdays from 2 PM to 4 PM. I want to take a break on Friday evenings."
+                  rows={4}
+                  required
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <SubmitButton text="Generate Schedule" icon={Wand2} />
+            </CardFooter>
+          </form>
+        </Card>
+        
+        {finalState.recommendation && (
+            <Card>
+            <CardHeader>
+                <CardTitle>Refine Schedule</CardTitle>
+                <CardDescription>
+                    Provide instructions to modify the schedule above.
+                </CardDescription>
+            </CardHeader>
+            <form action={editFormAction} ref={editFormRef}>
+                <CardContent className="space-y-4">
+                     <input type="hidden" name="currentSchedule" value={JSON.stringify(finalState.recommendation.scheduleRecommendation)} />
+                    <div className="space-y-2">
+                        <Label htmlFor="editInstruction">Edit Instructions</Label>
+                        <Input
+                            id="editInstruction"
+                            name="editInstruction"
+                            placeholder="e.g., Change the 9am session to be about Physics"
+                            required
+                        />
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <SubmitButton text="Refine Schedule" icon={Sparkles} />
+                </CardFooter>
+            </form>
+            </Card>
+        )}
+
+      </div>
+      
+      <div className="space-y-6 sticky top-4">
+        {finalState.recommendation ? (
           <Card className="bg-primary/5">
             <CardHeader>
               <CardTitle>Your Recommended Schedule</CardTitle>
@@ -110,7 +158,7 @@ export function AiScheduler() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {state.recommendation.scheduleRecommendation.map((item, index) => (
+                  {finalState.recommendation.scheduleRecommendation.map((item, index) => (
                     <TableRow key={index}>
                       <TableCell className="font-medium">{item.time}</TableCell>
                       <TableCell>{item.activity}</TableCell>

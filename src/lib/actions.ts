@@ -1,6 +1,7 @@
 "use server";
 
 import { intelligentScheduleRecommendation, IntelligentScheduleRecommendationOutput } from "@/ai/flows/intelligent-schedule-recommendation";
+import { editSchedule, EditScheduleOutput } from "@/ai/flows/edit-schedule-flow";
 import type { Activity, Problem } from "@/lib/types";
 
 export type SchedulerState = {
@@ -56,6 +57,42 @@ export async function getScheduleRecommendation(
     console.error(e);
     // Genkit can sometimes wrap errors, so we'll check for a more specific message
     const errorMessage = e.cause?.message || e.message || "Failed to generate schedule. Please try again.";
+    return { ...prevState, error: errorMessage };
+  }
+}
+
+export async function refineScheduleAction(
+  prevState: SchedulerState,
+  formData: FormData
+): Promise<SchedulerState> {
+  const editInstruction = formData.get("editInstruction") as string;
+  const currentScheduleStr = formData.get("currentSchedule") as string;
+
+  if (!editInstruction) {
+    return { ...prevState, error: "Please enter instructions to refine the schedule." };
+  }
+
+  if (!currentScheduleStr) {
+    return { ...prevState, error: "No schedule to edit." };
+  }
+  
+  const currentSchedule = JSON.parse(currentScheduleStr);
+
+  try {
+    const result = await editSchedule({
+      currentSchedule,
+      editInstruction,
+    });
+    
+    // The EditScheduleOutput has an `updatedSchedule` property. We need to map it back to the `SchedulerState` shape.
+    const newRecommendation: IntelligentScheduleRecommendationOutput = {
+      scheduleRecommendation: result.updatedSchedule,
+    };
+    
+    return { recommendation: newRecommendation, error: null, message: "Schedule updated!" };
+  } catch (e: any) {
+    console.error(e);
+    const errorMessage = e.cause?.message || e.message || "Failed to refine schedule. Please try again.";
     return { ...prevState, error: errorMessage };
   }
 }
