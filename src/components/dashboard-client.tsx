@@ -26,7 +26,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useMemo } from "react";
-import { format, subDays, parseISO, startOfDay } from "date-fns";
+import { format, subDays, parseISO, startOfDay, parse } from "date-fns";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { BarChart3, Clock, Target, TrendingUp } from "lucide-react";
@@ -244,7 +244,7 @@ export function DashboardClient() {
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" tickMargin={10} tickFormatter={(value) => format(parseISO(`2000-01-${value.split(' ')[0]}`), 'EEE d')}/>
+                  <XAxis dataKey="date" tickMargin={10} tickFormatter={(value) => format(parse(value, "d MMM", new Date()), 'EEE d')}/>
                   <YAxis />
                   <ChartTooltip
                     content={<ChartTooltipContent />}
