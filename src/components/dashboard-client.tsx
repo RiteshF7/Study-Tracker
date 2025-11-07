@@ -25,16 +25,18 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { format, subDays, parseISO, startOfDay, parse } from "date-fns";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { BarChart3, Clock, Target, TrendingUp, Goal } from "lucide-react";
+import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import { generateMockActivities, generateMockProblems } from "@/lib/mock-data";
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { Input } from "./ui/input";
 
 const activityChartConfig = {
   duration: {
@@ -53,6 +55,57 @@ const problemChartConfig = {
 type UserProfile = {
   name?: string;
   learningGoals?: string;
+}
+
+function TodaysGoal() {
+  const today = new Date().toISOString().split('T')[0];
+  const [dailyGoal, setDailyGoal] = useLocalStorage<string>(`daily-goal-${today}`, '');
+  const [inputValue, setInputValue] = useState('');
+
+  const handleSave = () => {
+    setDailyGoal(inputValue);
+    setInputValue('');
+  };
+  
+  if (dailyGoal) {
+    return (
+      <Card className="bg-accent/50 border-accent/30">
+        <CardHeader>
+          <CardTitle className="text-accent-foreground/80">Today's Focus</CardTitle>
+          <CardDescription>Your main objective for today.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <CheckCircle className="w-8 h-8 text-green-500" />
+            <p className="text-lg font-semibold text-foreground flex-1">
+              {dailyGoal}
+            </p>
+            <Button variant="ghost" size="sm" onClick={() => setDailyGoal('')}>Edit</Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>What is your goal for today?</CardTitle>
+        <CardDescription>Set a short-term objective to guide your study session.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-2">
+          <Input 
+            placeholder="e.g., 'Finish chapter 3 of Anatomy'"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+          />
+          <Button onClick={handleSave} disabled={!inputValue.trim()}>Save Goal</Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 export function DashboardClient() {
@@ -189,6 +242,8 @@ export function DashboardClient() {
             <p className="text-muted-foreground">Here's a snapshot of your progress.</p>
         </div>
 
+        <TodaysGoal />
+        
         {userProfile?.learningGoals && (
           <Card className="bg-primary/5 border-primary/20">
               <CardHeader className="flex flex-row items-start gap-4">
