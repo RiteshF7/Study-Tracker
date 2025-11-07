@@ -177,6 +177,12 @@ export function ActivityTimer() {
             
             <div className="relative w-[320px] h-[320px] md:w-[350px] md:h-[350px]">
                 <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 320 320">
+                    <defs>
+                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 0.8}} />
+                        <stop offset="100%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 1}} />
+                        </linearGradient>
+                    </defs>
                     <circle
                         className="text-border"
                         stroke="currentColor"
@@ -187,8 +193,7 @@ export function ActivityTimer() {
                         cy="160"
                     />
                     <circle
-                        className="text-primary"
-                        stroke="currentColor"
+                        stroke="url(#progressGradient)"
                         strokeWidth="10"
                         strokeLinecap="round"
                         fill="transparent"
