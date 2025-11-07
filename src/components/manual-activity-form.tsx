@@ -33,56 +33,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PlusCircle } from "lucide-react";
-import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
-import { collection, serverTimestamp, doc } from "firebase/firestore";
+import { useFirebase, useUser, useMemoFirebase } from "@/firebase";
+import { collection, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
-import type { Activity, CourseName } from "@/lib/types";
-import { activityTypes, courses, defaultSubjects } from "@/lib/types";
+import type { Activity } from "@/lib/types";
+import { activityTypes } from "@/lib/types";
 
 const manualActivitySchema = z.object({
-  name: z.string().min(1, "Subject is required."),
   type: z.string().min(1, "Type is required"),
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute."),
   date: z.string().min(1, "Date is required"),
 });
 
-type UserProfile = {
-  course?: CourseName;
-  year?: string;
-}
-
 export function ManualActivityForm() {
   const [open, setOpen] = useState(false);
   const { firestore, user } = useFirebase();
-
-  const userDocRef = useMemoFirebase(() =>
-    user ? doc(firestore, "users", user.uid) : null
-  , [firestore, user]);
-  const { data: userProfile } = useDoc<UserProfile>(userDocRef);
 
   const activitiesCollection = useMemoFirebase(() =>
     user ? collection(firestore, "users", user.uid, "activities") : null
   , [firestore, user]);
 
-  const problemSubjects = useMemo(() => {
-    const courseName = userProfile?.course;
-    const yearName = userProfile?.year;
-
-    if (courseName && courses[courseName]) {
-      const courseData = courses[courseName];
-      if (yearName && courseData[yearName as keyof typeof courseData]) {
-        return courseData[yearName as keyof typeof courseData];
-      }
-      return Object.values(courseData).flat();
-    }
-    
-    return defaultSubjects;
-  }, [userProfile]);
-
   const form = useForm<z.infer<typeof manualActivitySchema>>({
     resolver: zodResolver(manualActivitySchema),
     defaultValues: {
-      name: "",
       type: "Study",
       duration: 30,
       date: new Date().toISOString().split("T")[0],
@@ -90,35 +63,26 @@ export function ManualActivityForm() {
   });
 
   useEffect(() => {
-    if (problemSubjects.length > 0) {
-      const currentSubject = form.getValues("name");
-      if (!currentSubject || !problemSubjects.includes(currentSubject)) {
-        form.reset({
-          ...form.formState.defaultValues,
-          name: problemSubjects[0],
-          date: new Date().toISOString().split("T")[0],
-        });
-      }
-    }
-  }, [problemSubjects, form]);
+    form.reset({
+      type: "Study",
+      duration: 30,
+      date: new Date().toISOString().split("T")[0],
+    });
+  }, [form, open]);
 
   function onSubmit(values: z.infer<typeof manualActivitySchema>) {
     if (!activitiesCollection || !user) return;
     
     const newActivity: Omit<Activity, 'id' | 'createdAt'> & { createdAt: any } = {
-      ...values,
+      name: `${values.type} Session`,
       type: values.type as Activity['type'],
+      duration: values.duration,
+      date: values.date,
       userId: user.uid,
       createdAt: serverTimestamp(),
     };
     addDocumentNonBlocking(activitiesCollection, newActivity);
     
-    form.reset({
-      name: problemSubjects[0] || "",
-      type: "Study",
-      duration: 30,
-      date: new Date().toISOString().split("T")[0],
-    });
     setOpen(false);
   }
 
@@ -138,28 +102,6 @@ export function ManualActivityForm() {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Subject / Activity Name</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a subject" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {problemSubjects.map((subject) => (
-                        <SelectItem key={subject} value={subject}>{subject}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
              <FormField
               control={form.control}
               name="type"
