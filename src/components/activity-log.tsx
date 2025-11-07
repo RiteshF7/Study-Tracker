@@ -1,9 +1,8 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import type { Activity } from "@/lib/types";
-import { courses, defaultSubjects, CourseName, YearName } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -13,56 +12,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { subDays } from "date-fns";
-import { Trash2, ListFilter } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
+import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
-type UserProfile = {
-  course?: CourseName;
-  year?: string;
-}
-
 export function ActivityLog() {
   const { firestore, user } = useFirebase();
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   
-  const userDocRef = useMemoFirebase(() =>
-    user ? doc(firestore, "users", user.uid) : null
-  , [firestore, user]);
-  const { data: userProfile } = useDoc<UserProfile>(userDocRef);
-
   const activitiesCollection = useMemoFirebase(() => 
     user ? collection(firestore, "users", user.uid, "activities") : null
   , [firestore, user]);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesCollection);
-
-  const problemSubjects = useMemo(() => {
-    const courseName = userProfile?.course;
-    const yearName = userProfile?.year;
-    
-    if (courseName && courses[courseName]) {
-      const courseData = courses[courseName];
-      if (yearName && courseData[yearName as keyof typeof courseData]) {
-        return courseData[yearName as keyof typeof courseData];
-      }
-      return Object.values(courseData).flat();
-    }
-    
-    return defaultSubjects;
-  }, [userProfile]);
 
   function deleteActivity(id: string) {
     if (!activitiesCollection) return;
@@ -70,82 +34,30 @@ export function ActivityLog() {
     deleteDocumentNonBlocking(docRef);
   }
 
-  const handleSubjectChange = (subject: string) => {
-    setSelectedSubjects(prev => 
-      prev.includes(subject) 
-        ? prev.filter(s => s !== subject)
-        : [...prev, subject]
-    );
-  };
-  
-  const handleClearFilters = () => {
-    setSelectedSubjects([]);
-  };
-
-  const filteredActivities = useMemo(() => {
+  const recentActivities = useMemo(() => {
     if (!activities) return [];
     
     const oneMonthAgo = subDays(new Date(), 30);
     
-    const recentActivities = activities.filter(activity => {
+    return activities.filter(activity => {
       const activityDate = activity.createdAt?.toDate?.();
       return activityDate ? activityDate > oneMonthAgo : true;
     });
-
-    if (selectedSubjects.length === 0) return recentActivities;
-    
-    return recentActivities.filter(activity => 
-      selectedSubjects.some(subject => activity.name.toLowerCase().includes(subject.toLowerCase()))
-    );
-  }, [activities, selectedSubjects]);
+  }, [activities]);
   
   const sortedActivities = useMemo(() => {
-    if (!filteredActivities) return [];
-    return [...filteredActivities].sort((a, b) => {
+    if (!recentActivities) return [];
+    return [...recentActivities].sort((a, b) => {
         const timeA = a.createdAt?.toDate?.().getTime() || 0;
         const timeB = b.createdAt?.toDate?.().getTime() || 0;
         return timeB - timeA;
       })
-  },[filteredActivities]);
+  },[recentActivities]);
 
   return (
     <Card>
-      <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <CardTitle>Your Past Activities</CardTitle>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <ListFilter className="mr-2 h-4 w-4" />
-                Filter by Subject ({selectedSubjects.length})
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Filter by subject</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {selectedSubjects.length > 0 && (
-                <>
-                  <DropdownMenuItem
-                    onSelect={handleClearFilters}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    Clear filters
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              )}
-              {problemSubjects.map((subject) => (
-                <DropdownMenuCheckboxItem
-                  key={subject}
-                  checked={selectedSubjects.includes(subject)}
-                  onCheckedChange={() => handleSubjectChange(subject)}
-                >
-                  {subject}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      <CardHeader>
+        <CardTitle>Your Past Activities</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
