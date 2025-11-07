@@ -26,10 +26,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useMemo, useState } from "react";
-import { format, subDays, parseISO, startOfDay, parse } from "date-fns";
+import { format, subDays, parseISO, startOfDay, parse, eachDayOfInterval, startOfWeek, isSameWeek, endOfWeek, eachWeekOfInterval, addDays, getWeek, subMonths } from "date-fns";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle } from "lucide-react";
+import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle, ChevronDown } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import { generateMockActivities, generateMockProblems } from "@/lib/mock-data";
@@ -37,6 +37,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { Input } from "./ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 const activityChartConfig = {
   duration: {
@@ -56,6 +57,13 @@ type UserProfile = {
   name?: string;
   learningGoals?: string;
 }
+
+const timeRangeOptions = {
+  '7d': 'Last 7 Days',
+  '30d': 'Last 30 Days',
+  '90d': 'Last 3 Months',
+  '180d': 'Last 6 Months',
+};
 
 function TodaysGoal() {
   const today = new Date().toISOString().split('T')[0];
@@ -110,6 +118,7 @@ function TodaysGoal() {
 
 export function DashboardClient() {
   const { firestore, user } = useFirebase();
+  const [timeRange, setTimeRange] = useState<keyof typeof timeRangeOptions>('7d');
   
   const userDocRef = useMemoFirebase(() => 
     user ? doc(firestore, "users", user.uid) : null
@@ -131,8 +140,8 @@ export function DashboardClient() {
     const noRealData = (!realActivities || realActivities.length === 0) && (!realProblems || realProblems.length === 0);
     if (process.env.NODE_ENV === 'development' && noRealData && !isLoadingActivities && !isLoadingProblems && !isLoadingProfile) {
       return {
-        activities: generateMockActivities(30),
-        problems: generateMockProblems(30)
+        activities: generateMockActivities(180), // Generate more data for filtering
+        problems: generateMockProblems(180)
       };
     }
     return { activities: realActivities, problems: realProblems };
@@ -145,25 +154,81 @@ export function DashboardClient() {
     const productiveActivities = activities.filter(
       (a) => a.type === 'Study' || a.type === 'Class'
     );
-
-    const today = startOfDay(new Date());
-
-    // Last 7 days
-    const last7Days = Array.from({ length: 7 }, (_, i) => format(subDays(today, i), "yyyy-MM-dd")).reverse();
-    const last7DaysData = last7Days.map((date) => {
-      const dailyActivities = productiveActivities.filter((a) => a.date === date);
-      const totalDuration = dailyActivities.reduce((sum, a) => sum + a.duration, 0);
-      return { date: format(parseISO(date), "d MMM"), duration: totalDuration };
-    });
-    const last7DaysTotal = last7DaysData.reduce((sum, d) => sum + d.duration, 0);
-
-    // Previous 7 days (days 8-14 ago)
-    const prev7Days = Array.from({ length: 7 }, (_, i) => format(subDays(today, i + 7), "yyyy-MM-dd"));
-    const prev7DaysTotal = prev7Days.reduce((total, date) => {
-      const dailyActivities = productiveActivities.filter((a) => a.date === date);
-      return total + dailyActivities.reduce((sum, a) => sum + a.duration, 0);
-    }, 0);
     
+    const today = startOfDay(new Date());
+    let startDate: Date;
+    let tickFormatter: (value: string) => string = (value) => value;
+
+    switch(timeRange) {
+      case '30d':
+        startDate = subDays(today, 29);
+        tickFormatter = (value) => format(parse(value, "d MMM", new Date()), 'd');
+        break;
+      case '90d':
+        startDate = subMonths(today, 3);
+        tickFormatter = (value) => `W${value}`;
+        break;
+      case '180d':
+        startDate = subMonths(today, 6);
+        tickFormatter = (value) => format(parseISO(value), 'MMM');
+        break;
+      case '7d':
+      default:
+        startDate = subDays(today, 6);
+        tickFormatter = (value) => format(parse(value, "d MMM", new Date()), 'EEE');
+        break;
+    }
+
+    const relevantActivities = productiveActivities.filter(a => parseISO(a.date) >= startDate);
+    
+    let groupedData;
+
+    if (timeRange === '90d' || timeRange === '180d') {
+        const weekMap = new Map<string, number>();
+        relevantActivities.forEach(activity => {
+            const weekNumber = getWeek(parseISO(activity.date));
+            const year = parseISO(activity.date).getFullYear();
+            const key = `${year}-W${weekNumber}`;
+            weekMap.set(key, (weekMap.get(key) || 0) + activity.duration);
+        });
+
+        const weeks = eachWeekOfInterval({ start: startDate, end: today });
+        groupedData = weeks.map(weekStart => {
+            const weekNumber = getWeek(weekStart);
+            const year = weekStart.getFullYear();
+            const key = `${year}-W${weekNumber}`;
+            const totalDuration = weekMap.get(key) || 0;
+            return { date: `${weekNumber}`, duration: totalDuration };
+        });
+        if(timeRange === '180d') tickFormatter = (value) => `W${value}`;
+    } else {
+       const dayMap = new Map<string, number>();
+        relevantActivities.forEach(activity => {
+            dayMap.set(activity.date, (dayMap.get(activity.date) || 0) + activity.duration);
+        });
+        
+        const days = eachDayOfInterval({ start: startDate, end: today });
+        groupedData = days.map(day => {
+            const dateStr = format(day, 'yyyy-MM-dd');
+            return {
+                date: format(day, 'd MMM'),
+                duration: dayMap.get(dateStr) || 0
+            };
+        });
+    }
+
+    // Trend calculation remains for last 7 days vs previous 7 days for simplicity
+    const last7DaysTotal = productiveActivities
+      .filter(a => parseISO(a.date) >= subDays(today, 6))
+      .reduce((sum, a) => sum + a.duration, 0);
+
+    const prev7DaysTotal = productiveActivities
+      .filter(a => {
+        const activityDate = parseISO(a.date);
+        return activityDate >= subDays(today, 13) && activityDate < subDays(today, 6);
+      })
+      .reduce((sum, a) => sum + a.duration, 0);
+
     let trend: { percentage: number; hourDiff: number } | null = null;
     if (prev7DaysTotal > 0) {
       const percentage = ((last7DaysTotal - prev7DaysTotal) / prev7DaysTotal) * 100;
@@ -175,8 +240,8 @@ export function DashboardClient() {
     
     const totalDuration = productiveActivities.reduce((sum, a) => sum + a.duration, 0);
 
-    return { activityData: last7DaysData, totalDuration, productivityTrend: trend };
-  }, [activities]);
+    return { activityData: { data: groupedData, formatter: tickFormatter }, totalDuration, productivityTrend: trend };
+  }, [activities, timeRange]);
 
   const problemData = useMemo(() => {
     if (!problems) return [];
@@ -321,15 +386,29 @@ export function DashboardClient() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Activity Trends (Last 7 Days)</CardTitle>
-            <CardDescription>
-              Total minutes spent on logged activities.
-            </CardDescription>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle>Activity Trends</CardTitle>
+                <CardDescription>
+                  Total minutes spent on logged activities.
+                </CardDescription>
+              </div>
+              <Select value={timeRange} onValueChange={(value) => setTimeRange(value as keyof typeof timeRangeOptions)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select a range" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(timeRangeOptions).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
             <ChartContainer config={activityChartConfig} className="min-h-[200px] w-full">
                 <LineChart
-                  data={activityData}
+                  data={activityData.data}
                   margin={{
                     top: 5,
                     right: 20,
@@ -338,7 +417,7 @@ export function DashboardClient() {
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" tickMargin={10} tickFormatter={(value) => format(parse(value, "d MMM", new Date()), 'EEE d')}/>
+                  <XAxis dataKey="date" tickMargin={10} tickFormatter={activityData.formatter}/>
                   <YAxis />
                   <ChartTooltip
                     content={<ChartTooltipContent />}
@@ -423,3 +502,5 @@ export function DashboardClient() {
     </div>
   );
 }
+
+    
