@@ -27,6 +27,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -147,6 +148,10 @@ export function ActivityLog() {
         : [...prev, subject]
     );
   };
+  
+  const handleClearFilters = () => {
+    setSelectedSubjects([]);
+  };
 
   const filteredActivities = useMemo(() => {
     if (!activities) return [];
@@ -180,6 +185,17 @@ export function ActivityLog() {
             <DropdownMenuContent className="w-56">
               <DropdownMenuLabel>Filter by subject</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {selectedSubjects.length > 0 && (
+                <>
+                  <DropdownMenuItem
+                    onSelect={handleClearFilters}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    Clear filters
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               {problemSubjects.map((subject) => (
                 <DropdownMenuCheckboxItem
                   key={subject}
