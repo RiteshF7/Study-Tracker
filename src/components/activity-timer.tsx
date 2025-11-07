@@ -20,6 +20,7 @@ import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Label } from "./ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { cn } from "@/lib/utils";
 
 type UserProfile = {
   course?: CourseName;
@@ -42,6 +43,9 @@ type TimerState = {
   elapsedTime: number;
   startTime: number | null;
 };
+
+const CIRCLE_RADIUS = 150;
+const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 export function ActivityTimer() {
   const { firestore, user } = useFirebase();
@@ -158,17 +162,52 @@ export function ActivityTimer() {
     });
     router.push('/activities');
   };
+  
+  const secondsForRing = timerState.elapsedTime % 60;
+  const strokeDashoffset = CIRCLE_CIRCUMFERENCE - (secondsForRing / 60) * CIRCLE_CIRCUMFERENCE;
 
   return (
     <div className="h-screen w-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md text-center">
         {timerState.isTiming ? (
-          <div className="space-y-8">
+          <div className="space-y-8 flex flex-col items-center">
             <p className="text-2xl text-muted-foreground">Timing session for:</p>
             <h1 className="text-6xl font-bold font-headline">{timerState.subject}</h1>
-            <p className="font-mono text-8xl md:text-9xl font-bold tabular-nums tracking-tighter">
-                {formatTime(timerState.elapsedTime)}
-            </p>
+            
+            <div className="relative w-[320px] h-[320px] md:w-[350px] md:h-[350px]">
+                <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 320 320">
+                    <circle
+                        className="text-border"
+                        stroke="currentColor"
+                        strokeWidth="10"
+                        fill="transparent"
+                        r={CIRCLE_RADIUS}
+                        cx="160"
+                        cy="160"
+                    />
+                    <circle
+                        className="text-primary"
+                        stroke="currentColor"
+                        strokeWidth="10"
+                        strokeLinecap="round"
+                        fill="transparent"
+                        r={CIRCLE_RADIUS}
+                        cx="160"
+                        cy="160"
+                        style={{
+                            strokeDasharray: CIRCLE_CIRCUMFERENCE,
+                            strokeDashoffset: strokeDashoffset,
+                            transition: 'stroke-dashoffset 1s linear',
+                        }}
+                    />
+                </svg>
+                 <div className="absolute inset-0 flex items-center justify-center">
+                    <p className="font-mono text-7xl md:text-8xl font-bold tabular-nums tracking-tighter">
+                        {formatTime(timerState.elapsedTime)}
+                    </p>
+                </div>
+            </div>
+
              <Button size="lg" variant="destructive" onClick={handleStop} className="w-full py-8 text-2xl">
                 <Square className="mr-4 h-8 w-8" /> Stop & Save
             </Button>
