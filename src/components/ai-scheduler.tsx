@@ -2,7 +2,7 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { getScheduleRecommendation, SchedulerState } from "@/lib/actions";
-import { Activity, Problem } from "@/lib/types";
+import { Activity, Problem, problemSubjects } from "@/lib/types";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Wand2 } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
+import { Checkbox } from "./ui/checkbox";
 
 const initialState: SchedulerState = {
   recommendation: null,
@@ -83,13 +84,24 @@ export function AiScheduler() {
                 id="preferredStudyTimes"
                 name="preferredStudyTimes"
                 placeholder="e.g., I prefer studying in the morning from 9 AM to 12 PM. I have classes on Mondays and Wednesdays from 2 PM to 4 PM. I want to take a break on Friday evenings."
-                rows={5}
+                rows={4}
                 required
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              Your existing activity and problem history will be automatically used to generate the recommendation.
-            </p>
+            <div className="space-y-2">
+                <Label>Subjects to Focus On</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 rounded-lg border p-4">
+                    {problemSubjects.filter(s => s !== 'Other').map(subject => (
+                        <div key={subject} className="flex items-center space-x-2">
+                            <Checkbox id={`subject-${subject}`} name="subjects" value={subject} />
+                            <Label htmlFor={`subject-${subject}`} className="font-normal">{subject}</Label>
+                        </div>
+                    ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                    Select subjects to include in the schedule. If none are selected, subjects will be inferred from your problem history.
+                </p>
+            </div>
           </CardContent>
           <CardFooter>
             <SubmitButton />
