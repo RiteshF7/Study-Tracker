@@ -97,54 +97,29 @@ export function AiScheduler() {
       
       <div className="space-y-6">
         {state.recommendation ? (
-          <>
-            <Card className="bg-primary/5">
-              <CardHeader>
-                <CardTitle>Your Recommended Schedule</CardTitle>
-              </CardHeader>
-              <CardContent>
-                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[150px]">Time</TableHead>
-                      <TableHead>Activity</TableHead>
+          <Card className="bg-primary/5">
+            <CardHeader>
+              <CardTitle>Your Recommended Schedule</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[150px]">Time</TableHead>
+                    <TableHead>Activity</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {state.recommendation.scheduleRecommendation.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="font-medium">{item.time}</TableCell>
+                      <TableCell>{item.activity}</TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {state.recommendation.scheduleRecommendation.map((item, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{item.time}</TableCell>
-                        <TableCell>{item.activity}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-            <Card className="bg-accent/5">
-              <CardHeader>
-                <CardTitle>Reasoning</CardTitle>
-              </CardHeader>
-              <CardContent>
-                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[150px]">Point</TableHead>
-                      <TableHead>Explanation</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {state.recommendation.reasoning.map((item, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{item.point}</TableCell>
-                        <TableCell className="text-muted-foreground">{item.explanation}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         ) : (
           <Card className="flex items-center justify-center h-full min-h-[300px]">
             <div className="text-center text-muted-foreground">
