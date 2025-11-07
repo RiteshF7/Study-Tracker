@@ -508,15 +508,16 @@ export function DashboardClient() {
                 </Card>
             </DialogTrigger>
             <DialogContent className="max-w-4xl">
+                 <DialogHeader>
+                    <DialogTitle>Activity Trends</DialogTitle>
+                    <DialogDescription>
+                    Total minutes spent on logged activities.
+                    </DialogDescription>
+                 </DialogHeader>
                  <Card className="shadow-none border-none">
                     <CardHeader>
                         <div className="flex flex-wrap justify-between items-center gap-4">
-                        <div>
-                            <CardTitle>Activity Trends</CardTitle>
-                            <CardDescription>
-                            Total minutes spent on logged activities.
-                            </CardDescription>
-                        </div>
+                        <div/>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="icon" onClick={() => handleDateNavigation('prev', activityTimeRange, activityEndDate, setActivityEndDate)}>
                                 <ChevronLeft className="h-4 w-4" />
@@ -582,15 +583,16 @@ export function DashboardClient() {
                 </Card>
             </DialogTrigger>
             <DialogContent className="max-w-4xl">
+                 <DialogHeader>
+                    <DialogTitle>Problems Solved</DialogTitle>
+                    <DialogDescription>
+                    Your problem-solving trend.
+                    </DialogDescription>
+                 </DialogHeader>
                  <Card className="shadow-none border-none">
                     <CardHeader>
                         <div className="flex flex-wrap justify-between items-center gap-4">
-                        <div>
-                            <CardTitle>Problems Solved</CardTitle>
-                            <CardDescription>
-                            Your problem-solving trend.
-                            </CardDescription>
-                        </div>
+                        <div/>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="icon" onClick={() => handleDateNavigation('prev', problemTimeRange, problemEndDate, setProblemEndDate)}>
                                 <ChevronLeft className="h-4 w-4" />
@@ -669,5 +671,7 @@ export function DashboardClient() {
       )}
     </div>
   );
+
+    
 
     
