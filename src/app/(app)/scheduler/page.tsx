@@ -1,5 +1,4 @@
 import { AiScheduler } from "@/components/ai-scheduler";
-import { StickyNotes } from "@/components/sticky-notes";
 
 export default function SchedulerPage() {
   return (
@@ -8,7 +7,6 @@ export default function SchedulerPage() {
         <h1 className="text-3xl font-bold mb-6 font-headline">AI Scheduler</h1>
         <AiScheduler />
       </div>
-      <StickyNotes />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   Target,
   BookOpenCheck,
   LogOut,
+  NotebookPen,
 } from "lucide-react";
 import {
   SidebarHeader,
@@ -43,6 +44,11 @@ const navItems = [
     icon: BrainCircuit,
     label: "AI Scheduler",
   },
+  {
+    href: "/notes",
+    icon: NotebookPen,
+    label: "Sticky Notes",
+  },
 ];
 
 export function AppNav() {
@@ -65,8 +71,8 @@ export function AppNav() {
               <Link href={item.href} passHref>
                 <SidebarMenuButton
                   isActive={pathname === item.href}
-                  className={cn("w-full justify-start", {
-                    "bg-primary/10 text-primary hover:bg-primary/20":
+                  className={cn("w-full justify-start text-base", { // Increased font size
+                    "bg-primary/10 text-primary hover:bg-primary/20 font-semibold": // Higher contrast
                       pathname === item.href,
                   })}
                 >
