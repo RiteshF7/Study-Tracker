@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import type { Activity } from "@/lib/types";
-import { activityTypes, courses, defaultSubjects, CourseName } from "@/lib/types";
+import { activityTypes, courses, defaultSubjects, CourseName, YearName } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -60,6 +60,7 @@ const activitySchema = z.object({
 
 type UserProfile = {
   course?: CourseName;
+  year?: string;
 }
 
 export function ActivityLog() {
@@ -80,9 +81,17 @@ export function ActivityLog() {
 
   const problemSubjects = useMemo(() => {
     const courseName = userProfile?.course;
+    const yearName = userProfile?.year;
+    
     if (courseName && courses[courseName]) {
-      return courses[courseName].subjects;
+      const courseData = courses[courseName];
+      if (yearName && courseData[yearName as keyof typeof courseData]) {
+        return courseData[yearName as keyof typeof courseData];
+      }
+      // If no year or invalid year, return all subjects for the course by flattening the years
+      return Object.values(courseData).flat();
     }
+    
     return defaultSubjects;
   }, [userProfile]);
 

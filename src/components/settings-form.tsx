@@ -26,10 +26,10 @@ import { useDoc, useFirebase, useUser, useMemoFirebase } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { doc } from "firebase/firestore";
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Textarea } from "./ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { courses, CourseName } from "@/lib/types";
+import { courses, CourseName, YearName } from "@/lib/types";
 
 const profileSchema = z.object({
   name: z.string().min(2, {
@@ -37,12 +37,14 @@ const profileSchema = z.object({
   }),
   learningGoals: z.string().optional(),
   course: z.string().optional(),
+  year: z.string().optional(),
 });
 
 type UserProfile = {
     name?: string;
     learningGoals?: string;
     course?: CourseName;
+    year?: string;
 }
 
 export function SettingsForm() {
@@ -55,6 +57,8 @@ export function SettingsForm() {
   , [firestore, user]);
   
   const { data: userProfile } = useDoc<UserProfile>(userDocRef);
+  
+  const [availableYears, setAvailableYears] = useState<string[]>([]);
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -62,15 +66,34 @@ export function SettingsForm() {
       name: "",
       learningGoals: "",
       course: "General Studies",
+      year: "",
     },
   });
+
+  const selectedCourse = form.watch("course") as CourseName | undefined;
+
+  useEffect(() => {
+    if (selectedCourse && courses[selectedCourse]) {
+      const years = Object.keys(courses[selectedCourse]);
+      setAvailableYears(years);
+      // Reset year if the new course doesn't have the previously selected year
+      if (!years.includes(form.getValues("year") || "")) {
+        form.setValue("year", years[0]);
+      }
+    } else {
+      setAvailableYears([]);
+      form.setValue("year", "");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCourse]);
   
   useEffect(() => {
-    if (user) {
+    if (user && userProfile) {
       form.reset({ 
           name: userProfile?.name || user.displayName || "",
           learningGoals: userProfile?.learningGoals || "",
           course: userProfile?.course || "General Studies",
+          year: userProfile?.year || "",
       });
     }
   }, [user, userProfile, form]);
@@ -90,6 +113,7 @@ export function SettingsForm() {
         name: values.name,
         learningGoals: values.learningGoals,
         course: values.course,
+        year: values.year,
     }, { merge: true });
 
     toast({
@@ -147,6 +171,30 @@ export function SettingsForm() {
                 </FormItem>
               )}
             />
+            {availableYears.length > 0 && (
+                 <FormField
+                  control={form.control}
+                  name="year"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Year</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your year" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {availableYears.map((year) => (
+                            <SelectItem key={year} value={year}>{year}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            )}
             <FormField
               control={form.control}
               name="learningGoals"

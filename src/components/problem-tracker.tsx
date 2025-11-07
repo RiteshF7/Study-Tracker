@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import type { Problem } from "@/lib/types";
-import { courses, defaultSubjects, CourseName } from "@/lib/types";
+import { courses, defaultSubjects, CourseName, YearName } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -57,6 +57,7 @@ const problemSchema = z.object({
 
 type UserProfile = {
   course?: CourseName;
+  year?: string;
 }
 
 export function ProblemTracker() {
@@ -76,10 +77,17 @@ export function ProblemTracker() {
 
   const problemSubjects = useMemo(() => {
     const courseName = userProfile?.course;
-    // Fallback to General Studies if no course is set or if the course doesn't exist in our map
+    const yearName = userProfile?.year;
+
     if (courseName && courses[courseName]) {
-      return courses[courseName].subjects;
+      const courseData = courses[courseName];
+      if (yearName && courseData[yearName as keyof typeof courseData]) {
+        return courseData[yearName as keyof typeof courseData];
+      }
+      // If no year or invalid year, return all subjects for the course by flattening the years
+      return Object.values(courseData).flat();
     }
+    
     return defaultSubjects;
   }, [userProfile]);
 
@@ -117,7 +125,12 @@ export function ProblemTracker() {
       createdAt: serverTimestamp(),
     };
     addDocumentNonBlocking(problemsCollection, newProblem);
-    form.reset();
+    form.reset({
+        ...form.getValues(), // keep other values
+        count: 10,
+        notes: "",
+        date: new Date().toISOString().split("T")[0],
+    });
     setOpen(false);
   }
 
