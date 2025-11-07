@@ -104,7 +104,6 @@ export function ActivityTimer() {
     };
   }, [timerState.isTiming, timerState.startTime, setTimerState]);
   
-  // Set default subject when list loads
   useEffect(() => {
     if (problemSubjects.length > 0 && !timerState.subject) {
       setTimerState(prev => ({...prev, subject: problemSubjects[0]}));
@@ -152,7 +151,6 @@ export function ActivityTimer() {
         description: `${timerState.subject} for ${durationInMinutes} ${durationInMinutes > 1 ? 'minutes' : 'minute'} has been saved.`,
     });
 
-    // Reset state and redirect
     setTimerState({
       subject: problemSubjects[0] || '',
       type: 'Study',
@@ -179,8 +177,8 @@ export function ActivityTimer() {
                 <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 224 224">
                     <defs>
                         <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style={{stopColor: '#4ade80', stopOpacity: 0.8}} />
-                            <stop offset="100%" style={{stopColor: '#16a34a', stopOpacity: 1}} />
+                            <stop offset="0%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 0.8}} />
+                            <stop offset="100%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 1}} />
                         </linearGradient>
                     </defs>
                     <circle
