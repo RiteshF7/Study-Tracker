@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import { subDays } from "date-fns";
 import { Trash2, ListFilter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
@@ -84,8 +84,17 @@ export function ActivityLog() {
 
   const filteredActivities = useMemo(() => {
     if (!activities) return [];
-    if (selectedSubjects.length === 0) return activities;
-    return activities.filter(activity => 
+    
+    const oneMonthAgo = subDays(new Date(), 30);
+    
+    const recentActivities = activities.filter(activity => {
+      const activityDate = activity.createdAt?.toDate?.();
+      return activityDate ? activityDate > oneMonthAgo : true;
+    });
+
+    if (selectedSubjects.length === 0) return recentActivities;
+    
+    return recentActivities.filter(activity => 
       selectedSubjects.some(subject => activity.name.toLowerCase().includes(subject.toLowerCase()))
     );
   }, [activities, selectedSubjects]);
@@ -173,7 +182,7 @@ export function ActivityLog() {
             ) : (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
-                  No activities logged yet. Use the timer above to start tracking!
+                  No activities logged in the last 30 days.
                 </TableCell>
               </TableRow>
             )}
