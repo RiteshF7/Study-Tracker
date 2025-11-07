@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import type { Problem } from "@/lib/types";
-import { problemSubjects } from "@/lib/types";
+import { courses, defaultSubjects, CourseName } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -44,7 +44,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
+import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, serverTimestamp, doc } from "firebase/firestore";
 import { addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
@@ -55,9 +55,18 @@ const problemSchema = z.object({
   date: z.string().min(1, "Date is required"),
 });
 
+type UserProfile = {
+  course?: CourseName;
+}
+
 export function ProblemTracker() {
   const [open, setOpen] = useState(false);
   const { firestore, user } = useFirebase();
+  
+  const userDocRef = useMemoFirebase(() =>
+    user ? doc(firestore, "users", user.uid) : null
+  , [firestore, user]);
+  const { data: userProfile } = useDoc<UserProfile>(userDocRef);
 
   const problemsCollection = useMemoFirebase(() =>
     user ? collection(firestore, "users", user.uid, "problems") : null
@@ -65,15 +74,31 @@ export function ProblemTracker() {
 
   const { data: problems, isLoading } = useCollection<Problem>(problemsCollection);
 
+  const problemSubjects = useMemo(() => {
+    const courseName = userProfile?.course || "General Studies";
+    return courses[courseName]?.subjects || defaultSubjects;
+  }, [userProfile]);
+
   const form = useForm<z.infer<typeof problemSchema>>({
     resolver: zodResolver(problemSchema),
     defaultValues: {
-      subject: "Mathematics",
+      subject: problemSubjects[0],
       count: 10,
       notes: "",
       date: new Date().toISOString().split("T")[0],
     },
   });
+
+  // Reset form default when subjects change
+  useMemo(() => {
+    form.reset({
+      subject: problemSubjects[0],
+      count: 10,
+      notes: "",
+      date: new Date().toISOString().split("T")[0],
+    });
+  }, [problemSubjects, form]);
+
 
   function onSubmit(values: z.infer<typeof problemSchema>) {
     if (!problemsCollection || !user) return;
@@ -129,7 +154,7 @@ export function ProblemTracker() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Subject</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a subject" />

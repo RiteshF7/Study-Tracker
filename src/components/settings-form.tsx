@@ -28,6 +28,8 @@ import { doc } from "firebase/firestore";
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useEffect } from "react";
 import { Textarea } from "./ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { courses, CourseName } from "@/lib/types";
 
 const profileSchema = z.object({
   name: z.string().min(2, {
@@ -35,11 +37,13 @@ const profileSchema = z.object({
   }),
   email: z.string().email().optional(),
   learningGoals: z.string().optional(),
+  course: z.string().optional(),
 });
 
 type UserProfile = {
     name?: string;
     learningGoals?: string;
+    course?: CourseName;
 }
 
 export function SettingsForm() {
@@ -59,6 +63,7 @@ export function SettingsForm() {
       name: "",
       email: "",
       learningGoals: "",
+      course: "General Studies",
     },
   });
   
@@ -67,7 +72,8 @@ export function SettingsForm() {
       form.reset({ 
           name: userProfile?.name || user.displayName || "",
           email: user.email || "",
-          learningGoals: userProfile?.learningGoals || ""
+          learningGoals: userProfile?.learningGoals || "",
+          course: userProfile?.course || "General Studies",
       });
     }
   }, [user, userProfile, form]);
@@ -85,7 +91,8 @@ export function SettingsForm() {
     
     setDocumentNonBlocking(userDocRef, { 
         name: values.name,
-        learningGoals: values.learningGoals 
+        learningGoals: values.learningGoals,
+        course: values.course,
     }, { merge: true });
 
     toast({
@@ -129,6 +136,31 @@ export function SettingsForm() {
                   </FormControl>
                   <FormDescription>
                     Your email address cannot be changed.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="course"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Course</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your course of study" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.keys(courses).map((courseName) => (
+                        <SelectItem key={courseName} value={courseName}>{courseName}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                   <FormDescription>
+                    This will tailor the subjects available in the app.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

@@ -22,6 +22,10 @@
         "learningGoals": {
           "type": "string",
           "description": "The user's long-term learning goals and aspirations."
+        },
+        "course": {
+          "type": "string",
+          "description": "The user's selected course of study."
         }
       },
       "required": [

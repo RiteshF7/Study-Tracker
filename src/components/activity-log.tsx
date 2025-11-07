@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import type { Activity } from "@/lib/types";
-import { activityTypes, problemSubjects } from "@/lib/types";
+import { activityTypes, courses, defaultSubjects, CourseName } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -43,7 +43,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
+import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, serverTimestamp, doc, Timestamp } from "firebase/firestore";
 import { addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Checkbox } from "./ui/checkbox";
@@ -58,16 +58,31 @@ const activitySchema = z.object({
   date: z.string().min(1, "Date is required"),
 });
 
+type UserProfile = {
+  course?: CourseName;
+}
+
 export function ActivityLog() {
   const [open, setOpen] = useState(false);
   const { firestore, user } = useFirebase();
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  
+  const userDocRef = useMemoFirebase(() =>
+    user ? doc(firestore, "users", user.uid) : null
+  , [firestore, user]);
+  const { data: userProfile } = useDoc<UserProfile>(userDocRef);
 
   const activitiesCollection = useMemoFirebase(() => 
     user ? collection(firestore, "users", user.uid, "activities") : null
   , [firestore, user]);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesCollection);
+
+  const problemSubjects = useMemo(() => {
+    const courseName = userProfile?.course || "General Studies";
+    return courses[courseName]?.subjects || defaultSubjects;
+  }, [userProfile]);
+
 
   const form = useForm<z.infer<typeof activitySchema>>({
     resolver: zodResolver(activitySchema),
