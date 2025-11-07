@@ -335,8 +335,6 @@ export function DashboardClient() {
             <p className="text-muted-foreground">Here's a snapshot of your progress.</p>
         </div>
 
-        <TodaysGoal />
-        
         {userProfile?.learningGoals && (
           <Card className="bg-primary/5 border-primary/20">
               <CardHeader className="flex flex-row items-start gap-4">
@@ -353,6 +351,8 @@ export function DashboardClient() {
               </CardContent>
           </Card>
         )}
+
+        <TodaysGoal />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
