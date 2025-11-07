@@ -78,12 +78,16 @@ export function DashboardClient() {
   const { activityData, totalDuration, productivityTrend } = useMemo(() => {
     if (!activities) return { activityData: [], totalDuration: 0, productivityTrend: null };
 
+    const productiveActivities = activities.filter(
+      (a) => a.type === 'Study' || a.type === 'Class'
+    );
+
     const today = startOfDay(new Date());
 
     // Last 7 days
     const last7Days = Array.from({ length: 7 }, (_, i) => format(subDays(today, i), "yyyy-MM-dd")).reverse();
     const last7DaysData = last7Days.map((date) => {
-      const dailyActivities = activities.filter((a) => a.date === date);
+      const dailyActivities = productiveActivities.filter((a) => a.date === date);
       const totalDuration = dailyActivities.reduce((sum, a) => sum + a.duration, 0);
       return { date: format(parseISO(date), "d MMM"), duration: totalDuration };
     });
@@ -92,7 +96,7 @@ export function DashboardClient() {
     // Previous 7 days (days 8-14 ago)
     const prev7Days = Array.from({ length: 7 }, (_, i) => format(subDays(today, i + 7), "yyyy-MM-dd"));
     const prev7DaysTotal = prev7Days.reduce((total, date) => {
-      const dailyActivities = activities.filter((a) => a.date === date);
+      const dailyActivities = productiveActivities.filter((a) => a.date === date);
       return total + dailyActivities.reduce((sum, a) => sum + a.duration, 0);
     }, 0);
     
@@ -105,7 +109,7 @@ export function DashboardClient() {
         trend = { percentage: 100, hourDiff: last7DaysTotal / 60 };
     }
     
-    const totalDuration = activities.reduce((sum, a) => sum + a.duration, 0);
+    const totalDuration = productiveActivities.reduce((sum, a) => sum + a.duration, 0);
 
     return { activityData: last7DaysData, totalDuration, productivityTrend: trend };
   }, [activities]);
@@ -303,3 +307,5 @@ export function DashboardClient() {
     </div>
   );
 }
+
+    
