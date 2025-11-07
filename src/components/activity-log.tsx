@@ -46,6 +46,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection, serverTimestamp, doc, Timestamp } from "firebase/firestore";
 import { addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { Checkbox } from "./ui/checkbox";
+import { Label } from "./ui/label";
 
 const activitySchema = z.object({
   name: z.string().min(1, "Activity name is required."),
@@ -59,7 +61,7 @@ const activitySchema = z.object({
 export function ActivityLog() {
   const [open, setOpen] = useState(false);
   const { firestore, user } = useFirebase();
-  const [subjectFilter, setSubjectFilter] = useState<string>("all");
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
 
   const activitiesCollection = useMemoFirebase(() => 
     user ? collection(firestore, "users", user.uid, "activities") : null
@@ -95,15 +97,23 @@ export function ActivityLog() {
     deleteDocumentNonBlocking(docRef);
   }
 
+  const handleSubjectChange = (subject: string) => {
+    setSelectedSubjects(prev => 
+      prev.includes(subject) 
+        ? prev.filter(s => s !== subject)
+        : [...prev, subject]
+    );
+  };
+
   const filteredActivities = useMemo(() => {
     if (!activities) return [];
-    if (subjectFilter === "all") return activities;
+    if (selectedSubjects.length === 0) return activities;
     // This is a simple text search. 
     // A more robust solution might involve adding a 'subject' field to the Activity type.
     return activities.filter(activity => 
-      activity.name.toLowerCase().includes(subjectFilter.toLowerCase())
+      selectedSubjects.some(subject => activity.name.toLowerCase().includes(subject.toLowerCase()))
     );
-  }, [activities, subjectFilter]);
+  }, [activities, selectedSubjects]);
   
   const sortedActivities = useMemo(() => {
     if (!filteredActivities) return [];
@@ -116,22 +126,11 @@ export function ActivityLog() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-4">
           <CardTitle>Your Activities</CardTitle>
-          <Select value={subjectFilter} onValueChange={setSubjectFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by subject" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Subjects</SelectItem>
-              {problemSubjects.map((subject) => (
-                <SelectItem key={subject} value={subject}>{subject}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" /> Add Activity
@@ -219,6 +218,19 @@ export function ActivityLog() {
         </Dialog>
       </CardHeader>
       <CardContent>
+        <div className="flex flex-wrap gap-4 p-4 border-b">
+            <Label className="font-semibold self-center">Filter by subject:</Label>
+            {problemSubjects.map((subject) => (
+                <div key={subject} className="flex items-center space-x-2">
+                    <Checkbox
+                        id={`subject-${subject}`}
+                        checked={selectedSubjects.includes(subject)}
+                        onCheckedChange={() => handleSubjectChange(subject)}
+                    />
+                    <Label htmlFor={`subject-${subject}`} className="font-normal">{subject}</Label>
+                </div>
+            ))}
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
