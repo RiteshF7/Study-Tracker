@@ -29,49 +29,50 @@ export const defaultSubjects = [
   "Microbiology",
   "Forensic Medicine",
   "Community Medicine",
+  "None",
 ];
 
 export const courses = {
   "BPT": {
     "First Year": [
       "Human Anatomy", "Human Physiology", "Biochemistry", "Psychology", "Sociology", 
-      "English / Communication Skills", "Introduction to Physiotherapy"
+      "English / Communication Skills", "Introduction to Physiotherapy", "None"
     ],
     "Second Year": [
       "Pathology", "Microbiology", "Pharmacology", "Exercise Therapy", "Electrotherapy", 
-      "Biomechanics & Kinesiology", "Research Methodology & Biostatistics"
+      "Biomechanics & Kinesiology", "Research Methodology & Biostatistics", "None"
     ],
     "Third Year": [
       "General Medicine", "General Surgery", "Orthopaedics & Traumatology", "Neurology & Neurosurgery", 
-      "Cardio-Respiratory Conditions", "Community-Based Rehabilitation", "Diagnostic Imaging for Physiotherapists"
+      "Cardio-Respiratory Conditions", "Community-Based Rehabilitation", "Diagnostic Imaging for Physiotherapists", "None"
     ],
     "Fourth Year": [
       "Physiotherapy in Orthopaedic Conditions", "Physiotherapy in Neurological Conditions", 
       "Physiotherapy in Cardiopulmonary Conditions", "Sports Physiotherapy", "Geriatric Physiotherapy", 
       "Pediatric Physiotherapy", "Women’s Health & Obstetrics Physiotherapy", 
-      "Ethics, Administration & Management in Physiotherapy"
+      "Ethics, Administration & Management in Physiotherapy", "None"
     ],
     "Internship": [
-      "Orthopaedics", "Neurology", "Cardio-respiratory", "Pediatrics", "Community Health", "ICU and Surgical Wards"
+      "Orthopaedics", "Neurology", "Cardio-respiratory", "Pediatrics", "Community Health", "ICU and Surgical Wards", "None"
     ]
   },
   "MPT": {
-    "All Subjects": ["Advanced Physiotherapy", "Research Methodology", "Biomechanics", "Manual Therapy", "Sports Physiotherapy", "Neuro-rehabilitation", "Cardio-rehabilitation", "Other"],
+    "All Subjects": ["Advanced Physiotherapy", "Research Methodology", "Biomechanics", "Manual Therapy", "Sports Physiotherapy", "Neuro-rehabilitation", "Cardio-rehabilitation", "Other", "None"],
   },
   "MBBS": {
-    "All Subjects": ["Anatomy", "Physiology", "Biochemistry", "Pharmacology", "Pathology", "Microbiology", "Forensic Medicine", "Ophthalmology", "Surgery", "Pediatrics", "Other"],
+    "All Subjects": ["Anatomy", "Physiology", "Biochemistry", "Pharmacology", "Pathology", "Microbiology", "Forensic Medicine", "Ophthalmology", "Surgery", "Pediatrics", "Other", "None"],
   },
   "BSc": {
-    "All Subjects": ["Physics", "Chemistry", "Biology", "Mathematics", "Computer Science", "Botany", "Zoology", "Statistics", "Other"],
+    "All Subjects": ["Physics", "Chemistry", "Biology", "Mathematics", "Computer Science", "Botany", "Zoology", "Statistics", "Other", "None"],
   },
   "MSc": {
-    "All Subjects": ["Advanced Physics", "Organic Chemistry", "Molecular Biology", "Applied Mathematics", "Data Science", "Environmental Science", "Biotechnology", "Other"],
+    "All Subjects": ["Advanced Physics", "Organic Chemistry", "Molecular Biology", "Applied Mathematics", "Data Science", "Environmental Science", "Biotechnology", "Other", "None"],
   },
   "BDS": {
-    "All Subjects": ["Dental Anatomy", "Oral Pathology", "Periodontology", "Orthodontics", "Prosthodontics", "Endodontics", "Oral Surgery", "Community Dentistry", "Other"],
+    "All Subjects": ["Dental Anatomy", "Oral Pathology", "Periodontology", "Orthodontics", "Prosthodontics", "Endodontics", "Oral Surgery", "Community Dentistry", "Other", "None"],
   },
   "BAMS": {
-    "All Subjects": ["Ayurvedic Principles", "Dravyaguna", "Rasa Shastra", "Panchakarma", "Shalya Tantra", "Shalakya Tantra", "Prasuti Tantra", "Kaumarabhritya", "Other"],
+    "All Subjects": ["Ayurvedic Principles", "Dravyaguna", "Rasa Shastra", "Panchakarma", "Shalya Tantra", "Shalakya Tantra", "Prasuti Tantra", "Kaumarabhritya", "Other", "None"],
   },
   "General Studies": {
     "All Subjects": defaultSubjects,

@@ -106,7 +106,7 @@ export function ProblemTracker() {
     if(problemSubjects.length > 0) {
       const currentSubject = form.getValues("subject");
       // Only reset if the current subject is not in the new list or if it's the first load.
-      if (!problemSubjects.includes(currentSubject)) {
+      if (!currentSubject || !problemSubjects.includes(currentSubject)) {
         form.reset({
           ...form.getValues(),
           subject: problemSubjects[0], 
@@ -127,6 +127,7 @@ export function ProblemTracker() {
     addDocumentNonBlocking(problemsCollection, newProblem);
     form.reset({
         ...form.getValues(), // keep other values
+        subject: problemSubjects[0] || "",
         count: 10,
         notes: "",
         date: new Date().toISOString().split("T")[0],
