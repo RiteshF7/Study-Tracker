@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -101,7 +102,7 @@ export function SettingsForm() {
 
 
   function onSubmit(values: z.infer<typeof profileSchema>) {
-    if (!userDocRef) {
+    if (!userDocRef || !user) {
         toast({
             variant: "destructive",
             title: "Error",
@@ -115,6 +116,8 @@ export function SettingsForm() {
         learningGoals: values.learningGoals,
         course: values.course,
         year: values.year,
+        email: user.email,
+        id: user.uid,
     }, { merge: true });
 
     toast({
@@ -154,7 +157,7 @@ export function SettingsForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Course</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                  <Select onValuechange={field.onChange} value={field.value} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select your course of study" />
@@ -184,7 +187,7 @@ export function SettingsForm() {
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select your year" />
-                          </Trigger>
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {availableYears.map((year) => (
