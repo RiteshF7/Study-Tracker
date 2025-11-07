@@ -58,7 +58,7 @@ import { addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/no
 import { Label } from "./ui/label";
 
 const activitySchema = z.object({
-  name: z.string().min(1, "Activity name is required."),
+  subject: z.string().min(1, "Subject is required."),
   type: z.enum(activityTypes as [string, ...string[]], {
     required_error: "Please select an activity type.",
   }),
@@ -106,7 +106,7 @@ export function ActivityLog() {
   const form = useForm<z.infer<typeof activitySchema>>({
     resolver: zodResolver(activitySchema),
     defaultValues: {
-      name: "",
+      subject: problemSubjects[0] || "",
       type: "Study",
       duration: 30,
       date: new Date().toISOString().split("T")[0],
@@ -116,12 +116,21 @@ export function ActivityLog() {
   function onSubmit(values: z.infer<typeof activitySchema>) {
     if (!activitiesCollection || !user) return;
     const newActivity: Omit<Activity, 'id' | 'createdAt'> & { createdAt: any } = {
-      ...values,
+      name: values.subject,
+      type: values.type,
+      duration: values.duration,
+      date: values.date,
       userId: user.uid,
       createdAt: serverTimestamp(),
     };
     addDocumentNonBlocking(activitiesCollection, newActivity);
-    form.reset();
+    form.reset({
+      ...form.getValues(),
+      subject: problemSubjects[0] || "",
+      type: "Study",
+      duration: 30,
+      date: new Date().toISOString().split("T")[0],
+    });
     setOpen(false);
   }
 
@@ -200,13 +209,22 @@ export function ActivityLog() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="subject"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Activity Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Physics Chapter 3" {...field} />
-                      </FormControl>
+                      <FormLabel>Subject</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a subject" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {problemSubjects.map((subject) => (
+                            <SelectItem key={subject} value={subject}>{subject}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
