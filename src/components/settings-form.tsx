@@ -147,7 +147,7 @@ export function SettingsForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Course</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select your course of study" />
@@ -174,13 +174,13 @@ export function SettingsForm() {
                   <FormLabel>Learning Goals</FormLabel>
                   <FormControl>
                     <Textarea 
-                        placeholder="e.g., 'Master calculus concepts for my final exam' or 'Finish my history thesis.'" 
+                        placeholder="e.g., 'Ace my upcoming board exams' or 'Publish my first research paper.'" 
                         {...field}
                         rows={4}
                     />
                   </FormControl>
                    <FormDescription>
-                    What are you hoping to achieve in your studies?
+                    The goal you mention will be represented on your home screen just to keep you reminded.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
