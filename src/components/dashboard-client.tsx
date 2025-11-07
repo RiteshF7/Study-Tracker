@@ -109,7 +109,7 @@ function TodaysGoal() {
         <CardContent>
           <div className="flex gap-2">
             <Input 
-              placeholder="e.g., 'Finish chapter 3 of Anatomy'"
+              placeholder="e.g., 'Review lecture notes for 2 hours'"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSave()}
