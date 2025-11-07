@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { Problem } from "@/lib/types";
 import { courses, defaultSubjects, CourseName } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -75,8 +75,12 @@ export function ProblemTracker() {
   const { data: problems, isLoading } = useCollection<Problem>(problemsCollection);
 
   const problemSubjects = useMemo(() => {
-    const courseName = userProfile?.course || "General Studies";
-    return courses[courseName]?.subjects || defaultSubjects;
+    const courseName = userProfile?.course;
+    // Fallback to General Studies if no course is set or if the course doesn't exist in our map
+    if (courseName && courses[courseName]) {
+      return courses[courseName].subjects;
+    }
+    return courses["General Studies"].subjects;
   }, [userProfile]);
 
   const form = useForm<z.infer<typeof problemSchema>>({
@@ -90,13 +94,17 @@ export function ProblemTracker() {
   });
 
   // Reset form default when subjects change
-  useMemo(() => {
-    form.reset({
-      subject: problemSubjects[0],
-      count: 10,
-      notes: "",
-      date: new Date().toISOString().split("T")[0],
-    });
+  useEffect(() => {
+    if(problemSubjects.length > 0) {
+      const currentSubject = form.getValues("subject");
+      // Only reset if the current subject is not in the new list or if it's the first load.
+      if (!problemSubjects.includes(currentSubject)) {
+        form.reset({
+          ...form.getValues(),
+          subject: problemSubjects[0], 
+        });
+      }
+    }
   }, [problemSubjects, form]);
 
 

@@ -79,8 +79,11 @@ export function ActivityLog() {
   const { data: activities, isLoading } = useCollection<Activity>(activitiesCollection);
 
   const problemSubjects = useMemo(() => {
-    const courseName = userProfile?.course || "General Studies";
-    return courses[courseName]?.subjects || defaultSubjects;
+    const courseName = userProfile?.course;
+    if (courseName && courses[courseName]) {
+      return courses[courseName].subjects;
+    }
+    return courses["General Studies"].subjects;
   }, [userProfile]);
 
 

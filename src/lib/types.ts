@@ -53,6 +53,9 @@ export const courses = {
   "BAMS": {
     subjects: ["Ayurvedic Principles", "Dravyaguna", "Rasa Shastra", "Panchakarma", "Shalya Tantra", "Shalakya Tantra", "Prasuti Tantra", "Kaumarabhritya", "Other"],
   },
+  "General Studies": {
+    subjects: defaultSubjects,
+  }
 };
 
 export type CourseName = keyof typeof courses;
