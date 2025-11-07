@@ -81,18 +81,18 @@ function TodaysGoal() {
   
   if (dailyGoal) {
     return (
-      <Card className="bg-accent/50 border-accent/30">
+      <Card className="bg-primary/10 border-primary/20">
         <CardHeader>
-          <CardTitle className="text-accent-foreground/80">Today's Focus</CardTitle>
-          <CardDescription>Your main objective for today.</CardDescription>
+          <CardTitle className="text-primary-foreground/90">Today's Focus</CardTitle>
+          <CardDescription className="text-primary-foreground/70">Your main objective for today.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
-            <CheckCircle className="w-8 h-8 text-green-500" />
-            <p className="text-lg font-semibold text-foreground flex-1">
+            <CheckCircle className="w-8 h-8 text-green-400" />
+            <p className="text-lg font-semibold text-primary-foreground flex-1">
               {dailyGoal}
             </p>
-            <Button variant="ghost" size="sm" onClick={() => setDailyGoal('')}>Edit</Button>
+            <Button variant="ghost" size="sm" onClick={() => setDailyGoal('')} className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary/20">Edit</Button>
           </div>
         </CardContent>
       </Card>
