@@ -13,13 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Play, Square } from "lucide-react";
+import { Play, Square, TimerOff } from "lucide-react";
 import { useFirebase, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, serverTimestamp, doc } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Label } from "./ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
 
 type UserProfile = {
@@ -40,8 +41,10 @@ type TimerState = {
   subject: string;
   type: Activity['type'];
   isTiming: boolean;
-  elapsedTime: number;
+  remainingTime: number;
+  duration: number; // in minutes
   startTime: number | null;
+  isFinished: boolean;
 };
 
 const CIRCLE_RADIUS = 75;
@@ -80,18 +83,46 @@ export function ActivityTimer() {
     subject: '',
     type: 'Study',
     isTiming: false,
-    elapsedTime: 0,
+    remainingTime: 25 * 60,
+    duration: 25,
     startTime: null,
+    isFinished: false,
   });
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  const playSound = () => {
+    if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    const audioContext = audioContextRef.current;
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 note
+    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.5);
+  };
 
   useEffect(() => {
-    if (timerState.isTiming && timerState.startTime) {
+    if (timerState.isTiming) {
       intervalRef.current = setInterval(() => {
-        const now = Date.now();
-        const elapsed = Math.floor((now - timerState.startTime!) / 1000);
-        setTimerState(prev => ({...prev, elapsedTime: elapsed }));
+        const elapsed = Math.floor((Date.now() - timerState.startTime!) / 1000);
+        const remaining = timerState.duration * 60 - elapsed;
+        
+        if (remaining <= 0) {
+          setTimerState(prev => ({...prev, remainingTime: 0, isTiming: false, isFinished: true }));
+          playSound();
+        } else {
+          setTimerState(prev => ({...prev, remainingTime: remaining }));
+        }
       }, 1000);
     } else {
       if (intervalRef.current) {
@@ -102,7 +133,7 @@ export function ActivityTimer() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [timerState.isTiming, timerState.startTime, setTimerState]);
+  }, [timerState.isTiming, timerState.startTime, timerState.duration, setTimerState]);
   
   useEffect(() => {
     if (problemSubjects.length > 0 && !timerState.subject) {
@@ -120,57 +151,71 @@ export function ActivityTimer() {
       });
       return;
     }
+     if (timerState.duration <= 0) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Duration",
+        description: "Please set a duration greater than 0.",
+      });
+      return;
+    }
     setTimerState({
       ...timerState,
       isTiming: true,
       startTime: Date.now(),
-      elapsedTime: 0,
+      remainingTime: timerState.duration * 60,
+      isFinished: false,
     });
   };
 
-  const handleStop = () => {
+  const handleStop = (save: boolean) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
+    
+    if (save && activitiesCollection && user) {
+        const durationInMinutes = timerState.duration;
 
-    if (!activitiesCollection || !user) return;
-    
-    const durationInMinutes = Math.max(1, Math.round(timerState.elapsedTime / 60));
-
-    const newActivity: Omit<Activity, 'id' | 'createdAt'> & { createdAt: any } = {
-      name: timerState.subject,
-      type: timerState.type,
-      duration: durationInMinutes,
-      date: new Date().toISOString().split("T")[0],
-      userId: user.uid,
-      createdAt: serverTimestamp(),
-    };
-    
-    addDocumentNonBlocking(activitiesCollection, newActivity);
-    
-    toast({
-        title: "Activity Logged!",
-        description: `${timerState.subject} for ${durationInMinutes} ${durationInMinutes > 1 ? 'minutes' : 'minute'} has been saved.`,
-    });
+        const newActivity: Omit<Activity, 'id' | 'createdAt'> & { createdAt: any } = {
+          name: timerState.subject,
+          type: timerState.type,
+          duration: durationInMinutes,
+          date: new Date().toISOString().split("T")[0],
+          userId: user.uid,
+          createdAt: serverTimestamp(),
+        };
+        
+        addDocumentNonBlocking(activitiesCollection, newActivity);
+        
+        toast({
+            title: "Activity Logged!",
+            description: `${timerState.subject} for ${durationInMinutes} ${durationInMinutes > 1 ? 'minutes' : 'minute'} has been saved.`,
+        });
+    }
 
     setTimerState({
       subject: problemSubjects[0] || '',
       type: 'Study',
       isTiming: false,
-      elapsedTime: 0,
+      duration: 25,
+      remainingTime: 25 * 60,
       startTime: null,
+      isFinished: false,
     });
-    router.push('/activities');
+    
+    if(save) {
+        router.push('/activities');
+    }
   };
   
-  const totalSecondsForLoop = 30 * 60; // 30 minutes in seconds
-  const progressInLoop = timerState.elapsedTime % totalSecondsForLoop;
-  const strokeDashoffset = CIRCLE_CIRCUMFERENCE - (progressInLoop / totalSecondsForLoop) * CIRCLE_CIRCUMFERENCE;
+  const totalSecondsInDuration = timerState.duration * 60;
+  const progress = (totalSecondsInDuration - timerState.remainingTime) / totalSecondsInDuration;
+  const strokeDashoffset = CIRCLE_CIRCUMFERENCE * (1 - progress);
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-background">
-      <div className="w-full max-w-md text-center p-4">
-        {timerState.isTiming ? (
-          <div className="space-y-8 flex flex-col items-center">
-            <p className="text-2xl text-muted-foreground">Timing session for:</p>
+    <div className="flex h-screen w-screen items-center justify-center bg-background p-4 sm:p-10">
+      <div className="w-full max-w-md text-center">
+        {timerState.isTiming || timerState.isFinished ? (
+          <div className={cn("space-y-8 flex flex-col items-center", timerState.isFinished && "animate-blink")}>
+            <p className="text-2xl text-muted-foreground">{timerState.isFinished ? "Session Finished!" : "Timing session for:"}</p>
             <h1 className="text-6xl font-bold font-headline">{timerState.subject}</h1>
             
             <div className="relative w-[180px] h-[180px]">
@@ -186,20 +231,20 @@ export function ActivityTimer() {
                         stroke="currentColor"
                         strokeWidth="10"
                         fill="transparent"
-                        r="80"
+                        r={CIRCLE_RADIUS}
                         cx="90"
                         cy="90"
                     />
                     <circle
-                        stroke="url(#progressGradient)"
+                        stroke={timerState.isFinished ? "hsl(var(--destructive))" : "url(#progressGradient)"}
                         strokeWidth="10"
                         strokeLinecap="round"
                         fill="transparent"
-                        r="80"
+                        r={CIRCLE_RADIUS}
                         cx="90"
                         cy="90"
                         style={{
-                            strokeDasharray: 502.6548245743669,
+                            strokeDasharray: CIRCLE_CIRCUMFERENCE,
                             strokeDashoffset: strokeDashoffset,
                             transition: 'stroke-dashoffset 1s linear',
                         }}
@@ -207,13 +252,23 @@ export function ActivityTimer() {
                 </svg>
                  <div className="absolute inset-0 flex items-center justify-center">
                     <p className="font-mono text-5xl font-bold tabular-nums tracking-widest drop-shadow-sm">
-                        {formatTime(timerState.elapsedTime)}
+                        {formatTime(timerState.remainingTime)}
                     </p>
                 </div>
             </div>
 
-             <Button size="lg" variant="default" onClick={handleStop} className="w-full py-8 text-2xl">
-                <Square className="mr-4 h-8 w-8" /> Stop & Save
+            {timerState.isFinished ? (
+                 <Button size="lg" variant="default" onClick={() => handleStop(true)} className="w-full py-8 text-2xl">
+                    <Square className="mr-4 h-8 w-8" /> Save Session
+                </Button>
+            ) : (
+                 <Button size="lg" variant="destructive" onClick={() => handleStop(true)} className="w-full py-8 text-2xl">
+                    <Square className="mr-4 h-8 w-8" /> Stop & Save
+                </Button>
+            )}
+             <Button variant="ghost" onClick={() => handleStop(false)}>
+                <TimerOff className="mr-2 h-4 w-4"/>
+                Cancel Timer
             </Button>
           </div>
         ) : (
@@ -221,7 +276,7 @@ export function ActivityTimer() {
             <h1 className="text-4xl font-bold font-headline">Start a New Session</h1>
             <p className="text-muted-foreground">Select a subject and type to begin tracking your time.</p>
             <div className="grid grid-cols-2 gap-4 text-left">
-                <div className="grid gap-2">
+                <div className="grid gap-2 col-span-2 sm:col-span-1">
                     <Label htmlFor="subject-select" className="text-lg">Subject</Label>
                     <Select onValueChange={(val) => setTimerState(prev => ({...prev, subject: val}))} value={timerState.subject} defaultValue={timerState.subject}>
                         <SelectTrigger id="subject-select" className="py-6 text-lg">
@@ -234,7 +289,7 @@ export function ActivityTimer() {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 col-span-2 sm:col-span-1">
                     <Label htmlFor="type-select" className="text-lg">Type</Label>
                     <Select onValueChange={(v) => setTimerState(prev => ({...prev, type: v as Activity['type']}))} defaultValue={timerState.type}>
                         <SelectTrigger id="type-select" className="py-6 text-lg">
@@ -247,6 +302,17 @@ export function ActivityTimer() {
                         </SelectContent>
                     </Select>
                 </div>
+            </div>
+            <div className="grid gap-2 text-left">
+                 <Label htmlFor="duration-input" className="text-lg">Duration (minutes)</Label>
+                 <Input
+                    id="duration-input"
+                    type="number"
+                    value={timerState.duration}
+                    onChange={(e) => setTimerState(prev => ({...prev, duration: parseInt(e.target.value, 10) || 0, remainingTime: (parseInt(e.target.value, 10) || 0) * 60 }))}
+                    className="py-6 text-lg"
+                    placeholder="e.g., 25"
+                 />
             </div>
             <Button size="lg" onClick={handleStart} className="w-full py-8 text-2xl">
                 <Play className="mr-4 h-8 w-8" /> Start Timer
