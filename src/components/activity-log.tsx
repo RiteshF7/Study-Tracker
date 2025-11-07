@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Activity } from "@/lib/types";
-import { activityTypes } from "@/lib/types";
+import { activityTypes, problemSubjects } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -59,6 +59,7 @@ const activitySchema = z.object({
 export function ActivityLog() {
   const [open, setOpen] = useState(false);
   const { firestore, user } = useFirebase();
+  const [subjectFilter, setSubjectFilter] = useState<string>("all");
 
   const activitiesCollection = useMemoFirebase(() => 
     user ? collection(firestore, "users", user.uid, "activities") : null
@@ -93,9 +94,19 @@ export function ActivityLog() {
     const docRef = doc(activitiesCollection, id);
     deleteDocumentNonBlocking(docRef);
   }
+
+  const filteredActivities = useMemo(() => {
+    if (!activities) return [];
+    if (subjectFilter === "all") return activities;
+    // This is a simple text search. 
+    // A more robust solution might involve adding a 'subject' field to the Activity type.
+    return activities.filter(activity => 
+      activity.name.toLowerCase().includes(subjectFilter.toLowerCase())
+    );
+  }, [activities, subjectFilter]);
   
-  const sortedActivities = activities
-    ? [...activities].sort((a, b) => {
+  const sortedActivities = filteredActivities
+    ? [...filteredActivities].sort((a, b) => {
         const timeA = a.createdAt?.toDate?.().getTime() || Date.now();
         const timeB = b.createdAt?.toDate?.().getTime() || Date.now();
         return timeB - timeA;
@@ -105,7 +116,20 @@ export function ActivityLog() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Your Activities</CardTitle>
+        <div className="flex items-center gap-4">
+          <CardTitle>Your Activities</CardTitle>
+          <Select value={subjectFilter} onValueChange={setSubjectFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by subject" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Subjects</SelectItem>
+              {problemSubjects.map((subject) => (
+                <SelectItem key={subject} value={subject}>{subject}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -228,7 +252,7 @@ export function ActivityLog() {
             ) : (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
-                  No activities logged yet.
+                  No activities logged yet for this subject.
                 </TableCell>
               </TableRow>
             )}

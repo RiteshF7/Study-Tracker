@@ -20,7 +20,6 @@ export async function getScheduleRecommendation(
   const problems = JSON.parse(
     (formData.get("problems") as string) || "[]"
   ) as Problem[];
-  const selectedSubjects = formData.getAll("subjects") as string[];
 
   if (!preferredStudyTimes) {
     return { ...prevState, error: "Please enter your preferred study times." };
@@ -33,32 +32,24 @@ export async function getScheduleRecommendation(
     )
     .join("\n");
   
-  let subjectsToStudy: string;
+  const problemSummary = problems.reduce((acc, p) => {
+    acc[p.subject] = (acc[p.subject] || 0) + p.count;
+    return acc;
+  }, {} as Record<string, number>);
 
-  if (selectedSubjects.length > 0) {
-    subjectsToStudy = `The user wants to focus on the following subjects: ${selectedSubjects.join(', ')}. Please create a schedule that includes study time for these subjects.`;
-  } else {
-    const problemSummary = problems.reduce((acc, p) => {
-      acc[p.subject] = (acc[p.subject] || 0) + p.count;
-      return acc;
-    }, {} as Record<string, number>);
-  
-    const subjectBreakdown = Object.entries(problemSummary)
-      .map(
-        ([subject, count]) =>
-          `${subject}: ${count} problems solved so far.`
-      )
-      .join("\n");
-    
-    subjectsToStudy = `Base the study subjects on the following problem history:\n${subjectBreakdown || "No problems tracked yet."}`;
-  }
+  const subjectsToStudy = Object.entries(problemSummary)
+    .map(
+      ([subject, count]) =>
+        `${subject}: ${count} problems solved so far.`
+    )
+    .join("\n");
 
 
   try {
     const result = await intelligentScheduleRecommendation({
       activityHistory: activityHistory || "No activity history yet.",
       preferredStudyTimes,
-      subjects: subjectsToStudy,
+      subjects: subjectsToStudy || "No problems tracked yet. Base schedule on general good study habits.",
     });
     return { recommendation: result, error: null, message: "Successfully generated schedule!" };
   } catch (e) {

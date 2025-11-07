@@ -1,8 +1,8 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useFormStatus } from "react-dom";
 import { getScheduleRecommendation, SchedulerState } from "@/lib/actions";
-import { Activity, Problem, problemSubjects } from "@/lib/types";
+import type { Activity, Problem } from "@/lib/types";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
@@ -12,7 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Wand2 } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
-import { Checkbox } from "./ui/checkbox";
 
 const initialState: SchedulerState = {
   recommendation: null,
@@ -52,7 +51,7 @@ export function AiScheduler() {
   const { data: activities } = useCollection<Activity>(activitiesCollection);
   const { data: problems } = useCollection<Problem>(problemsCollection);
 
-  const [state, formAction] = useFormState(getScheduleRecommendation, initialState);
+  const [state, formAction] = useActionState(getScheduleRecommendation, initialState);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -87,20 +86,6 @@ export function AiScheduler() {
                 rows={4}
                 required
               />
-            </div>
-            <div className="space-y-2">
-                <Label>Subjects to Focus On</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 rounded-lg border p-4">
-                    {problemSubjects.filter(s => s !== 'Other').map(subject => (
-                        <div key={subject} className="flex items-center space-x-2">
-                            <Checkbox id={`subject-${subject}`} name="subjects" value={subject} />
-                            <Label htmlFor={`subject-${subject}`} className="font-normal">{subject}</Label>
-                        </div>
-                    ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                    Select subjects to include in the schedule. If none are selected, subjects will be inferred from your problem history.
-                </p>
             </div>
           </CardContent>
           <CardFooter>
