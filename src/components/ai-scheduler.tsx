@@ -103,7 +103,22 @@ export function AiScheduler() {
                 <CardTitle>Your Recommended Schedule</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-wrap">{state.recommendation.scheduleRecommendation}</p>
+                 <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[150px]">Time</TableHead>
+                      <TableHead>Activity</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {state.recommendation.scheduleRecommendation.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{item.time}</TableCell>
+                        <TableCell>{item.activity}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
             <Card className="bg-accent/5">
