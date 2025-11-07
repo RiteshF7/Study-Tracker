@@ -27,7 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Button
               variant="outline"
               size="icon"
-              className="overflow-hidden rounded-full"
+              className="overflow-hidden rounded-full transition-all hover:-translate-y-px"
               asChild
             >
               <Avatar>
