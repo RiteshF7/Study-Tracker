@@ -166,19 +166,19 @@ export function ActivityTimer() {
   const strokeDashoffset = CIRCLE_CIRCUMFERENCE - (progressInLoop / totalSecondsForLoop) * CIRCLE_CIRCUMFERENCE;
 
   return (
-    <div className="flex h-screen w-screen items-start justify-start pt-20 pl-12 bg-background">
+    <div className="flex h-screen w-screen items-center justify-center bg-background">
       <div className="w-full max-w-md text-center p-4">
         {timerState.isTiming ? (
           <div className="space-y-8 flex flex-col items-center">
             <p className="text-2xl text-muted-foreground">Timing session for:</p>
             <h1 className="text-6xl font-bold font-headline">{timerState.subject}</h1>
             
-            <div className="relative w-[160px] h-[160px]">
-                <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 164 164">
+            <div className="relative w-[180px] h-[180px]">
+                <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 180 180">
                     <defs>
-                        <linearGradient id="progressGradientGreen" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style={{stopColor: '#4ade80', stopOpacity: 0.8}} />
-                            <stop offset="100%" style={{stopColor: '#16a34a', stopOpacity: 1}} />
+                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 0.8}} />
+                            <stop offset="100%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 1}} />
                         </linearGradient>
                     </defs>
                     <circle
@@ -186,20 +186,20 @@ export function ActivityTimer() {
                         stroke="currentColor"
                         strokeWidth="10"
                         fill="transparent"
-                        r={CIRCLE_RADIUS}
-                        cx="82"
-                        cy="82"
+                        r="80"
+                        cx="90"
+                        cy="90"
                     />
                     <circle
-                        stroke="url(#progressGradientGreen)"
+                        stroke="url(#progressGradient)"
                         strokeWidth="10"
                         strokeLinecap="round"
                         fill="transparent"
-                        r={CIRCLE_RADIUS}
-                        cx="82"
-                        cy="82"
+                        r="80"
+                        cx="90"
+                        cy="90"
                         style={{
-                            strokeDasharray: CIRCLE_CIRCUMFERENCE,
+                            strokeDasharray: 502.6548245743669,
                             strokeDashoffset: strokeDashoffset,
                             transition: 'stroke-dashoffset 1s linear',
                         }}
@@ -260,3 +260,5 @@ export function ActivityTimer() {
     </div>
   );
 }
+
+    
