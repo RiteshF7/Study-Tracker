@@ -57,7 +57,36 @@ export const courses = {
     ]
   },
   "MPT": {
-    "All Subjects": ["Advanced Physiotherapy", "Research Methodology", "Biomechanics", "Manual Therapy", "Sports Physiotherapy", "Neuro-rehabilitation", "Cardio-rehabilitation", "Other", "None"],
+    "First Year": [
+      "Principles of Physiotherapy Practice",
+      "Physiotherapeutic Techniques & Approaches",
+      "Research Methodology & Biostatistics",
+      "Applied Biomechanics & Kinesiology",
+      "Exercise Physiology",
+      "Electrophysiology",
+      "Clinical Training (Specialization-specific)",
+      "Seminar & Case Presentations",
+      "None"
+    ],
+    "Second Year": [
+      "Advanced Physiotherapy in Specialization",
+      "Evidence-Based Practice in Physiotherapy",
+      "Dissertation / Thesis Work",
+      "Clinical Posting & Logbook",
+      "Teaching Methodology & Professional Ethics",
+      "Advanced Diagnostic & Therapeutic Techniques",
+      "Seminar & Journal Club",
+      "Final Practical & Viva Voce",
+      "None"
+    ],
+    "Optional Modules": [
+      "Ergonomics & Workplace Assessment",
+      "Manual Therapy & Taping Techniques",
+      "Robotics & Technology in Rehabilitation",
+      "Advanced Pain Management",
+      "Tele-Physiotherapy & Digital Health",
+      "None"
+    ]
   },
   "MBBS": {
     "All Subjects": ["Anatomy", "Physiology", "Biochemistry", "Pharmacology", "Pathology", "Microbiology", "Forensic Medicine", "Ophthalmology", "Surgery", "Pediatrics", "Other", "None"],
