@@ -211,7 +211,7 @@ export function ActivityTimer() {
   const strokeDashoffset = CIRCLE_CIRCUMFERENCE * (1 - progress);
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-background p-4 sm:p-10">
+    <div className="flex h-screen w-screen items-start justify-start bg-background p-2 sm:p-4 pt-8 sm:pt-12">
       <div className="w-full max-w-md text-center">
         {timerState.isTiming || timerState.isFinished ? (
           <div className={cn("space-y-8 flex flex-col items-center", timerState.isFinished && "animate-blink")}>
