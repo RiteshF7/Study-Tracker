@@ -118,7 +118,8 @@ function TodaysGoal() {
 
 export function DashboardClient() {
   const { firestore, user } = useFirebase();
-  const [timeRange, setTimeRange] = useState<keyof typeof timeRangeOptions>('7d');
+  const [activityTimeRange, setActivityTimeRange] = useState<keyof typeof timeRangeOptions>('7d');
+  const [problemTimeRange, setProblemTimeRange] = useState<keyof typeof timeRangeOptions>('7d');
   
   const userDocRef = useMemoFirebase(() => 
     user ? doc(firestore, "users", user.uid) : null
@@ -187,7 +188,7 @@ export function DashboardClient() {
     let startDate: Date;
     let tickFormatter: (value: string) => string = (value) => value;
 
-    switch(timeRange) {
+    switch(activityTimeRange) {
       case '30d':
         startDate = subDays(today, 29);
         tickFormatter = (value) => format(parse(value, "d MMM", new Date()), 'd');
@@ -211,7 +212,7 @@ export function DashboardClient() {
     
     let groupedData;
 
-    if (timeRange === '90d' || timeRange === '180d') {
+    if (activityTimeRange === '90d' || activityTimeRange === '180d') {
         const weekMap = new Map<string, number>();
         relevantActivities.forEach(activity => {
             const weekNumber = getWeek(parseISO(activity.date));
@@ -228,7 +229,7 @@ export function DashboardClient() {
             const totalDuration = weekMap.get(key) || 0;
             return { date: `${weekNumber}`, duration: totalDuration };
         });
-        if(timeRange === '180d') tickFormatter = (value) => `W${value}`;
+        if(activityTimeRange === '180d') tickFormatter = (value) => `W${value}`;
     } else {
        const dayMap = new Map<string, number>();
         relevantActivities.forEach(activity => {
@@ -267,7 +268,7 @@ export function DashboardClient() {
     }
     
     return { activityData: { data: groupedData, formatter: tickFormatter }, productivityTrend: trend };
-  }, [activities, timeRange]);
+  }, [activities, activityTimeRange]);
   
   const studyTimeToday = useMemo(() => {
     if (!activities) return 0;
@@ -279,30 +280,70 @@ export function DashboardClient() {
 
   const problemsPerDayData = useMemo(() => {
     if (!problems) return { data: [], formatter: (value: string) => value };
-    
+
     const today = startOfDay(new Date());
-    const startDate = subDays(today, 6); // Always show last 7 days for this chart
+    let startDate: Date;
+    let tickFormatter: (value: string) => string = (value) => value;
+
+    switch (problemTimeRange) {
+        case '30d':
+            startDate = subDays(today, 29);
+            tickFormatter = (value) => format(parse(value, "d MMM", new Date()), 'd');
+            break;
+        case '90d':
+            startDate = subMonths(today, 3);
+            tickFormatter = (value) => `W${value}`;
+            break;
+        case '180d':
+            startDate = subMonths(today, 6);
+            tickFormatter = (value) => `W${value}`;
+            break;
+        case '7d':
+        default:
+            startDate = subDays(today, 6);
+            tickFormatter = (value) => format(parse(value, "d MMM", new Date()), 'EEE');
+            break;
+    }
 
     const relevantProblems = problems.filter(p => parseISO(p.date) >= startDate);
-    
-    const dayMap = new Map<string, number>();
-    relevantProblems.forEach(problem => {
-        dayMap.set(problem.date, (dayMap.get(problem.date) || 0) + problem.count);
-    });
-    
-    const days = eachDayOfInterval({ start: startDate, end: today });
-    const data = days.map(day => {
-        const dateStr = format(day, 'yyyy-MM-dd');
-        return {
-            date: format(day, 'd MMM'),
-            count: dayMap.get(dateStr) || 0
-        };
-    });
 
-    const formatter = (value: string) => format(parse(value, "d MMM", new Date()), 'EEE');
+    let groupedData;
 
-    return { data, formatter };
-  }, [problems]);
+    if (problemTimeRange === '90d' || problemTimeRange === '180d') {
+        const weekMap = new Map<string, number>();
+        relevantProblems.forEach(problem => {
+            const weekNumber = getWeek(parseISO(problem.date));
+            const year = parseISO(problem.date).getFullYear();
+            const key = `${year}-W${weekNumber}`;
+            weekMap.set(key, (weekMap.get(key) || 0) + problem.count);
+        });
+
+        const weeks = eachWeekOfInterval({ start: startDate, end: today });
+        groupedData = weeks.map(weekStart => {
+            const weekNumber = getWeek(weekStart);
+            const year = weekStart.getFullYear();
+            const key = `${year}-W${weekNumber}`;
+            const totalCount = weekMap.get(key) || 0;
+            return { date: `${weekNumber}`, count: totalCount };
+        });
+    } else {
+        const dayMap = new Map<string, number>();
+        relevantProblems.forEach(problem => {
+            dayMap.set(problem.date, (dayMap.get(problem.date) || 0) + problem.count);
+        });
+
+        const days = eachDayOfInterval({ start: startDate, end: today });
+        groupedData = days.map(day => {
+            const dateStr = format(day, 'yyyy-MM-dd');
+            return {
+                date: format(day, 'd MMM'),
+                count: dayMap.get(dateStr) || 0
+            };
+        });
+    }
+    
+    return { data: groupedData, formatter: tickFormatter };
+  }, [problems, problemTimeRange]);
 
   const problemsSolvedToday = useMemo(() => {
     if (!problems) return 0;
@@ -457,7 +498,7 @@ export function DashboardClient() {
                   Total minutes spent on logged activities.
                 </CardDescription>
               </div>
-              <Select value={timeRange} onValueChange={(value) => setTimeRange(value as keyof typeof timeRangeOptions)}>
+              <Select value={activityTimeRange} onValueChange={(value) => setActivityTimeRange(value as keyof typeof timeRangeOptions)}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Select a range" />
                 </SelectTrigger>
@@ -500,10 +541,24 @@ export function DashboardClient() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Problems Solved Per Day</CardTitle>
-            <CardDescription>
-              Your problem-solving trend for the last 7 days.
-            </CardDescription>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle>Problems Solved Per Day</CardTitle>
+                <CardDescription>
+                  Your problem-solving trend.
+                </CardDescription>
+              </div>
+               <Select value={problemTimeRange} onValueChange={(value) => setProblemTimeRange(value as keyof typeof timeRangeOptions)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select a range" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(timeRangeOptions).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
             <ChartContainer config={problemChartConfig} className="min-h-[200px] w-full">
@@ -561,6 +616,8 @@ export function DashboardClient() {
       )}
     </div>
   );
+
+    
 
     
 
