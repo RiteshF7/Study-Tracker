@@ -166,7 +166,7 @@ export function ActivityTimer() {
   const strokeDashoffset = CIRCLE_CIRCUMFERENCE - (progressInLoop / totalSecondsForLoop) * CIRCLE_CIRCUMFERENCE;
 
   return (
-    <div className="flex h-screen w-screen items-center justify-start pl-20 bg-background">
+    <div className="flex h-screen w-screen items-start justify-start pt-20 pl-12 bg-background">
       <div className="w-full max-w-md text-center p-4">
         {timerState.isTiming ? (
           <div className="space-y-8 flex flex-col items-center">
