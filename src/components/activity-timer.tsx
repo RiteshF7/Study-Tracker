@@ -239,7 +239,7 @@ export function ActivityTimer() {
                     <Select onValueChange={(v) => setTimerState(prev => ({...prev, type: v as Activity['type']}))} defaultValue={timerState.type}>
                         <SelectTrigger id="type-select" className="py-6 text-lg">
                             <SelectValue placeholder="Select an activity type" />
-                        </Trigger>
+                        </SelectTrigger>
                         <SelectContent>
                             {activityTypes.map((t) => (
                             <SelectItem key={t} value={t} className="text-lg">{t}</SelectItem>
