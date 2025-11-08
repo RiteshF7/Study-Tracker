@@ -80,37 +80,37 @@ body {
   .violet {
     --background: 240 30% 12%; /* Base dark color for gradient fallback */
     --foreground: 210 50% 98%; /* Bright white for text */
-    --card: 240 31% 14% / 0.7; /* Translucent frosted card */
+    --card: 240 31% 16% / 0.75; /* Brighter, translucent frosted card */
     --card-foreground: 210 50% 98%;
     --popover: 240 31% 14%;
     --popover-foreground: 210 40% 98%;
-    --primary: 180 90% 50%; /* Aqua/Teal */
+    --primary: 180 90% 55%; /* Brighter Aqua/Teal */
     --primary-foreground: 240 40% 10%;
-    --secondary: 230 30% 25%; /* Slightly lighter violet-blue */
+    --secondary: 230 30% 28%; /* Brighter violet-blue */
     --secondary-foreground: 210 40% 98%;
-    --muted: 230 30% 25%;
-    --muted-foreground: 220 20% 70%;
-    --accent: 190 95% 60%; /* Neon Blue/Aqua */
+    --muted: 230 30% 28%;
+    --muted-foreground: 220 20% 75%; /* Brighter muted text */
+    --accent: 190 95% 65%; /* Brighter Neon Blue/Aqua */
     --accent-foreground: 210 40% 98%;
     --destructive: 350 80% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 240 31% 14% / 0.9;
-    --input: 240 31% 14% / 0.7;
-    --ring: 190 95% 60%; /* Neon Blue/Aqua for focus rings */
-    --chart-1: 180 90% 50%;
-    --chart-2: 190 95% 60%;
-    --chart-3: 260 85% 65%;
-    --chart-4: 210 90% 70%;
-    --chart-5: 27 87% 67%;
+    --border: 240 31% 18% / 0.9; /* Brighter border */
+    --input: 240 31% 16% / 0.75; /* Brighter input */
+    --ring: 190 95% 65%; /* Brighter Neon Blue/Aqua for focus rings */
+    --chart-1: 180 90% 55%;
+    --chart-2: 190 95% 65%;
+    --chart-3: 260 85% 70%;
+    --chart-4: 210 90% 75%;
+    --chart-5: 27 87% 70%;
     --radius: 0.75rem; /* Slightly more rounded corners */
-    --sidebar-background: 240 35% 12% / 0.8; /* Frosted glass sidebar */
+    --sidebar-background: 240 35% 14% / 0.85; /* Brighter Frosted glass sidebar */
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 180 90% 50%;
+    --sidebar-primary: 180 90% 55%;
     --sidebar-primary-foreground: 240 40% 10%;
-    --sidebar-accent: 230 30% 25%;
+    --sidebar-accent: 230 30% 28%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 220 25% 30% / 0.8;
-    --sidebar-ring: 190 95% 60%;
+    --sidebar-border: 220 25% 35% / 0.8;
+    --sidebar-ring: 190 95% 65%;
   }
 }
 
@@ -122,7 +122,7 @@ body {
     @apply bg-background text-foreground;
   }
   .violet body {
-    background-image: linear-gradient(to bottom, hsl(258, 60%, 30%), hsl(233, 70%, 25%));
+    background-image: linear-gradient(to bottom, hsl(258, 60%, 35%), hsl(233, 70%, 30%));
   }
 }
 
