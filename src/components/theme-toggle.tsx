@@ -33,9 +33,9 @@ export function ThemeToggle() {
           <Moon className="mr-2 h-4 w-4" />
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("violet")}>
+        <DropdownMenuItem onClick={() => setTheme("violet-dark")}>
           <Sparkles className="mr-2 h-4 w-4" />
-          Violet
+          Violet Dark
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

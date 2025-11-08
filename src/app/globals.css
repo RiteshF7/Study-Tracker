@@ -77,7 +77,7 @@ body {
     --sidebar-border: 217.2 32.6% 17.5%;
     --sidebar-ring: 207 90% 69%;
   }
-  .violet {
+  .violet-dark {
     --background: 265 30% 12%; /* Base dark color for gradient fallback */
     --foreground: 210 50% 98%; /* Bright white for text */
     --card: 265 31% 16% / 0.75; /* Brighter, translucent frosted card with a warmer tint */
@@ -121,7 +121,7 @@ body {
   body {
     @apply bg-background text-foreground;
   }
-  .violet body {
+  .violet-dark body {
     background-image: linear-gradient(to bottom, hsl(310, 60%, 25%), hsl(265, 70%, 30%));
   }
 }
