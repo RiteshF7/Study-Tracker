@@ -78,9 +78,9 @@ body {
     --sidebar-ring: 207 90% 69%;
   }
   .violet {
-    --background: 250 40% 8%; /* Deep violet as base */
+    --background: 240 30% 12%; /* Base dark color for gradient fallback */
     --foreground: 210 50% 98%; /* Bright white for text */
-    --card: 230 30% 15% / 0.6; /* Translucent frosted card */
+    --card: 240 31% 14% / 0.7; /* Translucent frosted card */
     --card-foreground: 210 50% 98%;
     --popover: 240 31% 14%;
     --popover-foreground: 210 40% 98%;
@@ -94,8 +94,8 @@ body {
     --accent-foreground: 210 40% 98%;
     --destructive: 350 80% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 25% 30% / 0.8; /* Translucent border */
-    --input: 230 30% 20% / 0.7; /* Translucent input */
+    --border: 240 31% 14% / 0.9;
+    --input: 240 31% 14% / 0.7;
     --ring: 190 95% 60%; /* Neon Blue/Aqua for focus rings */
     --chart-1: 180 90% 50%;
     --chart-2: 190 95% 60%;
@@ -122,7 +122,7 @@ body {
     @apply bg-background text-foreground;
   }
   .violet body {
-    background-image: linear-gradient(to bottom right, hsl(250, 40%, 8%), hsl(230, 30%, 12%));
+    background-image: linear-gradient(to bottom, hsl(258, 60%, 30%), hsl(233, 70%, 25%));
   }
 }
 
