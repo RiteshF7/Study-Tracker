@@ -11,11 +11,26 @@ export type Activity = {
   userId: string;
 };
 
+export type ProblemCategory = {
+  id: string;
+  name: string;
+}
+
+export const defaultProblemCategories: ProblemCategory[] = [
+  { id: 'math', name: 'Mathematics' },
+  { id: 'physics', name: 'Physics' },
+  { id: 'chemistry', name: 'Chemistry' },
+  { id: 'biology', name: 'Biology' },
+  { id: 'cs', name: 'Computer Science' },
+  { id: 'history', name: 'History' },
+];
+
 export type Problem = {
   id?: string;
   name: string;
   count: number;
   notes: string;
+  category: string;
   date: string; // YYYY-MM-DD
   createdAt: Timestamp;
   userId: string;

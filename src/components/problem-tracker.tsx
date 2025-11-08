@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import type { Problem } from "@/lib/types";
+import type { Problem, ProblemCategory } from "@/lib/types";
+import { defaultProblemCategories } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -30,6 +32,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,6 +51,7 @@ import { addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/no
 
 const problemSchema = z.object({
   name: z.string().min(1, "Name/Topic is required."),
+  category: z.string().min(1, "Category is required."),
   count: z.coerce.number().min(1, "Must solve at least 1 problem."),
   notes: z.string().optional(),
   date: z.string().min(1, "Date is required"),
@@ -49,6 +59,9 @@ const problemSchema = z.object({
 
 export function ProblemTracker() {
   const [open, setOpen] = useState(false);
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
+  const [categories, setCategories] = useState<ProblemCategory[]>(defaultProblemCategories);
   const { firestore, user } = useFirebase();
 
   const problemsCollection = useMemoFirebase(() =>
@@ -61,6 +74,7 @@ export function ProblemTracker() {
     resolver: zodResolver(problemSchema),
     defaultValues: {
       name: "",
+      category: "",
       count: 10,
       notes: "",
       date: new Date().toISOString().split("T")[0],
@@ -71,6 +85,7 @@ export function ProblemTracker() {
     if (open) {
       form.reset({
         name: "",
+        category: "",
         count: 10,
         notes: "",
         date: new Date().toISOString().split("T")[0],
@@ -78,6 +93,15 @@ export function ProblemTracker() {
     }
   }, [form, open]);
 
+  const handleAddCategory = () => {
+    if (newCategory.trim()) {
+      const newCat = { id: newCategory.toLowerCase().replace(/\s/g, '-'), name: newCategory.trim() };
+      setCategories([...categories, newCat]);
+      form.setValue('category', newCat.name);
+      setIsAddCategoryOpen(false);
+      setNewCategory('');
+    }
+  };
 
   function onSubmit(values: z.infer<typeof problemSchema>) {
     if (!problemsCollection || !user) return;
@@ -108,129 +132,183 @@ export function ProblemTracker() {
 
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Your Problems</CardTitle>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" /> Track Problems
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Track Solved Problems</DialogTitle>
-              <DialogDescription>
-                Log the number of problems you've solved.
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name / Topic</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Kinematics Equations" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="count"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Number of Problems</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Notes</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Any specific topics or difficulties?" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="secondary">Cancel</Button>
-                  </DialogClose>
-                  <Button type="submit">Track Problems</Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Name / Topic</TableHead>
-              <TableHead>Count</TableHead>
-              <TableHead>Notes</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-             {isLoading ? (
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Your Problems</CardTitle>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" /> Track Problems
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Track Solved Problems</DialogTitle>
+                <DialogDescription>
+                  Log the number of problems you've solved.
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name / Topic</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Kinematics Equations" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            if (value === "add_new") {
+                              setIsAddCategoryOpen(true);
+                            } else {
+                              field.onChange(value);
+                            }
+                          }}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {categories.map((cat) => (
+                              <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                            ))}
+                            <SelectItem value="add_new">Add New...</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="count"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Number of Problems</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Date</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Notes</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Any specific topics or difficulties?" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="button" variant="secondary">Cancel</Button>
+                    </DialogClose>
+                    <Button type="submit">Track Problems</Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  Loading problems...
-                </TableCell>
+                <TableHead>Date</TableHead>
+                <TableHead>Name / Topic</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Count</TableHead>
+                <TableHead>Notes</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ) : sortedProblems.length > 0 ? (
-              sortedProblems.map((problem) => (
-                <TableRow key={problem.id}>
-                  <TableCell>{problem.date}</TableCell>
-                  <TableCell className="font-medium">{problem.name}</TableCell>
-                  <TableCell>{problem.count}</TableCell>
-                  <TableCell className="text-muted-foreground truncate max-w-xs">{problem.notes}</TableCell>
-                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => deleteProblem(problem.id!)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    Loading problems...
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  No problems tracked yet.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+              ) : sortedProblems.length > 0 ? (
+                sortedProblems.map((problem) => (
+                  <TableRow key={problem.id}>
+                    <TableCell>{problem.date}</TableCell>
+                    <TableCell className="font-medium">{problem.name}</TableCell>
+                    <TableCell>{problem.category}</TableCell>
+                    <TableCell>{problem.count}</TableCell>
+                    <TableCell className="text-muted-foreground truncate max-w-xs">{problem.notes}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" onClick={() => deleteProblem(problem.id!)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    No problems tracked yet.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+      <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Category</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="e.g., Organic Chemistry"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddCategoryOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddCategory}>Add</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
