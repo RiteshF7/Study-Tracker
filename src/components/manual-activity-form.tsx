@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -37,7 +37,6 @@ import { useCollection, useFirebase, useUser, useMemoFirebase } from "@/firebase
 import { collection, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import type { Activity } from "@/lib/types";
-import { activityTypes } from "@/lib/types";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 
 const manualActivitySchema = z.object({
@@ -54,6 +53,10 @@ export function ManualActivityForm() {
   const { firestore, user } = useFirebase();
 
   const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
+  const [activityTypes, setActivityTypes] = useLocalStorage<string[]>(
+    "custom-activity-types",
+    ["Study", "Class", "Break", "Other"]
+  );
 
   const activitiesCollection = useMemoFirebase(() =>
     user ? collection(firestore, "users", user.uid, "activities") : null
