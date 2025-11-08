@@ -32,12 +32,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { useCollection, useFirebase, useUser, useMemoFirebase } from "@/firebase";
 import { collection, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import type { Activity } from "@/lib/types";
 import { activityTypes } from "@/lib/types";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 const manualActivitySchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -52,15 +53,20 @@ export function ManualActivityForm() {
   const [newActivityName, setNewActivityName] = useState("");
   const { firestore, user } = useFirebase();
 
+  const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
+
   const activitiesCollection = useMemoFirebase(() =>
     user ? collection(firestore, "users", user.uid, "activities") : null
   , [firestore, user]);
 
   const { data: activities } = useCollection<Activity>(activitiesCollection);
 
-  const pastActivityNames = useMemo(() => {
-    if (!activities) return [];
-    return [...new Set(activities.map(a => a.name).filter(Boolean))];
+  useEffect(() => {
+    if (activities) {
+        const namesFromHistory = [...new Set(activities.map(a => a.name).filter(Boolean))];
+        setPastActivityNames(prev => [...new Set([...prev, ...namesFromHistory])]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activities]);
 
   const form = useForm<z.infer<typeof manualActivitySchema>>({
@@ -85,10 +91,24 @@ export function ManualActivityForm() {
   }, [form, open]);
 
   const handleAddNewName = () => {
-    if (newActivityName.trim()) {
+    if (newActivityName.trim() && !pastActivityNames.includes(newActivityName.trim())) {
+      const newName = newActivityName.trim();
+      setPastActivityNames([...pastActivityNames, newName]);
+      form.setValue('name', newName);
+      setIsAddNameOpen(false);
+      setNewActivityName("");
+    } else if (pastActivityNames.includes(newActivityName.trim())) {
       form.setValue('name', newActivityName.trim());
       setIsAddNameOpen(false);
       setNewActivityName("");
+    }
+  };
+
+  const handleRemoveName = (e: React.MouseEvent, nameToRemove: string) => {
+    e.stopPropagation(); // Prevent the dropdown from closing
+    setPastActivityNames(pastActivityNames.filter(name => name !== nameToRemove));
+    if (form.getValues('name') === nameToRemove) {
+      form.setValue('name', '');
     }
   };
 
@@ -148,7 +168,18 @@ export function ManualActivityForm() {
                       </FormControl>
                       <SelectContent>
                         {pastActivityNames.map((name) => (
-                          <SelectItem key={name} value={name}>{name}</SelectItem>
+                          <SelectItem key={name} value={name} className="group/item">
+                              <div className="flex items-center justify-between w-full">
+                                  <span>{name}</span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleRemoveName(e, name)}
+                                    className="p-1 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/item:opacity-100"
+                                  >
+                                      <Trash2 className="h-3 w-3" />
+                                  </button>
+                              </div>
+                          </SelectItem>
                         ))}
                         <SelectItem value="add_new">Add New...</SelectItem>
                       </SelectContent>
@@ -225,6 +256,12 @@ export function ManualActivityForm() {
               placeholder="e.g., Quantum Physics"
               value={newActivityName}
               onChange={(e) => setNewActivityName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddNewName();
+                }
+              }}
             />
           </div>
           <DialogFooter>
