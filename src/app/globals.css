@@ -79,38 +79,38 @@ body {
   }
   .violet-dark {
     --background: 248 85% 15%;
-    --foreground: 240 50% 95%;
-    --card: 240 30% 25% / 0.5;
-    --card-foreground: 240 50% 95%;
-    --popover: 240 30% 15%;
-    --popover-foreground: 240 50% 95%;
-    --primary: 240 50% 95%;
+    --foreground: 300 50% 95%;
+    --card: 300 30% 25% / 0.5;
+    --card-foreground: 300 50% 95%;
+    --popover: 300 30% 15%;
+    --popover-foreground: 300 50% 95%;
+    --primary: 300 80% 80%;
     --primary-foreground: 248 85% 15%;
-    --secondary: 240 20% 30% / 0.5;
-    --secondary-foreground: 240 50% 95%;
-    --muted: 240 20% 30% / 0.5;
-    --muted-foreground: 240 15% 85%;
-    --accent: 260 80% 90%;
+    --secondary: 300 20% 30% / 0.5;
+    --secondary-foreground: 300 50% 95%;
+    --muted: 300 20% 30% / 0.5;
+    --muted-foreground: 300 15% 85%;
+    --accent: 280 80% 90%;
     --accent-foreground: 248 85% 15%;
     --destructive: 0 70% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 240 20% 40% / 0.7;
-    --input: 240 30% 25% / 0.5;
-    --ring: 240 50% 95%;
-    --chart-1: 240 50% 95%;
-    --chart-2: 260 80% 90%;
-    --chart-3: 280 80% 70%;
-    --chart-4: 300 80% 75%;
-    --chart-5: 200 85% 65%;
+    --border: 300 20% 40% / 0.7;
+    --input: 300 30% 25% / 0.5;
+    --ring: 300 50% 95%;
+    --chart-1: 300 50% 95%;
+    --chart-2: 280 80% 90%;
+    --chart-3: 260 80% 70%;
+    --chart-4: 240 80% 75%;
+    --chart-5: 220 85% 65%;
     --radius: 0.75rem;
-    --sidebar-background: 240 30% 20% / 0.6;
-    --sidebar-foreground: 240 50% 95%;
-    --sidebar-primary: 240 50% 95%;
+    --sidebar-background: 300 30% 20% / 0.6;
+    --sidebar-foreground: 300 50% 95%;
+    --sidebar-primary: 300 50% 95%;
     --sidebar-primary-foreground: 248 85% 15%;
-    --sidebar-accent: 240 20% 30% / 0.5;
-    --sidebar-accent-foreground: 240 50% 95%;
-    --sidebar-border: 240 20% 40% / 0.7;
-    --sidebar-ring: 240 50% 95%;
+    --sidebar-accent: 300 20% 30% / 0.5;
+    --sidebar-accent-foreground: 300 50% 95%;
+    --sidebar-border: 300 20% 40% / 0.7;
+    --sidebar-ring: 300 50% 95%;
   }
   .matrix-dark {
     --background: 0 0% 5%;
@@ -157,7 +157,7 @@ body {
     @apply bg-background text-foreground;
   }
   .violet-dark body {
-    background-image: linear-gradient(to bottom, hsl(265, 80%, 35%), hsl(220, 90%, 55%));
+    background-image: linear-gradient(to bottom, hsl(265, 80%, 35%), hsl(290, 80%, 45%), hsl(220, 90%, 55%));
   }
   .matrix-dark body {
     background-color: #000;
