@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import { useCollection, useFirebase, useUser, useMemoFirebase } from "@/firebase";
 import { collection, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
@@ -174,9 +174,9 @@ export function ManualActivityForm() {
                                   <button
                                     type="button"
                                     onClick={(e) => handleRemoveName(e, name)}
-                                    className="p-1 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/item:opacity-100"
+                                    className="p-1 rounded-full text-black dark:text-white bg-transparent hover:bg-muted-foreground/20 opacity-0 group-hover/item:opacity-100"
                                   >
-                                      <Trash2 className="h-3 w-3" />
+                                      <X className="h-3 w-3" />
                                   </button>
                               </div>
                           </SelectItem>
