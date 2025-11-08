@@ -428,7 +428,7 @@ export function DashboardClient() {
       </div>
 
       {userProfile?.learningGoals && (
-        <Card className="bg-primary/5 border-primary/20">
+        <Card className="bg-primary/5 border-primary/20 shadow-lg shadow-primary/30">
             <CardHeader className="flex flex-row items-start gap-4">
                 <Goal className="w-6 h-6 text-primary mt-1" />
                 <div>
