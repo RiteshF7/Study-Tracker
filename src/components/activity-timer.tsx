@@ -52,8 +52,11 @@ type TimerState = {
   isFinished: boolean;
 };
 
-const CIRCLE_RADIUS = 100;
-const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
+const RING_RADIUS = 115;
+const VIEWBOX_PADDING = 28;
+const VIEWBOX_SIZE = RING_RADIUS * 2 + VIEWBOX_PADDING;
+const VIEWBOX_CENTER = VIEWBOX_SIZE / 2;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 export function ActivityTimer({ mode }: { mode: TimerMode }) {
   const { firestore, user } = useFirebase();
@@ -236,119 +239,183 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
   
   const displayTime = mode === 'timer' ? timerState.remainingTime : timerState.elapsedTime;
   const totalSecondsInDuration = mode === 'timer' ? timerState.duration * 60 : 0;
-  const progress = mode === 'timer' ? (totalSecondsInDuration - timerState.remainingTime) / totalSecondsInDuration : 0;
-  const strokeDashoffset = CIRCLE_CIRCUMFERENCE * (1 - progress);
+  const progress = mode === 'timer' && totalSecondsInDuration > 0
+    ? (totalSecondsInDuration - timerState.remainingTime) / totalSecondsInDuration
+    : 0;
+  const ringStrokeDashoffset = RING_CIRCUMFERENCE * (1 - progress);
 
   return (
-    <div className="w-full max-w-md mx-auto text-center pt-8">
+    <div className="mx-auto flex h-full w-full max-w-3xl flex-col items-center justify-center  text-center">
       {timerState.isTiming || timerState.isFinished ? (
-        <div className={cn("space-y-8 flex flex-col items-center", timerState.isFinished && "animate-blink")}>
-          <p className="text-2xl text-muted-foreground">{timerState.isFinished ? "Session Finished!" : `Timing session for (${mode}):`}</p>
-          <h1 className="text-6xl font-bold font-headline">{timerState.subject}</h1>
-          
-          <div className="relative w-[220px] h-[220px]">
-              <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 220 220">
-                  <defs>
-                      <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" style={{stopColor: '#4ade80'}} />
-                          <stop offset="100%" style={{stopColor: '#16a34a'}} />
-                      </linearGradient>
-                  </defs>
-                  <circle
-                      className="text-border"
-                      stroke="currentColor"
-                      strokeWidth="12"
-                      fill="transparent"
-                      r={CIRCLE_RADIUS}
-                      cx="110"
-                      cy="110"
-                  />
-                  <circle
-                      stroke={timerState.isFinished ? "hsl(var(--destructive))" : (mode === 'timer' ? "url(#progressGradient)" : "hsl(var(--primary))")}
-                      strokeWidth="12"
-                      strokeLinecap="round"
-                      fill="transparent"
-                      r={CIRCLE_RADIUS}
-                      cx="110"
-                      cy="110"
-                      style={{
-                          strokeDasharray: CIRCLE_CIRCUMFERENCE,
-                          strokeDashoffset: mode === 'timer' ? strokeDashoffset : undefined,
-                          transition: mode === 'timer' ? 'stroke-dashoffset 1s linear' : 'none',
-                      }}
-                  />
-              </svg>
-               <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="font-mono text-5xl font-bold tabular-nums tracking-widest drop-shadow-sm">
-                      {formatTime(displayTime)}
-                  </p>
-              </div>
+        <div
+          className={cn(
+            "flex w-full max-w-lg flex-col items-center gap-5 rounded-[24px] border border-slate-800/60 bg-slate-900/70 p-7 shadow-[0_18px_60px_-30px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-all",
+            timerState.isFinished && "ring-2 ring-emerald-400/70",
+          )}
+        >
+          <p className="text-lg font-medium text-slate-300">
+            {timerState.isFinished ? "Great job! Session completed." : "Timing session :"}
+          </p>
+          <h1 className="bg-gradient-to-r from-white via-slate-100 to-slate-200 bg-clip-text text-4xl font-semibold font-headline text-transparent drop-shadow-lg sm:text-5xl">
+            {timerState.subject}
+          </h1>
+
+          <div className="relative flex aspect-square w-full max-w-[240px] items-center justify-center">
+            <svg
+              className="absolute inset-0 h-full w-full -rotate-90"
+              viewBox={`0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`}
+            >
+              <defs>
+                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: "#bbf7d0" }} />
+                  <stop offset="100%" style={{ stopColor: "#4ade80" }} />
+                </linearGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+                  <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <circle
+                className="text-slate-800/70"
+                stroke="currentColor"
+                strokeWidth="16"
+                fill="transparent"
+                r={RING_RADIUS}
+                cx={VIEWBOX_CENTER}
+                cy={VIEWBOX_CENTER}
+              />
+              <circle
+                stroke={timerState.isFinished ? "#f87171" : "url(#progressGradient)"}
+                strokeWidth="16"
+                strokeLinecap="round"
+                fill="transparent"
+                r={RING_RADIUS}
+                cx={VIEWBOX_CENTER}
+                cy={VIEWBOX_CENTER}
+                style={{
+                  strokeDasharray: RING_CIRCUMFERENCE,
+                  strokeDashoffset: mode === "timer" ? ringStrokeDashoffset : undefined,
+                  transition: "stroke-dashoffset 0.8s ease-out",
+                  filter: "url(#glow)",
+                }}
+              />
+            </svg>
+            <div className="relative flex flex-col items-center justify-center">
+              <p className="font-mono text-xl font-semibold tracking-[0.3em] text-slate-100 drop-shadow-xl sm:text-2xl">
+                {formatTime(displayTime)}
+              </p>
+              <span className="mt-2 text-xs uppercase tracking-[0.45em] text-emerald-200/80">
+                {mode === "timer" ? "Focus Timer" : "Stopwatch"}
+              </span>
+            </div>
           </div>
 
           {timerState.isFinished ? (
-               <Button size="lg" variant="default" onClick={() => handleStop(true)} className="w-full py-8 text-2xl">
-                  <Square className="mr-4 h-8 w-8" /> Save Session
-              </Button>
+            <Button
+              size="lg"
+              onClick={() => handleStop(true)}
+              className="group w-full max-w-xl rounded-2xl border border-emerald-400/40 bg-gradient-to-r from-emerald-500/30 via-emerald-400/25 to-emerald-500/30 px-6 py-5 text-base font-medium text-emerald-50 backdrop-blur hover:from-emerald-500/40 hover:to-emerald-400/35"
+            >
+              <Square className="mr-3 h-6 w-6 transition-transform group-hover:scale-105" /> Save Session
+            </Button>
           ) : (
-               <Button size="lg" variant="destructive" onClick={() => handleStop(true)} className="w-full py-8 text-2xl">
-                  <Square className="mr-4 h-8 w-8" /> Stop & Save
-              </Button>
+            <Button
+              size="lg"
+              onClick={() => handleStop(true)}
+              className="group w-full max-w-xl rounded-2xl border border-rose-400/40 bg-white/10 px-6 py-5 text-base font-medium text-rose-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] backdrop-blur-xl hover:bg-white/16"
+            >
+              <Square className="mr-3 h-6 w-6 transition-transform group-hover:scale-110" /> Stop and Save
+            </Button>
           )}
-           <Button variant="ghost" onClick={() => handleStop(false)}>
-              <TimerOff className="mr-2 h-4 w-4"/>
-              Cancel Session
+          <Button variant="ghost" onClick={() => handleStop(false)} className="text-slate-400 hover:text-slate-100">
+            <TimerOff className="mr-2 h-4 w-4" />
+            Cancel Session
           </Button>
         </div>
       ) : (
-        <div className="space-y-6">
-          <h1 className="text-4xl font-bold font-headline">Start a New {mode === 'timer' ? 'Timer' : 'Stopwatch'}</h1>
-          <p className="text-muted-foreground">Select a subject and type to begin tracking your time.</p>
-          <div className="grid grid-cols-2 gap-4 text-left">
-              <div className="grid gap-2 col-span-2 sm:col-span-1">
-                  <Label htmlFor="subject-select" className="text-lg">Subject</Label>
-                  <Select onValueChange={(val) => setTimerState(prev => ({...prev, subject: val}))} value={timerState.subject} defaultValue={timerState.subject}>
-                      <SelectTrigger id="subject-select" className="py-6 text-lg">
-                          <SelectValue placeholder="Select a subject" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          {problemSubjects.map((s) => (
-                          <SelectItem key={s} value={s} className="text-lg">{s}</SelectItem>
-                          ))}
-                      </SelectContent>
-                  </Select>
-              </div>
-              <div className="grid gap-2 col-span-2 sm:col-span-1">
-                  <Label htmlFor="type-select" className="text-lg">Type</Label>
-                  <Select onValueChange={(v) => setTimerState(prev => ({...prev, type: v as Activity['type']}))} defaultValue={timerState.type}>
-                      <SelectTrigger id="type-select" className="py-6 text-lg">
-                          <SelectValue placeholder="Select an activity type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          {activityTypes.map((t) => (
-                          <SelectItem key={t} value={t} className="text-lg">{t}</SelectItem>
-                          ))}
-                      </SelectContent>
-                  </Select>
-              </div>
+        <div className="flex w-full max-w-2xl flex-col gap-6 rounded-[24px] border border-slate-800/60 bg-slate-900/65 p-8 text-left shadow-[0_24px_70px_-30px_rgba(15,23,42,0.85)] backdrop-blur">
+          <h1 className="text-center text-3xl font-semibold font-headline text-slate-100">
+            Start a New {mode === "timer" ? "Timer" : "Stopwatch"}
+          </h1>
+          <p className="text-center text-sm text-slate-400">
+            Personalize your session to stay focused. Choose your subject, activity type, and duration to begin.
+          </p>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="subject-select" className="text-sm uppercase tracking-[0.3em] text-slate-400">
+                Subject
+              </Label>
+              <Select
+                onValueChange={(val) => setTimerState((prev) => ({ ...prev, subject: val }))}
+                value={timerState.subject}
+                defaultValue={timerState.subject}
+              >
+                <SelectTrigger className="h-12 rounded-2xl border border-slate-700/40 bg-slate-900/60 px-4 text-base font-medium text-slate-100 shadow-inner shadow-slate-900/60">
+                  <SelectValue placeholder="Select a subject" />
+                </SelectTrigger>
+                <SelectContent>
+                  {problemSubjects.map((s) => (
+                    <SelectItem key={s} value={s} className="text-base">
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="type-select" className="text-sm uppercase tracking-[0.3em] text-slate-400">
+                Type
+              </Label>
+              <Select
+                onValueChange={(v) => setTimerState((prev) => ({ ...prev, type: v as Activity["type"] }))}
+                defaultValue={timerState.type}
+              >
+                <SelectTrigger className="h-12 rounded-2xl border border-slate-700/40 bg-slate-900/60 px-4 text-base font-medium text-slate-100 shadow-inner shadow-slate-900/60">
+                  <SelectValue placeholder="Select an activity type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activityTypes.map((t) => (
+                    <SelectItem key={t} value={t} className="text-base">
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          {mode === 'timer' && (
-            <div className="grid gap-2 text-left">
-                <Label htmlFor="duration-input" className="text-lg">Duration (minutes)</Label>
-                <Input
-                  id="duration-input"
-                  type="number"
-                  value={timerState.duration}
-                  onChange={(e) => setTimerState(prev => ({...prev, duration: parseInt(e.target.value, 10) || 0, remainingTime: (parseInt(e.target.value, 10) || 0) * 60 }))}
-                  className="py-6 text-lg"
-                  placeholder="e.g., 25"
-                />
+          {mode === "timer" && (
+            <div className="grid gap-2">
+              <Label htmlFor="duration-input" className="text-sm uppercase tracking-[0.3em] text-slate-400">
+                Duration (minutes)
+              </Label>
+              <Input
+                id="duration-input"
+                type="number"
+                value={timerState.duration}
+                onChange={(e) =>
+                  setTimerState((prev) => ({
+                    ...prev,
+                    duration: parseInt(e.target.value, 10) || 0,
+                    remainingTime: (parseInt(e.target.value, 10) || 0) * 60,
+                  }))
+                }
+                className="h-12 rounded-2xl border border-slate-700/40 bg-slate-900/60 px-4 text-base font-medium text-slate-100 shadow-inner shadow-slate-900/60"
+                placeholder="25"
+              />
             </div>
           )}
-          <Button size="lg" onClick={handleStart} className="w-full py-8 text-2xl">
-              <Play className="mr-4 h-8 w-8" /> Start {mode === 'timer' ? 'Timer' : 'Stopwatch'}
+          <Button
+            size="lg"
+            onClick={handleStart}
+            className="group w-full rounded-2xl border border-emerald-400/40 bg-gradient-to-r from-emerald-500/20 via-teal-400/10 to-emerald-500/20 px-6 py-5 text-base font-medium text-emerald-100 backdrop-blur hover:from-emerald-500/30 hover:to-teal-400/20"
+          >
+            <Play className="mr-3 h-6 w-6 transition-transform group-hover:translate-x-1" /> Start {mode === "timer" ? "Timer" : "Stopwatch"}
           </Button>
-           <Button variant="ghost" onClick={() => router.push('/activities')}>
-              Cancel
+          <Button variant="ghost" onClick={() => router.push("/activities")} className="text-slate-400 hover:text-slate-100">
+            Cancel
           </Button>
         </div>
       )}
