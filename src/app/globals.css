@@ -78,39 +78,39 @@ body {
     --sidebar-ring: 207 90% 69%;
   }
   .violet {
-    --background: 240 30% 12%; /* Base dark color for gradient fallback */
+    --background: 265 30% 12%; /* Base dark color for gradient fallback */
     --foreground: 210 50% 98%; /* Bright white for text */
-    --card: 240 31% 16% / 0.75; /* Brighter, translucent frosted card */
+    --card: 265 31% 16% / 0.75; /* Brighter, translucent frosted card with a warmer tint */
     --card-foreground: 210 50% 98%;
-    --popover: 240 31% 14%;
+    --popover: 265 31% 14%;
     --popover-foreground: 210 40% 98%;
-    --primary: 180 90% 55%; /* Brighter Aqua/Teal */
-    --primary-foreground: 240 40% 10%;
-    --secondary: 230 30% 28%; /* Brighter violet-blue */
+    --primary: 25 95% 60%; /* Warm Sunset Orange */
+    --primary-foreground: 260 40% 10%;
+    --secondary: 280 30% 28%; /* Warmer violet-blue */
     --secondary-foreground: 210 40% 98%;
-    --muted: 230 30% 28%;
-    --muted-foreground: 220 20% 75%; /* Brighter muted text */
-    --accent: 190 95% 65%; /* Brighter Neon Blue/Aqua */
+    --muted: 280 30% 28%;
+    --muted-foreground: 240 20% 75%; /* Brighter muted text */
+    --accent: 310 95% 65%; /* Vibrant Magenta */
     --accent-foreground: 210 40% 98%;
     --destructive: 350 80% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 240 31% 18% / 0.9; /* Brighter border */
-    --input: 240 31% 16% / 0.75; /* Brighter input */
-    --ring: 190 95% 65%; /* Brighter Neon Blue/Aqua for focus rings */
-    --chart-1: 180 90% 55%;
-    --chart-2: 190 95% 65%;
-    --chart-3: 260 85% 70%;
-    --chart-4: 210 90% 75%;
-    --chart-5: 27 87% 70%;
+    --border: 265 31% 18% / 0.9; /* Brighter border with warm tint */
+    --input: 265 31% 16% / 0.75; /* Brighter input with warm tint */
+    --ring: 25 95% 60%; /* Warm Sunset Orange for focus rings */
+    --chart-1: 25 95% 60%;
+    --chart-2: 310 95% 65%;
+    --chart-3: 280 85% 70%;
+    --chart-4: 340 90% 75%;
+    --chart-5: 15 87% 70%;
     --radius: 0.75rem; /* Slightly more rounded corners */
-    --sidebar-background: 240 35% 14% / 0.85; /* Brighter Frosted glass sidebar */
+    --sidebar-background: 265 35% 14% / 0.85; /* Brighter Frosted glass sidebar with warm tint */
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 180 90% 55%;
-    --sidebar-primary-foreground: 240 40% 10%;
-    --sidebar-accent: 230 30% 28%;
+    --sidebar-primary: 25 95% 60%;
+    --sidebar-primary-foreground: 260 40% 10%;
+    --sidebar-accent: 280 30% 28%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 220 25% 35% / 0.8;
-    --sidebar-ring: 190 95% 65%;
+    --sidebar-border: 250 25% 35% / 0.8;
+    --sidebar-ring: 25 95% 60%;
   }
 }
 
@@ -122,7 +122,7 @@ body {
     @apply bg-background text-foreground;
   }
   .violet body {
-    background-image: linear-gradient(to bottom, hsl(258, 60%, 35%), hsl(233, 70%, 30%));
+    background-image: linear-gradient(to bottom, hsl(310, 60%, 25%), hsl(265, 70%, 30%));
   }
 }
 
