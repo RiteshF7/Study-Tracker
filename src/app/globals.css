@@ -78,39 +78,39 @@ body {
     --sidebar-ring: 207 90% 69%;
   }
   .violet-dark {
-    --background: 248 85% 15%; /* A very dark blue-violet */
-    --foreground: 240 50% 95%; /* A very light, slightly cool white */
-    --card: 240 30% 25% / 0.5; /* Translucent card */
-    --card-foreground: 240 50% 95%;
+    --background: 248 85% 15%;
+    --foreground: 240 10% 98%;
+    --card: 240 30% 25% / 0.5;
+    --card-foreground: 240 10% 98%;
     --popover: 240 30% 15%;
-    --popover-foreground: 240 50% 95%;
-    --primary: 220 90% 75%; /* A brighter, lighter blue for primary actions */
+    --popover-foreground: 240 10% 98%;
+    --primary: 220 80% 90%;
     --primary-foreground: 248 85% 15%;
     --secondary: 240 20% 30% / 0.5;
-    --secondary-foreground: 240 50% 95%;
+    --secondary-foreground: 240 10% 98%;
     --muted: 240 20% 30% / 0.5;
-    --muted-foreground: 240 20% 75%;
-    --accent: 260 90% 80%; /* A light lavender for accents */
+    --muted-foreground: 240 15% 85%;
+    --accent: 260 80% 90%;
     --accent-foreground: 248 85% 15%;
     --destructive: 0 70% 60%;
     --destructive-foreground: 210 40% 98%;
     --border: 240 20% 40% / 0.7;
     --input: 240 30% 25% / 0.5;
-    --ring: 220 90% 75%;
-    --chart-1: 220 90% 75%;
-    --chart-2: 260 90% 80%;
+    --ring: 220 80% 90%;
+    --chart-1: 220 80% 90%;
+    --chart-2: 260 80% 90%;
     --chart-3: 280 80% 70%;
     --chart-4: 300 80% 75%;
     --chart-5: 200 85% 65%;
     --radius: 0.75rem;
     --sidebar-background: 240 30% 20% / 0.6;
-    --sidebar-foreground: 240 50% 95%;
-    --sidebar-primary: 220 90% 75%;
+    --sidebar-foreground: 240 10% 98%;
+    --sidebar-primary: 220 80% 90%;
     --sidebar-primary-foreground: 248 85% 15%;
     --sidebar-accent: 240 20% 30% / 0.5;
-    --sidebar-accent-foreground: 240 50% 95%;
+    --sidebar-accent-foreground: 240 10% 98%;
     --sidebar-border: 240 20% 40% / 0.7;
-    --sidebar-ring: 220 90% 75%;
+    --sidebar-ring: 220 80% 90%;
   }
   .matrix-dark {
     --background: 0 0% 5%;
