@@ -40,6 +40,7 @@ import type { Activity } from "@/lib/types";
 import { activityTypes } from "@/lib/types";
 
 const manualActivitySchema = z.object({
+  name: z.string().min(1, "Name is required"),
   type: z.string().min(1, "Type is required"),
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute."),
   date: z.string().min(1, "Date is required"),
@@ -56,6 +57,7 @@ export function ManualActivityForm() {
   const form = useForm<z.infer<typeof manualActivitySchema>>({
     resolver: zodResolver(manualActivitySchema),
     defaultValues: {
+      name: "",
       type: "Study",
       duration: 30,
       date: new Date().toISOString().split("T")[0],
@@ -63,18 +65,21 @@ export function ManualActivityForm() {
   });
 
   useEffect(() => {
-    form.reset({
-      type: "Study",
-      duration: 30,
-      date: new Date().toISOString().split("T")[0],
-    });
+    if (open) {
+      form.reset({
+        name: "",
+        type: "Study",
+        duration: 30,
+        date: new Date().toISOString().split("T")[0],
+      });
+    }
   }, [form, open]);
 
   function onSubmit(values: z.infer<typeof manualActivitySchema>) {
     if (!activitiesCollection || !user) return;
     
     const newActivity: Omit<Activity, 'id' | 'createdAt'> & { createdAt: any } = {
-      name: `${values.type} Session`,
+      name: values.name,
       type: values.type as Activity['type'],
       duration: values.duration,
       date: values.date,
@@ -102,6 +107,19 @@ export function ManualActivityForm() {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+             <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Activity Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Chemistry Homework" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
              <FormField
               control={form.control}
               name="type"

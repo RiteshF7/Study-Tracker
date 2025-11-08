@@ -14,7 +14,6 @@ import {z} from 'genkit';
 const IntelligentScheduleRecommendationInputSchema = z.object({
   activityHistory: z.string().describe("A summary of the user's past activities, including study sessions, classes, and breaks."),
   preferredStudyTimes: z.string().describe("The user's stated preferences for study times, including any constraints or fixed appointments."),
-  subjects: z.string().describe("A list of subjects the user is studying, potentially with notes on their progress."),
 });
 export type IntelligentScheduleRecommendationInput = z.infer<typeof IntelligentScheduleRecommendationInputSchema>;
 
@@ -53,21 +52,18 @@ const prompt = ai.definePrompt({
   output: {schema: IntelligentScheduleRecommendationOutputSchema},
   prompt: `You are an expert productivity coach and academic advisor for a student. Your goal is to create an optimal, personalized daily study schedule.
 
-Analyze the user's activity history, their stated preferences, and their subjects of study to create a balanced and effective schedule.
+Analyze the user's activity history and their stated preferences to create a balanced and effective schedule.
 
 **User Information:**
 - **Past Activities**: 
 {{{activityHistory}}}
 - **Preferences and Constraints**: "{{preferredStudyTimes}}"
-- **Subjects to Focus On**: 
-{{{subjects}}}
 
 **Your Task:**
 1.  Create a detailed, hour-by-hour schedule for a single day.
 2.  Incorporate study blocks, breaks, and any fixed appointments mentioned by the user.
-3.  Prioritize subjects based on the user's history, but ensure a balanced approach.
-4.  Apply productivity principles like spacing out difficult subjects and scheduling breaks to avoid burnout.
-5.  Provide a brief reasoning for your schedule, explaining 2-3 key principles you applied (e.g., "I scheduled Math in the morning as you seem to be most productive then," or "I added a break after a long study session to improve focus.").
+3.  Apply productivity principles like spacing out difficult subjects and scheduling breaks to avoid burnout.
+4.  Provide a brief reasoning for your schedule, explaining 2-3 key principles you applied (e.g., "I scheduled Math in the morning as you seem to be most productive then," or "I added a break after a long study session to improve focus.").
 
 Return the schedule and reasoning in the specified JSON format.
 `,

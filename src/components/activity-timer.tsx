@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { Activity } from "@/lib/types";
-import { activityTypes, courses, defaultSubjects, CourseName, YearName } from "@/lib/types";
+import { activityTypes } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -14,19 +14,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Play, Square, TimerOff } from "lucide-react";
-import { useFirebase, useMemoFirebase, useDoc } from "@/firebase";
-import { collection, serverTimestamp, doc } from "firebase/firestore";
+import { useFirebase, useMemoFirebase } from "@/firebase";
+import { collection, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Label } from "./ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
-
-type UserProfile = {
-  course?: CourseName;
-  year?: string;
-}
 
 const formatTime = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
@@ -40,7 +35,7 @@ const formatTime = (totalSeconds: number) => {
 type TimerMode = 'timer' | 'stopwatch';
 
 type TimerState = {
-  subject: string;
+  activityName: string;
   type: Activity['type'];
   isTiming: boolean;
   // Timer mode
@@ -60,32 +55,12 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
   const router = useRouter();
   const { toast } = useToast();
   
-  const userDocRef = useMemoFirebase(() =>
-    user ? doc(firestore, "users", user.uid) : null
-  , [firestore, user]);
-  const { data: userProfile } = useDoc<UserProfile>(userDocRef);
-
   const activitiesCollection = useMemoFirebase(() => 
     user ? collection(firestore, "users", user.uid, "activities") : null
   , [firestore, user]);
 
-  const problemSubjects = useMemo(() => {
-    const courseName = userProfile?.course;
-    const yearName = userProfile?.year;
-    
-    if (courseName && courses[courseName]) {
-      const courseData = courses[courseName];
-      if (yearName && courseData[yearName as keyof typeof courseData]) {
-        return courseData[yearName as keyof typeof courseData];
-      }
-      return Object.values(courseData).flat();
-    }
-    
-    return defaultSubjects;
-  }, [userProfile]);
-
   const [timerState, setTimerState] = useLocalStorage<TimerState>(`activity-session-state-${mode}`, {
-    subject: '',
+    activityName: '',
     type: 'Study',
     isTiming: false,
     remainingTime: 25 * 60,
@@ -146,20 +121,14 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
     }
     return clearTimer;
   }, [timerState.isTiming, timerState.startTime, timerState.duration, setTimerState, mode, clearTimer]);
-  
-  useEffect(() => {
-    if (problemSubjects.length > 0 && !timerState.subject) {
-      setTimerState(prev => ({...prev, subject: problemSubjects[0]}));
-    }
-  }, [problemSubjects, timerState.subject, setTimerState]);
 
 
   const handleStart = () => {
-    if (!timerState.subject) {
+    if (!timerState.activityName) {
       toast({
         variant: "destructive",
-        title: "No Subject Selected",
-        description: "Please select a subject before starting.",
+        title: "No Activity Name",
+        description: "Please enter a name for your activity.",
       });
       return;
     }
@@ -195,7 +164,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
         // Don't log if duration is 0
         if (durationInMinutes > 0) {
             const newActivity: Omit<Activity, 'id' | 'createdAt'> & { createdAt: any } = {
-                name: timerState.subject,
+                name: timerState.activityName,
                 type: timerState.type,
                 duration: durationInMinutes,
                 date: new Date().toISOString().split("T")[0],
@@ -207,7 +176,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
             
             toast({
                 title: "Activity Logged!",
-                description: `${timerState.subject} for ${durationInMinutes} ${durationInMinutes > 1 ? 'minutes' : 'minute'} has been saved.`,
+                description: `${timerState.activityName} for ${durationInMinutes} ${durationInMinutes > 1 ? 'minutes' : 'minute'} has been saved.`,
             });
         } else {
              toast({
@@ -219,7 +188,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
     }
 
     setTimerState({
-      subject: problemSubjects[0] || '',
+      activityName: '',
       type: 'Study',
       isTiming: false,
       duration: 25,
@@ -244,7 +213,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
       {timerState.isTiming || timerState.isFinished ? (
         <div className={cn("space-y-8 flex flex-col items-center", timerState.isFinished && "animate-blink")}>
           <p className="text-2xl text-muted-foreground">{timerState.isFinished ? "Session Finished!" : `Timing session for (${mode}):`}</p>
-          <h1 className="text-6xl font-bold font-headline">{timerState.subject}</h1>
+          <h1 className="text-6xl font-bold font-headline">{timerState.activityName}</h1>
           
           <div className="relative w-[220px] h-[220px]">
               <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 220 220">
@@ -302,22 +271,19 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
       ) : (
         <div className="space-y-6">
           <h1 className="text-4xl font-bold font-headline">Start a New {mode === 'timer' ? 'Timer' : 'Stopwatch'}</h1>
-          <p className="text-muted-foreground">Select a subject and type to begin tracking your time.</p>
+          <p className="text-muted-foreground">Select a type and name to begin tracking your time.</p>
           <div className="grid grid-cols-2 gap-4 text-left">
-              <div className="grid gap-2 col-span-2 sm:col-span-1">
-                  <Label htmlFor="subject-select" className="text-lg">Subject</Label>
-                  <Select onValueChange={(val) => setTimerState(prev => ({...prev, subject: val}))} value={timerState.subject} defaultValue={timerState.subject}>
-                      <SelectTrigger id="subject-select" className="py-6 text-lg">
-                          <SelectValue placeholder="Select a subject" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          {problemSubjects.map((s) => (
-                          <SelectItem key={s} value={s} className="text-lg">{s}</SelectItem>
-                          ))}
-                      </SelectContent>
-                  </Select>
+              <div className="grid gap-2 col-span-2">
+                  <Label htmlFor="activity-name" className="text-lg">Activity Name</Label>
+                  <Input 
+                    id="activity-name"
+                    value={timerState.activityName} 
+                    onChange={(e) => setTimerState(prev => ({...prev, activityName: e.target.value}))}
+                    placeholder="e.g., Physics practice problems"
+                    className="py-6 text-lg"
+                  />
               </div>
-              <div className="grid gap-2 col-span-2 sm:col-span-1">
+              <div className="grid gap-2 col-span-2">
                   <Label htmlFor="type-select" className="text-lg">Type</Label>
                   <Select onValueChange={(v) => setTimerState(prev => ({...prev, type: v as Activity['type']}))} defaultValue={timerState.type}>
                       <SelectTrigger id="type-select" className="py-6 text-lg">

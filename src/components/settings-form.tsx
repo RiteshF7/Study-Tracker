@@ -27,25 +27,19 @@ import { useDoc, useFirebase, useUser, useMemoFirebase } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { doc } from "firebase/firestore";
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Textarea } from "./ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { courses, CourseName } from "@/lib/types";
 
 const profileSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
   }),
   learningGoals: z.string().optional(),
-  course: z.string().optional(),
-  year: z.string().optional(),
 });
 
 type UserProfile = {
     name?: string;
     learningGoals?: string;
-    course?: CourseName;
-    year?: string;
 }
 
 export function SettingsForm() {
@@ -58,44 +52,20 @@ export function SettingsForm() {
   , [firestore, user]);
   
   const { data: userProfile } = useDoc<UserProfile>(userDocRef);
-  
-  const [availableYears, setAvailableYears] = useState<string[]>([]);
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: "",
       learningGoals: "",
-      course: "General Studies",
-      year: "",
     },
   });
 
-  const selectedCourse = form.watch("course") as CourseName | undefined;
-
-  useEffect(() => {
-    if (selectedCourse && courses[selectedCourse]) {
-      const years = Object.keys(courses[selectedCourse]);
-      setAvailableYears(years);
-      // Reset year if the new course doesn't have the previously selected year
-      const currentYear = form.getValues("year");
-      if (!currentYear || !years.includes(currentYear)) {
-        form.setValue("year", years[0] || "");
-      }
-    } else {
-      setAvailableYears([]);
-      form.setValue("year", "");
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCourse]);
-  
   useEffect(() => {
     if (user && userProfile) {
       form.reset({ 
           name: userProfile?.name || user.displayName || "",
           learningGoals: userProfile?.learningGoals || "",
-          course: userProfile?.course || "General Studies",
-          year: userProfile?.year || "",
       });
     }
   }, [user, userProfile, form]);
@@ -114,8 +84,6 @@ export function SettingsForm() {
     setDocumentNonBlocking(userDocRef, { 
         name: values.name,
         learningGoals: values.learningGoals,
-        course: values.course,
-        year: values.year,
         email: user.email,
         id: user.uid,
     }, { merge: true });
@@ -150,55 +118,6 @@ export function SettingsForm() {
                 </FormItem>
               )}
             />
-             <FormField
-              control={form.control}
-              name="course"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Course</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your course of study" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.keys(courses).map((courseName) => (
-                        <SelectItem key={courseName} value={courseName}>{courseName}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                   <FormDescription>
-                    This will tailor the subjects available in the app.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {availableYears.length > 0 && (
-                 <FormField
-                  control={form.control}
-                  name="year"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Year</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select your year" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {availableYears.map((year) => (
-                            <SelectItem key={year} value={year}>{year}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-            )}
             <FormField
               control={form.control}
               name="learningGoals"

@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import type { Problem } from "@/lib/types";
-import { courses, defaultSubjects, CourseName, YearName } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -31,43 +30,26 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
+import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection, serverTimestamp, doc } from "firebase/firestore";
 import { addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 const problemSchema = z.object({
-  subject: z.string().min(1, "Subject is required."),
+  name: z.string().min(1, "Name/Topic is required."),
   count: z.coerce.number().min(1, "Must solve at least 1 problem."),
   notes: z.string().optional(),
   date: z.string().min(1, "Date is required"),
 });
 
-type UserProfile = {
-  course?: CourseName;
-  year?: string;
-}
-
 export function ProblemTracker() {
   const [open, setOpen] = useState(false);
   const { firestore, user } = useFirebase();
-  
-  const userDocRef = useMemoFirebase(() =>
-    user ? doc(firestore, "users", user.uid) : null
-  , [firestore, user]);
-  const { data: userProfile } = useDoc<UserProfile>(userDocRef);
 
   const problemsCollection = useMemoFirebase(() =>
     user ? collection(firestore, "users", user.uid, "problems") : null
@@ -75,45 +57,26 @@ export function ProblemTracker() {
 
   const { data: problems, isLoading } = useCollection<Problem>(problemsCollection);
 
-  const problemSubjects = useMemo(() => {
-    const courseName = userProfile?.course;
-    const yearName = userProfile?.year;
-
-    if (courseName && courses[courseName]) {
-      const courseData = courses[courseName];
-      if (yearName && courseData[yearName as keyof typeof courseData]) {
-        return courseData[yearName as keyof typeof courseData];
-      }
-      // If no year or invalid year, return all subjects for the course by flattening the years
-      return Object.values(courseData).flat();
-    }
-    
-    return defaultSubjects;
-  }, [userProfile]);
-
   const form = useForm<z.infer<typeof problemSchema>>({
     resolver: zodResolver(problemSchema),
     defaultValues: {
-      subject: "",
+      name: "",
       count: 10,
       notes: "",
       date: new Date().toISOString().split("T")[0],
     },
   });
 
-  // Reset form default when subjects change
   useEffect(() => {
-    if(problemSubjects.length > 0) {
-      const currentSubject = form.getValues("subject");
-      // Only reset if the current subject is not in the new list or if it's the first load.
-      if (!currentSubject || !problemSubjects.includes(currentSubject)) {
-        form.reset({
-          ...form.getValues(),
-          subject: problemSubjects[0], 
-        });
-      }
+    if (open) {
+      form.reset({
+        name: "",
+        count: 10,
+        notes: "",
+        date: new Date().toISOString().split("T")[0],
+      });
     }
-  }, [problemSubjects, form]);
+  }, [form, open]);
 
 
   function onSubmit(values: z.infer<typeof problemSchema>) {
@@ -125,13 +88,6 @@ export function ProblemTracker() {
       createdAt: serverTimestamp(),
     };
     addDocumentNonBlocking(problemsCollection, newProblem);
-    form.reset({
-        ...form.getValues(), // keep other values
-        subject: problemSubjects[0] || "",
-        count: 10,
-        notes: "",
-        date: new Date().toISOString().split("T")[0],
-    });
     setOpen(false);
   }
 
@@ -172,22 +128,13 @@ export function ProblemTracker() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
                 <FormField
                   control={form.control}
-                  name="subject"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Subject</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a subject" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {problemSubjects.map((subject) => (
-                            <SelectItem key={subject} value={subject}>{subject}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>Name / Topic</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Kinematics Equations" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -247,7 +194,7 @@ export function ProblemTracker() {
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
-              <TableHead>Subject</TableHead>
+              <TableHead>Name / Topic</TableHead>
               <TableHead>Count</TableHead>
               <TableHead>Notes</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -264,7 +211,7 @@ export function ProblemTracker() {
               sortedProblems.map((problem) => (
                 <TableRow key={problem.id}>
                   <TableCell>{problem.date}</TableCell>
-                  <TableCell className="font-medium">{problem.subject}</TableCell>
+                  <TableCell className="font-medium">{problem.name}</TableCell>
                   <TableCell>{problem.count}</TableCell>
                   <TableCell className="text-muted-foreground truncate max-w-xs">{problem.notes}</TableCell>
                    <TableCell className="text-right">

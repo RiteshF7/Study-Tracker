@@ -18,9 +18,6 @@ export async function getScheduleRecommendation(
   const activities = JSON.parse(
     (formData.get("activities") as string) || "[]"
   ) as Activity[];
-  const problems = JSON.parse(
-    (formData.get("problems") as string) || "[]"
-  ) as Problem[];
 
   if (!preferredStudyTimes) {
     return { ...prevState, error: "Please enter your preferred study times." };
@@ -32,25 +29,12 @@ export async function getScheduleRecommendation(
       (a) => `On ${a.date}, I did '${a.name}' (${a.type}) for ${a.duration} minutes.`
     )
     .join("\n");
-  
-  const problemSummary = problems.reduce((acc, p) => {
-    acc[p.subject] = (acc[p.subject] || 0) + p.count;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const subjectsToStudy = Object.entries(problemSummary)
-    .map(
-      ([subject, count]) =>
-        `${subject}: ${count} problems solved so far.`
-    )
-    .join("\n");
 
 
   try {
     const result = await intelligentScheduleRecommendation({
       activityHistory: activityHistory || "No activity history yet.",
       preferredStudyTimes,
-      subjects: subjectsToStudy || "No problems tracked yet. Base schedule on general good study habits.",
     });
     return { recommendation: result, error: null, message: "Successfully generated schedule!" };
   } catch (e: any) {
