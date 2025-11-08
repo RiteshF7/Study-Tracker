@@ -78,39 +78,39 @@ body {
     --sidebar-ring: 207 90% 69%;
   }
   .violet-dark {
-    --background: 265 30% 12%;
+    --background: 220 30% 12%;
     --foreground: 210 50% 98%;
-    --card: 265 31% 16% / 0.75;
+    --card: 220 31% 16% / 0.75;
     --card-foreground: 210 50% 98%;
-    --popover: 265 31% 14%;
+    --popover: 220 31% 14%;
     --popover-foreground: 210 40% 98%;
-    --primary: 25 95% 60%;
-    --primary-foreground: 260 40% 10%;
-    --secondary: 280 30% 28%;
+    --primary: 200 95% 60%;
+    --primary-foreground: 220 40% 10%;
+    --secondary: 210 30% 28%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 280 30% 28%;
-    --muted-foreground: 240 20% 75%;
-    --accent: 310 95% 65%;
+    --muted: 210 30% 28%;
+    --muted-foreground: 215 20% 75%;
+    --accent: 200 95% 65%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 350 80% 60%;
+    --destructive: 0 80% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 265 31% 18% / 0.9;
-    --input: 265 31% 16% / 0.75;
-    --ring: 25 95% 60%;
-    --chart-1: 25 95% 60%;
-    --chart-2: 310 95% 65%;
-    --chart-3: 280 85% 70%;
-    --chart-4: 340 90% 75%;
-    --chart-5: 15 87% 70%;
+    --border: 220 31% 18% / 0.9;
+    --input: 220 31% 16% / 0.75;
+    --ring: 200 95% 60%;
+    --chart-1: 200 95% 60%;
+    --chart-2: 210 95% 65%;
+    --chart-3: 220 85% 70%;
+    --chart-4: 230 90% 75%;
+    --chart-5: 190 87% 70%;
     --radius: 0.75rem;
-    --sidebar-background: 265 35% 14% / 0.85;
+    --sidebar-background: 220 35% 14% / 0.85;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 25 95% 60%;
-    --sidebar-primary-foreground: 260 40% 10%;
-    --sidebar-accent: 280 30% 28%;
+    --sidebar-primary: 200 95% 60%;
+    --sidebar-primary-foreground: 220 40% 10%;
+    --sidebar-accent: 210 30% 28%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 250 25% 35% / 0.8;
-    --sidebar-ring: 25 95% 60%;
+    --sidebar-border: 220 25% 35% / 0.8;
+    --sidebar-ring: 200 95% 60%;
   }
   .matrix-dark {
     --background: 0 0% 5%;
@@ -157,7 +157,7 @@ body {
     @apply bg-background text-foreground;
   }
   .violet-dark body {
-    background-image: linear-gradient(to bottom, hsl(310, 60%, 25%), hsl(265, 70%, 30%));
+    background-image: linear-gradient(to bottom, hsl(220, 60%, 25%), hsl(240, 70%, 30%));
   }
   .matrix-dark body {
     background-color: #000;
