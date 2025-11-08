@@ -78,39 +78,39 @@ body {
     --sidebar-ring: 207 90% 69%;
   }
   .violet-dark {
-    --background: 220 30% 12%;
-    --foreground: 210 50% 98%;
-    --card: 220 31% 16% / 0.75;
-    --card-foreground: 210 50% 98%;
-    --popover: 220 31% 14%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 200 95% 60%;
-    --primary-foreground: 220 40% 10%;
-    --secondary: 210 30% 28%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 210 30% 28%;
-    --muted-foreground: 215 20% 75%;
-    --accent: 200 95% 65%;
-    --accent-foreground: 210 40% 98%;
+    --background: 250 40% 12%;
+    --foreground: 250 50% 98%;
+    --card: 260 31% 16% / 0.75;
+    --card-foreground: 250 50% 98%;
+    --popover: 260 31% 14%;
+    --popover-foreground: 250 40% 98%;
+    --primary: 300 95% 70%; /* Warmer - Magenta */
+    --primary-foreground: 250 40% 10%;
+    --secondary: 270 30% 28%;
+    --secondary-foreground: 250 40% 98%;
+    --muted: 270 30% 28%;
+    --muted-foreground: 255 20% 75%;
+    --accent: 20 95% 65%; /* Warmer - Sunset Orange */
+    --accent-foreground: 250 40% 98%;
     --destructive: 0 80% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 220 31% 18% / 0.9;
-    --input: 220 31% 16% / 0.75;
-    --ring: 200 95% 60%;
-    --chart-1: 200 95% 60%;
-    --chart-2: 210 95% 65%;
-    --chart-3: 220 85% 70%;
-    --chart-4: 230 90% 75%;
-    --chart-5: 190 87% 70%;
+    --destructive-foreground: 250 40% 98%;
+    --border: 260 31% 18% / 0.9;
+    --input: 260 31% 16% / 0.75;
+    --ring: 300 95% 70%;
+    --chart-1: 300 95% 70%;
+    --chart-2: 280 95% 75%;
+    --chart-3: 260 85% 80%;
+    --chart-4: 20 90% 75%;
+    --chart-5: 40 87% 70%;
     --radius: 0.75rem;
-    --sidebar-background: 220 35% 14% / 0.85;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 200 95% 60%;
-    --sidebar-primary-foreground: 220 40% 10%;
-    --sidebar-accent: 210 30% 28%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 220 25% 35% / 0.8;
-    --sidebar-ring: 200 95% 60%;
+    --sidebar-background: 250 35% 14% / 0.85;
+    --sidebar-foreground: 250 40% 98%;
+    --sidebar-primary: 300 95% 70%;
+    --sidebar-primary-foreground: 250 40% 10%;
+    --sidebar-accent: 270 30% 28%;
+    --sidebar-accent-foreground: 250 40% 98%;
+    --sidebar-border: 260 25% 35% / 0.8;
+    --sidebar-ring: 300 95% 70%;
   }
   .matrix-dark {
     --background: 0 0% 5%;
@@ -157,7 +157,7 @@ body {
     @apply bg-background text-foreground;
   }
   .violet-dark body {
-    background-image: linear-gradient(to bottom, hsl(220, 60%, 25%), hsl(240, 70%, 30%));
+    background-image: linear-gradient(to bottom, hsl(270, 60%, 25%), hsl(250, 70%, 30%));
   }
   .matrix-dark body {
     background-color: #000;
@@ -174,3 +174,5 @@ body {
     animation: blink 1s infinite;
   }
 }
+
+    
