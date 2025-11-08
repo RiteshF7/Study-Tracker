@@ -240,7 +240,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
   const strokeDashoffset = CIRCLE_CIRCUMFERENCE * (1 - progress);
 
   return (
-    <div className="w-full max-w-md text-center pt-8">
+    <div className="w-full max-w-md mx-auto text-center pt-8">
       {timerState.isTiming || timerState.isFinished ? (
         <div className={cn("space-y-8 flex flex-col items-center", timerState.isFinished && "animate-blink")}>
           <p className="text-2xl text-muted-foreground">{timerState.isFinished ? "Session Finished!" : `Timing session for (${mode}):`}</p>
