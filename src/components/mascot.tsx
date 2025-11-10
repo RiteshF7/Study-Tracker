@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -18,10 +19,8 @@ export function Mascot({ studyTimeToday }: MascotProps) {
   useEffect(() => {
     if (studyTimeToday > 60) {
       setMascotState('happy');
-    } else if (studyTimeToday > 0) {
-      setMascotState('default');
     } else {
-      setMascotState('default'); // Always default to Olaf unless happy
+      setMascotState('default'); 
     }
   }, [studyTimeToday]);
   
