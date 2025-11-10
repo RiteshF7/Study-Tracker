@@ -477,3 +477,5 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
     </>
   );
 }
+
+    
