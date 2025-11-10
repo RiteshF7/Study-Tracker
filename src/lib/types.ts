@@ -36,4 +36,13 @@ export type Problem = {
   userId: string;
 };
 
+export type Todo = {
+  id?: string;
+  title: string;
+  completed: boolean;
+  createdAt: Timestamp;
+  userId: string;
+};
+
+
 export const activityTypes = ["Study", "Class", "Break", "Other"];

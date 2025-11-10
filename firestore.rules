@@ -1,3 +1,4 @@
+
 /**
  * @fileoverview Firestore Security Rules for StudyTrack Journal application.
  *
@@ -9,11 +10,6 @@
  * /users/{userId} - User profile information
  * /users/{userId}/activities/{activityId} - Activities for each user
  * /users/{userId}/problems/{problemId} - Problems solved by each user
- *
- * Key Security Decisions:
- * - Users can only access their own data.
- * - No listing of all users is allowed.
- * - Data access is controlled through path-based rules.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -72,6 +68,25 @@ service cloud.firestore {
       allow list: if isOwner(userId);
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Controls access to to-do items for each user.
+     * @path /users/{userId}/todos/{todoId}
+     * @allow (create) User with ID 'user_abc' can create a to-do item under their ID: request.auth.uid == 'user_abc'
+     * @allow (get) User with ID 'user_abc' can read a to-do item under their ID: request.auth.uid == 'user_abc'
+     * @allow (update) User with ID 'user_abc' can update a to-do item under their ID: request.auth.uid == 'user_abc'
+     * @allow (delete) User with ID 'user_abc' can delete a to-do item under their ID: request.auth.uid == 'user_abc'
+     * @allow (list) User with ID 'user_abc' can list their to-do items: request.auth.uid == 'user_abc'
+     * @deny (create) User with ID 'user_xyz' cannot create a to-do item for 'user_abc': request.auth.uid != 'user_abc'
+     * @principle Enforces document ownership for writes; allows owner to read and list.
+     */
+    match /users/{userId}/todos/{todoId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isOwner(userId);
       allow delete: if isOwner(userId);
     }
   }
