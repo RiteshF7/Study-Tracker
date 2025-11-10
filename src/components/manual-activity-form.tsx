@@ -29,6 +29,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -202,13 +203,14 @@ export function ManualActivityForm() {
                                   <button
                                     type="button"
                                     onClick={(e) => handleRemoveName(e, name)}
-                                    className="p-1 rounded-full text-black dark:text-white bg-transparent hover:bg-muted-foreground/20 opacity-0 group-hover/item:opacity-100"
+                                    className="ml-auto p-1 rounded-full text-black dark:text-white bg-transparent hover:bg-muted-foreground/20 opacity-0 group-hover/item:opacity-100"
                                   >
                                       <X className="h-3 w-3" />
                                   </button>
                               </div>
                           </SelectItem>
                         ))}
+                        {pastActivityNames.length > 0 && <SelectSeparator />}
                         <SelectItem value="add_new">Add New...</SelectItem>
                       </SelectContent>
                     </Select>
@@ -241,16 +243,19 @@ export function ManualActivityForm() {
                           <SelectItem key={t} value={t} className="group/item">
                             <div className="flex items-center justify-between w-full">
                                 <span>{t}</span>
+                                {!['Study', 'Class', 'Break', 'Other'].includes(t) && (
                                 <button
                                   type="button"
                                   onClick={(e) => handleRemoveType(e, t)}
-                                  className="p-1 rounded-full text-black dark:text-white bg-transparent hover:bg-muted-foreground/20 opacity-0 group-hover/item:opacity-100"
+                                  className="ml-auto p-1 rounded-full text-black dark:text-white bg-transparent hover:bg-muted-foreground/20 opacity-0 group-hover/item:opacity-100"
                                 >
                                     <X className="h-3 w-3" />
                                 </button>
+                                )}
                             </div>
                           </SelectItem>
                         ))}
+                        <SelectSeparator />
                         <SelectItem value="add_new">Add New...</SelectItem>
                       </SelectContent>
                     </Select>
