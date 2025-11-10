@@ -359,7 +359,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
                                   <button
                                     type="button"
                                     onClick={(e) => handleRemoveName(e, name)}
-                                    className="ml-auto p-1 rounded-full text-black dark:text-white bg-transparent hover:bg-muted-foreground/20 opacity-0 group-hover/item:opacity-100"
+                                    className="ml-auto p-1 rounded-full text-muted-foreground bg-transparent hover:bg-muted-foreground/20"
                                   >
                                       <X className="h-3 w-3" />
                                   </button>
@@ -395,7 +395,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
                                 <button
                                   type="button"
                                   onClick={(e) => handleRemoveType(e, t)}
-                                  className="ml-auto p-1 rounded-full text-black dark:text-white bg-transparent hover:bg-muted-foreground/20 opacity-0 group-hover/item:opacity-100"
+                                  className="ml-auto p-1 rounded-full text-muted-foreground bg-transparent hover:bg-muted-foreground/20"
                                 >
                                     <X className="h-3 w-3" />
                                 </button>
@@ -482,3 +482,5 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
     </>
   );
 }
+
+    
