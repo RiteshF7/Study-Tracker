@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 type MascotState = 'default' | 'happy' | 'sleepy';
 
