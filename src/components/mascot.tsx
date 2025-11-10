@@ -21,7 +21,7 @@ export function Mascot({ studyTimeToday }: MascotProps) {
     } else if (studyTimeToday > 0) {
       setMascotState('default');
     } else {
-      setMascotState('sleepy');
+      setMascotState('default'); // Always default to Olaf unless happy
     }
   }, [studyTimeToday]);
   
@@ -32,7 +32,7 @@ export function Mascot({ studyTimeToday }: MascotProps) {
   const mascotImage = PlaceHolderImages.find(img => img.id === `mascot-${mascotState}`);
   const message = {
     happy: "Great job! Keep up the amazing work!",
-    default: "You're off to a good start. Let's keep going!",
+    default: "Hi! I'm Olaf and I like warm hugs!",
     sleepy: "Ready to start a study session?"
   }[mascotState];
 

@@ -8,9 +8,9 @@
     },
     {
       "id": "mascot-default",
-      "description": "A friendly cartoon mascot waving.",
-      "imageUrl": "https://images.unsplash.com/photo-1752479910178-1bbeac45da07?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjYXJ0b29uJTIwbWFzY290fGVufDB8fHx8MTc2Mjc2ODYwMnww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "cartoon mascot"
+      "description": "A cheerful Olaf from Frozen, waving.",
+      "imageUrl": "https://images.unsplash.com/photo-1600861168233-556a3e573a98?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxvbGFmJTIwZnJvemVufGVufDB8fHx8MTc2NDA0MDI5M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cartoon snowman"
     },
     {
       "id": "mascot-happy",
