@@ -54,7 +54,7 @@ type TimerState = {
   isFinished: boolean;
 };
 
-const CIRCLE_RADIUS = 135;
+const CIRCLE_RADIUS = 175;
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 export function ActivityTimer({ mode }: { mode: TimerMode }) {
@@ -278,23 +278,23 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
   }, [mode, totalSecondsInDuration, timerState.remainingTime]);
 
   const strokeDashoffset = useMemo(() => {
-    if (mode === 'stopwatch') {
-      return CIRCLE_CIRCUMFERENCE * (1 - (timerState.elapsedTime % 60) / 60);
-    }
-    return CIRCLE_CIRCUMFERENCE * (1 - progress);
+    const elapsedRatio = mode === 'stopwatch' 
+      ? (timerState.elapsedTime % 60) / 60
+      : progress;
+    return CIRCLE_CIRCUMFERENCE * (1 - elapsedRatio);
   }, [mode, progress, timerState.elapsedTime]);
 
 
   return (
     <>
-    <div className="w-full max-w-md mx-auto text-center pt-8">
+    <div className="w-full max-w-lg mx-auto text-center pt-8">
       {timerState.isTiming || timerState.isFinished ? (
         <div className={cn("space-y-8 flex flex-col items-center", timerState.isFinished && "animate-blink")}>
           <p className="text-2xl text-muted-foreground">{timerState.isFinished ? "Session Finished!" : `Timing session for (${mode}):`}</p>
           <h1 className="text-6xl font-bold font-headline">{timerState.activityName}</h1>
           
-          <div className={cn("relative w-[300px] h-[300px]", mode === 'stopwatch' && timerState.isTiming && 'animate-pulse')}>
-              <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 300 300">
+          <div className={cn("relative w-[400px] h-[400px]", mode === 'stopwatch' && timerState.isTiming && 'animate-pulse')}>
+              <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 400 400">
                   <defs>
                       <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                           <stop offset="0%" stopColor="hsl(var(--primary))" />
@@ -304,21 +304,21 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
                   <circle
                       className="text-border"
                       stroke="currentColor"
-                      strokeWidth="16"
+                      strokeWidth="20"
                       fill="transparent"
                       r={CIRCLE_RADIUS}
-                      cx="150"
-                      cy="150"
+                      cx="200"
+                      cy="200"
                   />
                   <circle
                       className="transition-all duration-1000 ease-linear"
                       stroke={timerState.isFinished ? "hsl(var(--destructive))" : "url(#progressGradient)"}
-                      strokeWidth="16"
+                      strokeWidth="20"
                       strokeLinecap="round"
                       fill="transparent"
                       r={CIRCLE_RADIUS}
-                      cx="150"
-                      cy="150"
+                      cx="200"
+                      cy="200"
                       style={{
                           strokeDasharray: CIRCLE_CIRCUMFERENCE,
                           strokeDashoffset: strokeDashoffset,
@@ -326,7 +326,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
                   />
               </svg>
                <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="font-mono text-6xl font-bold tabular-nums tracking-wider drop-shadow-lg">
+                  <p className="font-mono text-7xl font-bold tabular-nums tracking-wider drop-shadow-lg">
                       {formatTime(displayTime)}
                   </p>
               </div>
