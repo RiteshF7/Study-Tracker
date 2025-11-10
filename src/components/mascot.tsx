@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 
@@ -28,7 +27,7 @@ export function Mascot({ studyTimeToday }: MascotProps) {
     setIsLoaded(true);
   }, []);
 
-  const mascotImage = PlaceHolderImages.find(img => img.id === `mascot-${mascotState}`);
+  const mascotImage = PlaceHolderImages.find(img => img.id === mascotState);
   const message = {
     happy: "Great job! Keep up the amazing work!",
     default: "Hi! I'm Olaf and I like warm hugs!",
@@ -40,7 +39,7 @@ export function Mascot({ studyTimeToday }: MascotProps) {
   return (
     <div className={cn("relative flex flex-col items-center transition-all duration-500", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
       <div className="w-24 h-24 relative">
-        <Image
+        <img
           src={mascotImage.imageUrl}
           alt={mascotImage.description}
           width={96}
