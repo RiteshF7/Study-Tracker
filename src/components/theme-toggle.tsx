@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Moon, Sun, Sparkles, Code } from "lucide-react"
+import { Moon, Sun, Sparkles, Code, Tv } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
@@ -45,6 +45,10 @@ export function ThemeToggle() {
         <DropdownMenuItem onClick={() => setTheme("disney-dark")}>
           <Sparkles className="mr-2 h-4 w-4" />
           Disney
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("cn-dark")}>
+          <Tv className="mr-2 h-4 w-4" />
+          CN
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
