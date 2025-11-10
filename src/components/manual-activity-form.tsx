@@ -50,6 +50,8 @@ export function ManualActivityForm() {
   const [open, setOpen] = useState(false);
   const [isAddNameOpen, setIsAddNameOpen] = useState(false);
   const [newActivityName, setNewActivityName] = useState("");
+  const [isAddTypeOpen, setIsAddTypeOpen] = useState(false);
+  const [newActivityType, setNewActivityType] = useState("");
   const { firestore, user } = useFirebase();
 
   const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
@@ -114,6 +116,29 @@ export function ManualActivityForm() {
       form.setValue('name', '');
     }
   };
+  
+  const handleAddNewType = () => {
+    if (newActivityType.trim() && !activityTypes.includes(newActivityType.trim())) {
+      const newType = newActivityType.trim();
+      setActivityTypes([...activityTypes, newType]);
+      form.setValue('type', newType);
+      setIsAddTypeOpen(false);
+      setNewActivityType("");
+    } else if (activityTypes.includes(newActivityType.trim())) {
+      form.setValue('type', newActivityType.trim());
+      setIsAddTypeOpen(false);
+      setNewActivityType("");
+    }
+  };
+
+  const handleRemoveType = (e: React.MouseEvent, typeToRemove: string) => {
+    e.stopPropagation(); // Prevent the dropdown from closing
+    setActivityTypes(activityTypes.filter(type => type !== typeToRemove));
+    if (form.getValues('type') === typeToRemove) {
+      form.setValue('type', 'Other');
+    }
+  };
+
 
   function onSubmit(values: z.infer<typeof manualActivitySchema>) {
     if (!activitiesCollection || !user) return;
@@ -197,7 +222,15 @@ export function ManualActivityForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Type</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                    <Select onValueChange={(value) => {
+                        if (value === "add_new") {
+                          setIsAddTypeOpen(true);
+                        } else {
+                          field.onChange(value);
+                        }
+                      }}
+                      value={field.value}
+                      defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select an activity type" />
@@ -205,8 +238,20 @@ export function ManualActivityForm() {
                       </FormControl>
                       <SelectContent>
                         {activityTypes.map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                          <SelectItem key={t} value={t} className="group/item">
+                            <div className="flex items-center justify-between w-full">
+                                <span>{t}</span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleRemoveType(e, t)}
+                                  className="p-1 rounded-full text-black dark:text-white bg-transparent hover:bg-muted-foreground/20 opacity-0 group-hover/item:opacity-100"
+                                >
+                                    <X className="h-3 w-3" />
+                                </button>
+                            </div>
+                          </SelectItem>
                         ))}
+                        <SelectItem value="add_new">Add New...</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -270,6 +315,30 @@ export function ManualActivityForm() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddNameOpen(false)}>Cancel</Button>
             <Button onClick={handleAddNewName}>Add</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isAddTypeOpen} onOpenChange={setIsAddTypeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Activity Type</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="e.g., Lab Work"
+              value={newActivityType}
+              onChange={(e) => setNewActivityType(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddNewType();
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddTypeOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddNewType}>Add</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
