@@ -311,7 +311,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
                   />
               </svg>
                <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="font-mono text-5xl font-bold tabular-nums tracking-widest drop-shadow-sm">
+                  <p className="font-mono text-5xl font-bold tabular-nums tracking-wider drop-shadow-lg">
                       {formatTime(displayTime)}
                   </p>
               </div>
@@ -510,4 +510,5 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
   );
 }
 
+    
     
