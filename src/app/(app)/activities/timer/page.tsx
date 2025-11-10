@@ -17,13 +17,13 @@ export default function TimerPage() {
                 onValueChange={(value) => setMode(value as 'timer' | 'stopwatch')}
                 orientation="vertical"
             >
-                <TabsList className="grid w-full sm:w-auto sm:grid-rows-2 sm:grid-cols-1 gap-16">
-                    <TabsTrigger value="timer" className="py-4">
-                        <Timer className="mr-2 h-5 w-5" />
+                <TabsList className="grid w-full sm:w-auto sm:grid-rows-2 sm:grid-cols-1 gap-4">
+                    <TabsTrigger value="timer" className="flex flex-col items-center justify-center gap-2 h-24 w-24 sm:h-28 sm:w-28 text-lg">
+                        <Timer className="h-8 w-8" />
                         Timer
                     </TabsTrigger>
-                    <TabsTrigger value="stopwatch" className="py-4">
-                        <Clock className="mr-2 h-5 w-5" />
+                    <TabsTrigger value="stopwatch" className="flex flex-col items-center justify-center gap-2 h-24 w-24 sm:h-28 sm:w-28 text-lg">
+                        <Clock className="h-8 w-8" />
                         Stopwatch
                     </TabsTrigger>
                 </TabsList>
@@ -43,3 +43,4 @@ export default function TimerPage() {
         </div>
     );
 }
+
