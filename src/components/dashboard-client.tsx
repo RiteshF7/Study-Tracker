@@ -359,6 +359,33 @@ export function DashboardClient() {
     return { problemsPerDayData: { data: groupedData, formatter: tickFormatter }, problemDateRange: dateRangeStr };
   }, [problems, problemTimeRange, problemEndDate]);
 
+  const { thisWeekMinutes, lastWeekMinutes, weeklyTrendPercentage } = useMemo(() => {
+    if (!activities) return { thisWeekMinutes: 0, lastWeekMinutes: 0, weeklyTrendPercentage: 0 };
+
+    const today = new Date();
+    const productiveActivities = activities.filter(
+      (a) => a.type === 'Study' || a.type === 'Class'
+    );
+    
+    const thisWeekMinutes = productiveActivities
+      .filter(a => isSameWeek(parseISO(a.date), today, { weekStartsOn: 1 }))
+      .reduce((sum, a) => sum + a.duration, 0);
+
+    const lastWeekStart = startOfWeek(subDays(today, 7), { weekStartsOn: 1 });
+    const lastWeekMinutes = productiveActivities
+      .filter(a => isSameWeek(parseISO(a.date), lastWeekStart, { weekStartsOn: 1 }))
+      .reduce((sum, a) => sum + a.duration, 0);
+      
+    let weeklyTrendPercentage = 0;
+    if (lastWeekMinutes > 0) {
+      weeklyTrendPercentage = ((thisWeekMinutes - lastWeekMinutes) / lastWeekMinutes) * 100;
+    } else if (thisWeekMinutes > 0) {
+      weeklyTrendPercentage = 100; // Infinite growth technically, show as 100%
+    }
+
+    return { thisWeekMinutes, lastWeekMinutes, weeklyTrendPercentage };
+  }, [activities]);
+
   const problemsSolvedToday = useMemo(() => {
     if (!problems) return 0;
     const todayStr = format(new Date(), 'yyyy-MM-dd');
@@ -399,7 +426,7 @@ export function DashboardClient() {
     return (
       <div className="flex flex-col items-center justify-center text-center py-16">
         {emptyStateImage && (
-          <Image
+          <img
             src={emptyStateImage.imageUrl}
             alt={emptyStateImage.description}
             width={300}
@@ -472,12 +499,46 @@ export function DashboardClient() {
               </CardContent>
             </Card>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Today's Study Activities</DialogTitle>
-              <DialogDescription>
-                A breakdown of your productive sessions for today.
-              </DialogDescription>
+              <DialogTitle>Weekly Study Comparison</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base">This Week</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold">{Math.floor(thisWeekMinutes / 60)}h {thisWeekMinutes % 60}m</p>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base">Last Week</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold">{Math.floor(lastWeekMinutes / 60)}h {lastWeekMinutes % 60}m</p>
+                        </CardContent>
+                    </Card>
+                </div>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-base">Weekly Trend</CardTitle>
+                         <TrendingUp className={cn("h-5 w-5", weeklyTrendPercentage >= 0 ? 'text-green-500' : 'text-red-500 rotate-180')} />
+                    </CardHeader>
+                    <CardContent>
+                       <p className={cn("text-2xl font-bold", weeklyTrendPercentage >= 0 ? 'text-green-500' : 'text-red-500')}>
+                          {weeklyTrendPercentage >= 0 ? '+' : ''}{weeklyTrendPercentage.toFixed(0)}%
+                       </p>
+                       <p className="text-xs text-muted-foreground">
+                           Compared to last week
+                       </p>
+                    </CardContent>
+                </Card>
+            </div>
+            <DialogHeader>
+              <DialogTitle>Today's Activities</DialogTitle>
             </DialogHeader>
             {todaysActivities.length > 0 ? (
                 <Table>
@@ -697,3 +758,4 @@ export function DashboardClient() {
   );
 }
 
+    
