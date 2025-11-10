@@ -4,7 +4,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { Activity } from "@/lib/types";
-import { activityTypes } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -81,6 +80,13 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
   const [newActivityName, setNewActivityName] = useState("");
   const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
 
+  const [isAddTypeOpen, setIsAddTypeOpen] = useState(false);
+  const [newActivityType, setNewActivityType] = useState("");
+  const [activityTypes, setActivityTypes] = useLocalStorage<string[]>(
+    "custom-activity-types",
+    ["Study", "Class", "Break", "Other"]
+  );
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -152,6 +158,28 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
     setPastActivityNames(pastActivityNames.filter(name => name !== nameToRemove));
      if (timerState.activityName === nameToRemove) {
       setTimerState(prev => ({...prev, activityName: ''}));
+    }
+  };
+
+  const handleAddNewType = () => {
+    if (newActivityType.trim() && !activityTypes.includes(newActivityType.trim())) {
+      const newType = newActivityType.trim();
+      setActivityTypes([...activityTypes, newType]);
+      setTimerState(prev => ({...prev, type: newType as Activity['type']}));
+      setIsAddTypeOpen(false);
+      setNewActivityType("");
+    } else if (activityTypes.includes(newActivityType.trim())) {
+      setTimerState(prev => ({...prev, type: newActivityType.trim() as Activity['type']}));
+      setIsAddTypeOpen(false);
+      setNewActivityType("");
+    }
+  };
+
+  const handleRemoveType = (e: React.MouseEvent, typeToRemove: string) => {
+    e.stopPropagation(); // Prevent the dropdown from closing
+    setActivityTypes(activityTypes.filter(type => type !== typeToRemove));
+    if (timerState.type === typeToRemove) {
+      setTimerState(prev => ({...prev, type: 'Other'}));
     }
   };
 
@@ -343,15 +371,36 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
               </div>
               <div className="grid gap-2 col-span-2">
                   <Label htmlFor="type-select" className="text-lg">Type</Label>
-                  <Select onValueChange={(v) => setTimerState(prev => ({...prev, type: v as Activity['type']}))} defaultValue={timerState.type}>
-                      <SelectTrigger id="type-select" className="py-6 text-lg">
-                          <SelectValue placeholder="Select an activity type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          {activityTypes.map((t) => (
-                          <SelectItem key={t} value={t} className="text-lg">{t}</SelectItem>
-                          ))}
-                      </SelectContent>
+                  <Select
+                    onValueChange={(value) => {
+                      if (value === "add_new") {
+                        setIsAddTypeOpen(true);
+                      } else {
+                        setTimerState(prev => ({...prev, type: value as Activity['type']}));
+                      }
+                    }}
+                    value={timerState.type}
+                  >
+                    <SelectTrigger id="type-select" className="py-6 text-lg">
+                        <SelectValue placeholder="Select an activity type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {activityTypes.map((t) => (
+                          <SelectItem key={t} value={t} className="group/item text-lg">
+                            <div className="flex items-center justify-between w-full">
+                                <span>{t}</span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleRemoveType(e, t)}
+                                  className="p-1 rounded-full text-black dark:text-white bg-transparent hover:bg-muted-foreground/20 opacity-0 group-hover/item:opacity-100"
+                                >
+                                    <X className="h-3 w-3" />
+                                </button>
+                            </div>
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="add_new" className="text-lg">Add New...</SelectItem>
+                    </SelectContent>
                   </Select>
               </div>
           </div>
@@ -398,6 +447,30 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddNameOpen(false)}>Cancel</Button>
             <Button onClick={handleAddNewName}>Add</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isAddTypeOpen} onOpenChange={setIsAddTypeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Activity Type</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="e.g., Lab Work"
+              value={newActivityType}
+              onChange={(e) => setNewActivityType(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddNewType();
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddTypeOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddNewType}>Add</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
