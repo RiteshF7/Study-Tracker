@@ -222,7 +222,7 @@ export function DashboardClient() {
     setEndDate(newEndDate);
   };
 
-  const { activityData, productivityTrend, activityDateRange } = useMemo(() => {
+  const { activityData, activityDateRange } = useMemo(() => {
     if (!activities) return { activityData: { data: [], formatter: (v: string) => v }, totalDuration: 0, productivityTrend: null, activityDateRange: '' };
 
     const productiveActivities = activities.filter(
@@ -270,31 +270,10 @@ export function DashboardClient() {
         });
         tickFormatter = (value) => value;
     }
-
-    const today = startOfDay(new Date());
-    const last7DaysTotal = productiveActivities
-      .filter(a => parseISO(a.date) >= subDays(today, 6))
-      .reduce((sum, a) => sum + a.duration, 0);
-
-    const prev7DaysTotal = productiveActivities
-      .filter(a => {
-        const activityDate = parseISO(a.date);
-        return activityDate >= subDays(today, 13) && activityDate < subDays(today, 6);
-      })
-      .reduce((sum, a) => sum + a.duration, 0);
-
-    let trend: { percentage: number; hourDiff: number } | null = null;
-    if (prev7DaysTotal > 0) {
-      const percentage = ((last7DaysTotal - prev7DaysTotal) / prev7DaysTotal) * 100;
-      const hourDiff = (last7DaysTotal - prev7DaysTotal) / 60;
-      trend = { percentage, hourDiff };
-    } else if (last7DaysTotal > 0) {
-        trend = { percentage: 100, hourDiff: last7DaysTotal / 60 };
-    }
     
     const dateRangeStr = `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
 
-    return { activityData: { data: groupedData, formatter: tickFormatter }, productivityTrend: trend, activityDateRange: dateRangeStr };
+    return { activityData: { data: groupedData, formatter: tickFormatter }, activityDateRange: dateRangeStr };
   }, [activities, activityTimeRange, activityEndDate]);
   
   const { studyTimeToday, todaysActivities } = useMemo(() => {
