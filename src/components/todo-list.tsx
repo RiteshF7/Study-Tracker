@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import type { Todo } from '@/lib/types';
 import { PlusCircle, Trash2, Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -34,11 +34,14 @@ const todoSchema = z.object({
 export function TodoList() {
   const { firestore, user } = useFirebase();
 
-  const todosCollection = useMemoFirebase(() => 
-    user ? collection(firestore, 'users', user.uid, 'todos') : null
-  , [firestore, user]);
+  const todosQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    const todosCollection = collection(firestore, 'users', user.uid, 'todos');
+    return query(todosCollection, orderBy("createdAt", "desc"));
+  }, [firestore, user]);
 
-  const { data: todos, isLoading } = useCollection<Todo>(todosCollection);
+
+  const { data: todos, isLoading } = useCollection<Todo>(todosQuery);
 
   const form = useForm<z.infer<typeof todoSchema>>({
     resolver: zodResolver(todoSchema),
@@ -48,7 +51,7 @@ export function TodoList() {
   });
 
   const onSubmit = (values: z.infer<typeof todoSchema>) => {
-    if (!todosCollection || !user) return;
+    if (!todosQuery || !user) return;
 
     const newTodo: Omit<Todo, 'id' | 'createdAt'> & { createdAt: any, dueDate?: string } = {
       title: values.title,
@@ -57,19 +60,19 @@ export function TodoList() {
       createdAt: serverTimestamp(),
       ...(values.dueDate && { dueDate: format(values.dueDate, 'yyyy-MM-dd') }),
     };
-    addDocumentNonBlocking(todosCollection, newTodo);
+    addDocumentNonBlocking(todosQuery.converter ? todosQuery.withConverter(null) : todosQuery, newTodo);
     form.reset();
   };
 
   const toggleTodo = (todo: Todo) => {
-    if (!todosCollection || !todo.id) return;
-    const docRef = doc(todosCollection, todo.id);
+    if (!user || !firestore || !todo.id) return;
+    const docRef = doc(firestore, 'users', user.uid, 'todos', todo.id);
     setDocumentNonBlocking(docRef, { completed: !todo.completed }, { merge: true });
   };
   
   const deleteTodo = (id: string) => {
-    if (!todosCollection) return;
-    const docRef = doc(todosCollection, id);
+    if (!user || !firestore) return;
+    const docRef = doc(firestore, 'users', user.uid, 'todos', id);
     deleteDocumentNonBlocking(docRef);
   };
 
@@ -253,4 +256,3 @@ export function TodoList() {
     </Card>
   );
 }
-

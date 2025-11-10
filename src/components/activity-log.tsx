@@ -16,21 +16,23 @@ import { subDays } from "date-fns";
 import { Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
-import { collection, doc } from "firebase/firestore";
+import { collection, doc, query, orderBy } from "firebase/firestore";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 export function ActivityLog() {
   const { firestore, user } = useFirebase();
   
-  const activitiesCollection = useMemoFirebase(() => 
-    user ? collection(firestore, "users", user.uid, "activities") : null
-  , [firestore, user]);
+  const activitiesQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    const activitiesCollection = collection(firestore, "users", user.uid, "activities");
+    return query(activitiesCollection, orderBy("createdAt", "desc"));
+  }, [firestore, user]);
 
-  const { data: activities, isLoading } = useCollection<Activity>(activitiesCollection);
+  const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 
   function deleteActivity(id: string) {
-    if (!activitiesCollection) return;
-    const docRef = doc(activitiesCollection, id);
+    if (!user || !firestore) return;
+    const docRef = doc(firestore, "users", user.uid, "activities", id);
     deleteDocumentNonBlocking(docRef);
   }
 
@@ -44,15 +46,6 @@ export function ActivityLog() {
       return activityDate ? activityDate > oneMonthAgo : true;
     });
   }, [activities]);
-  
-  const sortedActivities = useMemo(() => {
-    if (!recentActivities) return [];
-    return [...recentActivities].sort((a, b) => {
-        const timeA = a.createdAt?.toDate?.().getTime() || 0;
-        const timeB = b.createdAt?.toDate?.().getTime() || 0;
-        return timeB - timeA;
-      })
-  },[recentActivities]);
 
   return (
     <Card>
@@ -77,8 +70,8 @@ export function ActivityLog() {
                   Loading activities...
                 </TableCell>
               </TableRow>
-            ) : sortedActivities.length > 0 ? (
-              sortedActivities.map((activity) => (
+            ) : recentActivities.length > 0 ? (
+              recentActivities.map((activity) => (
                 <TableRow key={activity.id}>
                   <TableCell>{activity.date}</TableCell>
                   <TableCell className="font-medium">{activity.name}</TableCell>

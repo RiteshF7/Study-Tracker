@@ -46,7 +46,7 @@ import { z } from "zod";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
-import { collection, serverTimestamp, doc } from "firebase/firestore";
+import { collection, serverTimestamp, doc, query, orderBy } from "firebase/firestore";
 import { addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 const problemSchema = z.object({
@@ -64,11 +64,13 @@ export function ProblemTracker() {
   const [categories, setCategories] = useState<ProblemCategory[]>(defaultProblemCategories);
   const { firestore, user } = useFirebase();
 
-  const problemsCollection = useMemoFirebase(() =>
-    user ? collection(firestore, "users", user.uid, "problems") : null
-  , [firestore, user]);
+  const problemsQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    const problemsCollection = collection(firestore, "users", user.uid, "problems");
+    return query(problemsCollection, orderBy("createdAt", "desc"));
+  },[firestore, user]);
 
-  const { data: problems, isLoading } = useCollection<Problem>(problemsCollection);
+  const { data: problems, isLoading } = useCollection<Problem>(problemsQuery);
 
   const form = useForm<z.infer<typeof problemSchema>>({
     resolver: zodResolver(problemSchema),
@@ -104,32 +106,22 @@ export function ProblemTracker() {
   };
 
   function onSubmit(values: z.infer<typeof problemSchema>) {
-    if (!problemsCollection || !user) return;
+    if (!problemsQuery || !user) return;
     const newProblem: Omit<Problem, 'id' | 'createdAt'> & { createdAt: any } = {
       ...values,
       notes: values.notes || "",
       userId: user.uid,
       createdAt: serverTimestamp(),
     };
-    addDocumentNonBlocking(problemsCollection, newProblem);
+    addDocumentNonBlocking(problemsQuery.converter ? problemsQuery.withConverter(null) : problemsQuery, newProblem);
     setOpen(false);
   }
 
   function deleteProblem(id: string) {
-    if (!problemsCollection) return;
-    const docRef = doc(problemsCollection, id);
+    if (!user || !firestore) return;
+    const docRef = doc(firestore, "users", user.uid, "problems", id);
     deleteDocumentNonBlocking(docRef);
   }
-
-  const sortedProblems = useMemo(() => {
-    if (!problems) return [];
-    return [...problems].sort((a, b) => {
-        const timeA = a.createdAt?.toDate?.().getTime() || 0;
-        const timeB = b.createdAt?.toDate?.().getTime() || 0;
-        return timeB - timeA;
-      })
-  }, [problems]);
-
 
   return (
     <>
@@ -265,8 +257,8 @@ export function ProblemTracker() {
                     Loading problems...
                   </TableCell>
                 </TableRow>
-              ) : sortedProblems.length > 0 ? (
-                sortedProblems.map((problem) => (
+              ) : problems && problems.length > 0 ? (
+                problems.map((problem) => (
                   <TableRow key={problem.id}>
                     <TableCell>{problem.date}</TableCell>
                     <TableCell className="font-medium">{problem.name}</TableCell>
