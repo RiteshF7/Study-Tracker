@@ -18,7 +18,7 @@ export default function TimerPage() {
                     onValueChange={(value) => setMode(value as 'timer' | 'stopwatch')}
                     orientation="vertical"
                 >
-                    <TabsList className="grid w-full sm:w-auto sm:grid-rows-2 sm:grid-cols-1 gap-8">
+                    <TabsList className="grid w-full sm:w-auto sm:grid-rows-2 sm:grid-cols-1 gap-16">
                         <TabsTrigger value="timer" className="py-4">
                             <Timer className="mr-2 h-5 w-5" />
                             Timer
