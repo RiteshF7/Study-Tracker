@@ -450,7 +450,7 @@ export function DashboardClient() {
 
       <TodaysGoal />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Problems Solved Today</CardTitle>
@@ -513,30 +513,6 @@ export function DashboardClient() {
             <CardContent>
                 <div className="text-2xl font-bold">{studyStreak} days</div>
                 <p className="text-xs text-muted-foreground">Consecutive days of activity</p>
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Productivity Trend</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              {productivityTrend ? (
-                <>
-                  <div className="text-2xl font-bold">
-                    {productivityTrend.percentage >= 0 ? "+" : ""}
-                    {productivityTrend.percentage.toFixed(0)}%
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {`${productivityTrend.hourDiff.toFixed(1)} hours ${productivityTrend.hourDiff >= 0 ? 'more' : 'less'} than last week`}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <div className="text-2xl font-bold">N/A</div>
-                  <p className="text-xs text-muted-foreground">Not enough data</p>
-                </>
-              )}
             </CardContent>
         </Card>
       </div>
@@ -720,3 +696,4 @@ export function DashboardClient() {
     </div>
   );
 }
+
