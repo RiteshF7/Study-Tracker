@@ -45,6 +45,7 @@ const manualActivitySchema = z.object({
   type: z.string().min(1, "Type is required"),
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute."),
   date: z.string().min(1, "Date is required"),
+  startTime: z.string().min(1, "Start time is required"),
 });
 
 export function ManualActivityForm() {
@@ -87,6 +88,7 @@ export function ManualActivityForm() {
       type: "Study",
       duration: 30,
       date: new Date().toISOString().split("T")[0],
+      startTime: "09:00",
     },
   });
 
@@ -97,6 +99,7 @@ export function ManualActivityForm() {
         type: "Study",
         duration: 30,
         date: new Date().toISOString().split("T")[0],
+        startTime: "09:00",
       });
     }
   }, [form, open]);
@@ -152,6 +155,7 @@ export function ManualActivityForm() {
       type: values.type as Activity['type'],
       duration: values.duration,
       date: values.date,
+      startTime: values.startTime,
       userId: user.uid,
       createdAt: serverTimestamp(),
     };
@@ -252,19 +256,34 @@ export function ManualActivityForm() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="duration"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Duration (in minutes)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="duration"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Duration (min)</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Start Time</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <FormField
                 control={form.control}
                 name="date"
@@ -381,5 +400,3 @@ export function ManualActivityForm() {
     </>
   );
 }
-
-    

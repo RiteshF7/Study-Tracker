@@ -7,6 +7,7 @@ export type Activity = {
   type: 'Study' | 'Class' | 'Break' | 'Other';
   duration: number; // in minutes
   date: string; // YYYY-MM-DD
+  startTime: string; // HH:MM
   createdAt: Timestamp;
   userId: string;
 };
@@ -47,4 +48,3 @@ export type Todo = {
 
 
 export const activityTypes = ["Study", "Class", "Break", "Other"];
-
