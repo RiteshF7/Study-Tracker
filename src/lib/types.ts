@@ -41,8 +41,10 @@ export type Todo = {
   title: string;
   completed: boolean;
   createdAt: Timestamp;
+  dueDate?: string; // YYYY-MM-DD
   userId: string;
 };
 
 
 export const activityTypes = ["Study", "Class", "Break", "Other"];
+
