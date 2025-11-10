@@ -54,7 +54,7 @@ type TimerState = {
   isFinished: boolean;
 };
 
-const CIRCLE_RADIUS = 100;
+const CIRCLE_RADIUS = 135;
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 export function ActivityTimer({ mode }: { mode: TimerMode }) {
@@ -271,8 +271,19 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
   
   const displayTime = mode === 'timer' ? timerState.remainingTime : timerState.elapsedTime;
   const totalSecondsInDuration = mode === 'timer' ? timerState.duration * 60 : 0;
-  const progress = mode === 'timer' && totalSecondsInDuration > 0 ? (totalSecondsInDuration - timerState.remainingTime) / totalSecondsInDuration : 0;
-  const strokeDashoffset = CIRCLE_CIRCUMFERENCE * (1 - progress);
+  
+  const progress = useMemo(() => {
+    if (mode === 'stopwatch' || totalSecondsInDuration === 0) return 0;
+    return (totalSecondsInDuration - timerState.remainingTime) / totalSecondsInDuration;
+  }, [mode, totalSecondsInDuration, timerState.remainingTime]);
+
+  const strokeDashoffset = useMemo(() => {
+    if (mode === 'stopwatch') {
+      return CIRCLE_CIRCUMFERENCE * (1 - (timerState.elapsedTime % 60) / 60);
+    }
+    return CIRCLE_CIRCUMFERENCE * (1 - progress);
+  }, [mode, progress, timerState.elapsedTime]);
+
 
   return (
     <>
@@ -282,8 +293,8 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
           <p className="text-2xl text-muted-foreground">{timerState.isFinished ? "Session Finished!" : `Timing session for (${mode}):`}</p>
           <h1 className="text-6xl font-bold font-headline">{timerState.activityName}</h1>
           
-          <div className={cn("relative w-[220px] h-[220px]", mode === 'stopwatch' && timerState.isTiming && 'animate-pulse')}>
-              <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 220 220">
+          <div className={cn("relative w-[300px] h-[300px]", mode === 'stopwatch' && timerState.isTiming && 'animate-pulse')}>
+              <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 300 300">
                   <defs>
                       <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                           <stop offset="0%" stopColor="hsl(var(--primary))" />
@@ -293,29 +304,29 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
                   <circle
                       className="text-border"
                       stroke="currentColor"
-                      strokeWidth="12"
+                      strokeWidth="16"
                       fill="transparent"
                       r={CIRCLE_RADIUS}
-                      cx="110"
-                      cy="110"
+                      cx="150"
+                      cy="150"
                   />
                   <circle
+                      className="transition-all duration-1000 ease-linear"
                       stroke={timerState.isFinished ? "hsl(var(--destructive))" : "url(#progressGradient)"}
-                      strokeWidth="12"
+                      strokeWidth="16"
                       strokeLinecap="round"
                       fill="transparent"
                       r={CIRCLE_RADIUS}
-                      cx="110"
-                      cy="110"
+                      cx="150"
+                      cy="150"
                       style={{
                           strokeDasharray: CIRCLE_CIRCUMFERENCE,
-                          strokeDashoffset: mode === 'timer' ? strokeDashoffset : undefined,
-                          transition: 'stroke-dashoffset 1s linear',
+                          strokeDashoffset: strokeDashoffset,
                       }}
                   />
               </svg>
                <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="font-mono text-5xl font-bold tabular-nums tracking-wider drop-shadow-lg">
+                  <p className="font-mono text-6xl font-bold tabular-nums tracking-wider drop-shadow-lg">
                       {formatTime(displayTime)}
                   </p>
               </div>
@@ -513,8 +524,3 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
     </>
   );
 }
-
-    
-    
-
-    
