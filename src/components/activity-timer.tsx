@@ -13,7 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Play, Square, TimerOff } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Play, Square, TimerOff, X } from "lucide-react";
 import { useFirebase, useMemoFirebase } from "@/firebase";
 import { collection, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
@@ -70,6 +77,10 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
     isFinished: false,
   });
 
+  const [isAddNameOpen, setIsAddNameOpen] = useState(false);
+  const [newActivityName, setNewActivityName] = useState("");
+  const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -121,6 +132,28 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
     }
     return clearTimer;
   }, [timerState.isTiming, timerState.startTime, timerState.duration, setTimerState, mode, clearTimer]);
+
+  const handleAddNewName = () => {
+    if (newActivityName.trim() && !pastActivityNames.includes(newActivityName.trim())) {
+      const newName = newActivityName.trim();
+      setPastActivityNames([...pastActivityNames, newName]);
+      setTimerState(prev => ({...prev, activityName: newName}));
+      setIsAddNameOpen(false);
+      setNewActivityName("");
+    } else if (pastActivityNames.includes(newActivityName.trim())) {
+      setTimerState(prev => ({...prev, activityName: newActivityName.trim()}));
+      setIsAddNameOpen(false);
+      setNewActivityName("");
+    }
+  };
+
+  const handleRemoveName = (e: React.MouseEvent, nameToRemove: string) => {
+    e.stopPropagation(); // Prevent the dropdown from closing
+    setPastActivityNames(pastActivityNames.filter(name => name !== nameToRemove));
+     if (timerState.activityName === nameToRemove) {
+      setTimerState(prev => ({...prev, activityName: ''}));
+    }
+  };
 
 
   const handleStart = () => {
@@ -209,6 +242,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
   const strokeDashoffset = CIRCLE_CIRCUMFERENCE * (1 - progress);
 
   return (
+    <>
     <div className="w-full max-w-md mx-auto text-center pt-8">
       {timerState.isTiming || timerState.isFinished ? (
         <div className={cn("space-y-8 flex flex-col items-center", timerState.isFinished && "animate-blink")}>
@@ -275,13 +309,37 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
           <div className="grid grid-cols-2 gap-4 text-left">
               <div className="grid gap-2 col-span-2">
                   <Label htmlFor="activity-name" className="text-lg">Activity Name</Label>
-                  <Input 
-                    id="activity-name"
-                    value={timerState.activityName} 
-                    onChange={(e) => setTimerState(prev => ({...prev, activityName: e.target.value}))}
-                    placeholder="e.g., Physics practice problems"
-                    className="py-6 text-lg"
-                  />
+                  <Select
+                      onValueChange={(value) => {
+                        if (value === "add_new") {
+                          setIsAddNameOpen(true);
+                        } else {
+                          setTimerState(prev => ({...prev, activityName: value}));
+                        }
+                      }}
+                      value={timerState.activityName}
+                    >
+                      <SelectTrigger id="activity-name" className="py-6 text-lg">
+                          <SelectValue placeholder="Select an activity name" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pastActivityNames.map((name) => (
+                          <SelectItem key={name} value={name} className="group/item text-lg">
+                              <div className="flex items-center justify-between w-full">
+                                  <span>{name}</span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleRemoveName(e, name)}
+                                    className="p-1 rounded-full text-black dark:text-white bg-transparent hover:bg-muted-foreground/20 opacity-0 group-hover/item:opacity-100"
+                                  >
+                                      <X className="h-3 w-3" />
+                                  </button>
+                              </div>
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="add_new" className="text-lg">Add New...</SelectItem>
+                      </SelectContent>
+                    </Select>
               </div>
               <div className="grid gap-2 col-span-2">
                   <Label htmlFor="type-select" className="text-lg">Type</Label>
@@ -319,5 +377,30 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
         </div>
       )}
     </div>
+     <Dialog open={isAddNameOpen} onOpenChange={setIsAddNameOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Activity Name</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="e.g., Quantum Physics"
+              value={newActivityName}
+              onChange={(e) => setNewActivityName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddNewName();
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddNameOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddNewName}>Add</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
