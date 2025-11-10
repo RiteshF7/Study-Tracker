@@ -183,39 +183,39 @@ body {
     --sidebar-ring: 45 100% 70%;
   }
   .cn-dark {
-    --background: 210 30% 10%;
+    --background: 220 30% 12%;
     --foreground: 0 0% 98%;
-    --card: 210 30% 15% / 0.7;
+    --card: 220 30% 18% / 0.75;
     --card-foreground: 0 0% 98%;
-    --popover: 210 30% 8%;
+    --popover: 220 30% 10%;
     --popover-foreground: 0 0% 98%;
-    --primary: 180 100% 50%; /* Cyan */
-    --primary-foreground: 210 30% 5%;
-    --secondary: 210 25% 25% / 0.5;
+    --primary: 180 100% 60%; /* Vibrant Cyan */
+    --primary-foreground: 180 100% 10%;
+    --secondary: 220 25% 28% / 0.6;
     --secondary-foreground: 0 0% 98%;
-    --muted: 210 25% 25% / 0.5;
-    --muted-foreground: 210 15% 80%;
-    --accent: 330 100% 55%; /* Magenta */
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 70% 60%;
+    --muted: 220 25% 28% / 0.6;
+    --muted-foreground: 220 15% 85%;
+    --accent: 330 100% 65%; /* Vibrant Magenta */
+    --accent-foreground: 330 100% 98%;
+    --destructive: 0 80% 65%;
     --destructive-foreground: 0 0% 98%;
-    --border: 180 50% 30% / 0.7;
-    --input: 210 30% 15% / 0.5;
-    --ring: 180 100% 50%;
-    --chart-1: 180 100% 50%;
-    --chart-2: 330 100% 55%;
-    --chart-3: 50 100% 50%; /* Yellow */
-    --chart-4: 210 100% 60%;
-    --chart-5: 280 80% 65%;
+    --border: 180 60% 40% / 0.8;
+    --input: 220 30% 20% / 0.6;
+    --ring: 180 100% 60%;
+    --chart-1: 180 100% 60%; /* Vibrant Cyan */
+    --chart-2: 330 100% 65%; /* Vibrant Magenta */
+    --chart-3: 50 100% 60%; /* Vibrant Yellow */
+    --chart-4: 210 100% 70%;
+    --chart-5: 280 90% 75%;
     --radius: 0.5rem;
-    --sidebar-background: 210 30% 12% / 0.8;
+    --sidebar-background: 220 30% 15% / 0.85;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 180 100% 50%;
-    --sidebar-primary-foreground: 210 30% 5%;
-    --sidebar-accent: 210 25% 25% / 0.5;
+    --sidebar-primary: 180 100% 60%;
+    --sidebar-primary-foreground: 180 100% 10%;
+    --sidebar-accent: 220 25% 28% / 0.6;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 180 50% 30% / 0.7;
-    --sidebar-ring: 180 100% 50%;
+    --sidebar-border: 180 60% 40% / 0.8;
+    --sidebar-ring: 180 100% 60%;
   }
 }
 
