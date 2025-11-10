@@ -9,6 +9,7 @@ import {
   Target,
   BookOpenCheck,
   LogOut,
+  CalendarDays,
 } from "lucide-react";
 import {
   SidebarHeader,
@@ -42,6 +43,11 @@ const navItems = [
     href: "/scheduler",
     icon: BrainCircuit,
     label: "AI Scheduler",
+  },
+  {
+    href: "/planner",
+    icon: CalendarDays,
+    label: "Planner",
   },
 ];
 
