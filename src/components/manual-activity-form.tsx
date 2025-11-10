@@ -33,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PlusCircle, X } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { useCollection, useFirebase, useUser, useMemoFirebase } from "@/firebase";
 import { collection, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
@@ -49,10 +49,15 @@ const manualActivitySchema = z.object({
 
 export function ManualActivityForm() {
   const [open, setOpen] = useState(false);
+  
   const [isAddNameOpen, setIsAddNameOpen] = useState(false);
+  const [isManageNamesOpen, setIsManageNamesOpen] = useState(false);
   const [newActivityName, setNewActivityName] = useState("");
+  
   const [isAddTypeOpen, setIsAddTypeOpen] = useState(false);
+  const [isManageTypesOpen, setIsManageTypesOpen] = useState(false);
   const [newActivityType, setNewActivityType] = useState("");
+  
   const { firestore, user } = useFirebase();
 
   const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
@@ -110,8 +115,7 @@ export function ManualActivityForm() {
     }
   };
 
-  const handleRemoveName = (e: React.MouseEvent, nameToRemove: string) => {
-    e.stopPropagation(); // Prevent the dropdown from closing
+  const handleRemoveName = (nameToRemove: string) => {
     setPastActivityNames(pastActivityNames.filter(name => name !== nameToRemove));
     if (form.getValues('name') === nameToRemove) {
       form.setValue('name', '');
@@ -132,8 +136,7 @@ export function ManualActivityForm() {
     }
   };
 
-  const handleRemoveType = (e: React.MouseEvent, typeToRemove: string) => {
-    e.stopPropagation(); // Prevent the dropdown from closing
+  const handleRemoveType = (typeToRemove: string) => {
     setActivityTypes(activityTypes.filter(type => type !== typeToRemove));
     if (form.getValues('type') === typeToRemove) {
       form.setValue('type', 'Other');
@@ -184,6 +187,8 @@ export function ManualActivityForm() {
                       onValueChange={(value) => {
                         if (value === "add_new") {
                           setIsAddNameOpen(true);
+                        } else if (value === "manage") {
+                          setIsManageNamesOpen(true);
                         } else {
                           field.onChange(value);
                         }
@@ -197,21 +202,13 @@ export function ManualActivityForm() {
                       </FormControl>
                       <SelectContent>
                         {pastActivityNames.map((name) => (
-                          <SelectItem key={name} value={name} className="group/item">
-                              <div className="flex items-center justify-between w-full">
-                                  <span>{name}</span>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => handleRemoveName(e, name)}
-                                    className="ml-auto p-1 rounded-full text-muted-foreground bg-transparent hover:bg-muted-foreground/20"
-                                  >
-                                      <X className="h-3 w-3" />
-                                  </button>
-                              </div>
+                          <SelectItem key={name} value={name}>
+                            {name}
                           </SelectItem>
                         ))}
-                        {pastActivityNames.length > 0 && <SelectSeparator />}
+                         {(pastActivityNames.length > 0) && <SelectSeparator />}
                         <SelectItem value="add_new">Add New...</SelectItem>
+                        <SelectItem value="manage" className="text-muted-foreground">Manage Names...</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -227,6 +224,8 @@ export function ManualActivityForm() {
                     <Select onValueChange={(value) => {
                         if (value === "add_new") {
                           setIsAddTypeOpen(true);
+                        } else if (value === "manage") {
+                          setIsManageTypesOpen(true);
                         } else {
                           field.onChange(value);
                         }
@@ -240,23 +239,13 @@ export function ManualActivityForm() {
                       </FormControl>
                       <SelectContent>
                         {activityTypes.map((t) => (
-                          <SelectItem key={t} value={t} className="group/item">
-                            <div className="flex items-center justify-between w-full">
-                                <span>{t}</span>
-                                {!['Study', 'Class', 'Break', 'Other'].includes(t) && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => handleRemoveType(e, t)}
-                                  className="ml-auto p-1 rounded-full text-muted-foreground bg-transparent hover:bg-muted-foreground/20"
-                                >
-                                    <X className="h-3 w-3" />
-                                </button>
-                                )}
-                            </div>
+                          <SelectItem key={t} value={t}>
+                           {t}
                           </SelectItem>
                         ))}
                         <SelectSeparator />
                         <SelectItem value="add_new">Add New...</SelectItem>
+                        <SelectItem value="manage" className="text-muted-foreground">Manage Types...</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -344,6 +333,48 @@ export function ManualActivityForm() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddTypeOpen(false)}>Cancel</Button>
             <Button onClick={handleAddNewType}>Add</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isManageNamesOpen} onOpenChange={setIsManageNamesOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Manage Activity Names</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-2">
+            {pastActivityNames.length > 0 ? pastActivityNames.map(name => (
+                <div key={name} className="flex items-center justify-between p-2 rounded-md border">
+                    <span>{name}</span>
+                    <Button variant="ghost" size="icon" onClick={() => handleRemoveName(name)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                </div>
+            )) : <p className="text-sm text-muted-foreground text-center">No custom names to manage.</p>}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setIsManageNamesOpen(false)}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+       <Dialog open={isManageTypesOpen} onOpenChange={setIsManageTypesOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Manage Activity Types</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-2">
+            {activityTypes.filter(t => !['Study', 'Class', 'Break', 'Other'].includes(t)).length > 0 ? 
+             activityTypes.filter(t => !['Study', 'Class', 'Break', 'Other'].includes(t)).map(type => (
+                <div key={type} className="flex items-center justify-between p-2 rounded-md border">
+                    <span>{type}</span>
+                    <Button variant="ghost" size="icon" onClick={() => handleRemoveType(type)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                </div>
+            )) : <p className="text-sm text-muted-foreground text-center">No custom types to manage.</p>}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setIsManageTypesOpen(false)}>Done</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
