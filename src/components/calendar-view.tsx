@@ -97,7 +97,7 @@ export function CalendarView() {
             <div key={day} className="py-2">{day}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 grid-rows-5 gap-px border-t border-l border-border bg-border">
+        <div className="grid grid-cols-7 grid-rows-5 gap-px border-t border-l border-border">
           {days.map((day) => {
             const dayKey = format(day, 'yyyy-MM-dd');
             const dayActivities = groupActivitiesByDay[dayKey] || [];
@@ -105,7 +105,7 @@ export function CalendarView() {
               <div
                 key={day.toString()}
                 className={cn(
-                  'relative flex flex-col bg-card p-2 min-h-[120px] overflow-hidden cursor-pointer hover:bg-muted/50',
+                  'relative flex flex-col bg-card p-2 min-h-[120px] overflow-hidden cursor-pointer hover:bg-muted/50 border-b border-r border-border',
                   !isSameMonth(day, currentMonth) && 'bg-muted/50 text-muted-foreground'
                 )}
                 onClick={() => handleDayClick(day)}
