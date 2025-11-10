@@ -24,10 +24,14 @@ export default function TimerPage() {
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value="timer">
-                        <ActivityTimer mode="timer" />
+                        <div className="min-h-[550px]">
+                            <ActivityTimer mode="timer" />
+                        </div>
                     </TabsContent>
                     <TabsContent value="stopwatch">
-                        <ActivityTimer mode="stopwatch" />
+                         <div className="min-h-[550px]">
+                            <ActivityTimer mode="stopwatch" />
+                        </div>
                     </TabsContent>
                 </Tabs>
             </div>
