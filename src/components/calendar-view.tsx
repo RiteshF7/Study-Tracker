@@ -140,7 +140,7 @@ export function CalendarView() {
             <div key={day} className="py-2">{day}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-px border-t border-l border-border">
+        <div className="grid grid-cols-7 border-t border-l border-border">
           {calendarGrid}
         </div>
       </div>
