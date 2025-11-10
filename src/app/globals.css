@@ -226,8 +226,17 @@ body {
   body {
     @apply bg-background text-foreground;
   }
-  .violet-dark body, .disney-dark body {
-    background-image: linear-gradient(to bottom, hsl(265, 80%, 25%), hsl(300, 90%, 35%), hsl(220, 90%, 45%));
+  .violet-dark body {
+    background-image: url('https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx2aW9sZXQlMjBwYXN0ZWwlMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc2MjkxNTU4N3ww&ixlib=rb-4.1.0&q=80&w=1080');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+  .disney-dark body {
+    background-image: url('https://images.unsplash.com/photo-1596277625127-4ddc9446cec2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxkaXNuZXklMjBjYXN0bGUlMjBuaWdodHxlbnwwfHx8fDE3NjI5MTU0OTB8MA&ixlib=rb-4.1.0&q=80&w=1080');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
   }
   .matrix-dark body {
     background-color: #000;
