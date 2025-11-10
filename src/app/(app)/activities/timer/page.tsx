@@ -10,7 +10,7 @@ export default function TimerPage() {
     const [mode, setMode] = useState<'timer' | 'stopwatch'>('timer');
 
     return (
-        <div className="flex items-start justify-center p-2 sm:p-4">
+        <div className="flex items-start p-2 sm:p-4">
             <div className="w-full max-w-2xl">
                 <Tabs 
                     defaultValue="timer" 
