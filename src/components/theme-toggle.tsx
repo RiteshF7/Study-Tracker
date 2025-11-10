@@ -42,6 +42,10 @@ export function ThemeToggle() {
           <Code className="mr-2 h-4 w-4" />
           Matrix
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("disney-dark")}>
+          <Sparkles className="mr-2 h-4 w-4" />
+          Disney
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
