@@ -9,7 +9,6 @@ import {
   Target,
   BookOpenCheck,
   LogOut,
-  NotebookPen,
 } from "lucide-react";
 import {
   SidebarHeader,
@@ -43,11 +42,6 @@ const navItems = [
     href: "/scheduler",
     icon: BrainCircuit,
     label: "AI Scheduler",
-  },
-  {
-    href: "/notes",
-    icon: NotebookPen,
-    label: "Sticky Notes",
   },
 ];
 
