@@ -267,7 +267,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
   
   const displayTime = mode === 'timer' ? timerState.remainingTime : timerState.elapsedTime;
   const totalSecondsInDuration = mode === 'timer' ? timerState.duration * 60 : 0;
-  const progress = mode === 'timer' ? (totalSecondsInDuration - timerState.remainingTime) / totalSecondsInDuration : 0;
+  const progress = mode === 'timer' && totalSecondsInDuration > 0 ? (totalSecondsInDuration - timerState.remainingTime) / totalSecondsInDuration : 0;
   const strokeDashoffset = CIRCLE_CIRCUMFERENCE * (1 - progress);
 
   return (
@@ -278,12 +278,12 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
           <p className="text-2xl text-muted-foreground">{timerState.isFinished ? "Session Finished!" : `Timing session for (${mode}):`}</p>
           <h1 className="text-6xl font-bold font-headline">{timerState.activityName}</h1>
           
-          <div className="relative w-[220px] h-[220px]">
+          <div className={cn("relative w-[220px] h-[220px]", mode === 'stopwatch' && 'animate-pulse')}>
               <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 220 220">
                   <defs>
                       <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" style={{stopColor: '#4ade80'}} />
-                          <stop offset="100%" style={{stopColor: '#16a34a'}} />
+                          <stop offset="0%" stopColor="hsl(var(--primary))" />
+                          <stop offset="100%" stopColor="hsl(var(--accent))" />
                       </linearGradient>
                   </defs>
                   <circle
@@ -296,7 +296,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
                       cy="110"
                   />
                   <circle
-                      stroke={timerState.isFinished ? "hsl(var(--destructive))" : (mode === 'timer' ? "url(#progressGradient)" : "hsl(var(--primary))")}
+                      stroke={timerState.isFinished ? "hsl(var(--destructive))" : "url(#progressGradient)"}
                       strokeWidth="12"
                       strokeLinecap="round"
                       fill="transparent"
@@ -305,8 +305,8 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
                       cy="110"
                       style={{
                           strokeDasharray: CIRCLE_CIRCUMFERENCE,
-                          strokeDashoffset: mode === 'timer' ? strokeDashoffset : undefined,
-                          transition: mode === 'timer' ? 'stroke-dashoffset 1s linear' : 'none',
+                          strokeDashoffset: strokeDashoffset,
+                          transition: 'stroke-dashoffset 1s linear',
                       }}
                   />
               </svg>
