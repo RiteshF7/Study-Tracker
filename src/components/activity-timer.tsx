@@ -128,6 +128,10 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
           if (remaining <= 0) {
             setTimerState(prev => ({...prev, remainingTime: 0, isTiming: false, isFinished: true }));
             playSound();
+            toast({
+                title: "Timer Finished!",
+                description: `Your session for "${timerState.activityName}" is complete.`,
+            });
             clearTimer();
           } else {
             setTimerState(prev => ({...prev, remainingTime: remaining }));
@@ -140,7 +144,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
       clearTimer();
     }
     return clearTimer;
-  }, [timerState.isTiming, timerState.startTime, timerState.duration, setTimerState, mode, clearTimer]);
+  }, [timerState.isTiming, timerState.startTime, timerState.duration, timerState.activityName, setTimerState, mode, clearTimer, toast]);
 
   const handleAddNewName = () => {
     if (newActivityName.trim() && !pastActivityNames.includes(newActivityName.trim())) {
@@ -278,7 +282,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
           <p className="text-2xl text-muted-foreground">{timerState.isFinished ? "Session Finished!" : `Timing session for (${mode}):`}</p>
           <h1 className="text-6xl font-bold font-headline">{timerState.activityName}</h1>
           
-          <div className={cn("relative w-[220px] h-[220px]", mode === 'stopwatch' && 'animate-pulse')}>
+          <div className={cn("relative w-[220px] h-[220px]", mode === 'stopwatch' && timerState.isTiming && 'animate-pulse')}>
               <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 220 220">
                   <defs>
                       <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -305,7 +309,7 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
                       cy="110"
                       style={{
                           strokeDasharray: CIRCLE_CIRCUMFERENCE,
-                          strokeDashoffset: strokeDashoffset,
+                          strokeDashoffset: mode === 'timer' ? strokeDashoffset : undefined,
                           transition: 'stroke-dashoffset 1s linear',
                       }}
                   />
@@ -511,4 +515,6 @@ export function ActivityTimer({ mode }: { mode: TimerMode }) {
 }
 
     
+    
+
     
