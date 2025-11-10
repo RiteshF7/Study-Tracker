@@ -51,10 +51,10 @@ export function CalendarView() {
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 
-  const days = eachDayOfInterval({
-    start: startOfWeek(firstDayCurrentMonth),
-    end: endOfWeek(lastDayCurrentMonth),
-  });
+  const days = useMemo(() => eachDayOfInterval({
+    start: startOfWeek(startOfMonth(currentMonth)),
+    end: endOfWeek(endOfMonth(currentMonth)),
+  }), [currentMonth]);
 
   const groupActivitiesByDay = useMemo(() => {
     const grouped: { [key: string]: Activity[] } = {};
@@ -76,6 +76,48 @@ export function CalendarView() {
   const handleDayClick = (day: Date) => {
     setSelectedDate(day);
   };
+  
+  const calendarGrid = useMemo(() => {
+    return days.map((day) => {
+        const dayKey = format(day, 'yyyy-MM-dd');
+        const dayActivities = groupActivitiesByDay[dayKey] || [];
+        return (
+          <div
+            key={day.toString()}
+            className={cn(
+              'relative flex flex-col bg-card p-2 min-h-[120px] overflow-hidden cursor-pointer hover:bg-muted/50 border-b border-r border-border',
+              !isSameMonth(day, currentMonth) && 'bg-muted/50 text-muted-foreground'
+            )}
+            onClick={() => handleDayClick(day)}
+          >
+            <time
+              dateTime={format(day, 'yyyy-MM-dd')}
+              className={cn(
+                'font-medium',
+                isToday(day) &&
+                  'flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground'
+              )}
+            >
+              {format(day, 'd')}
+            </time>
+            <div className="mt-1 flex-1 overflow-y-auto">
+              {isLoading && isSameMonth(day, currentMonth) && (
+                <div className="w-full h-4 bg-muted rounded animate-pulse mt-1"></div>
+              )}
+              {dayActivities.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="mt-1 p-1 text-xs rounded-md bg-primary/10 text-primary-foreground/90 truncate"
+                  title={`${activity.name} (${activity.duration} min)`}
+                >
+                  <span className="font-bold text-primary">{activity.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })
+  }, [days, groupActivitiesByDay, currentMonth, handleDayClick, isLoading]);
 
   return (
     <>
@@ -99,45 +141,7 @@ export function CalendarView() {
           ))}
         </div>
         <div className="grid grid-cols-7 gap-px border-t border-l border-border">
-          {days.map((day) => {
-            const dayKey = format(day, 'yyyy-MM-dd');
-            const dayActivities = groupActivitiesByDay[dayKey] || [];
-            return (
-              <div
-                key={day.toString()}
-                className={cn(
-                  'relative flex flex-col bg-card p-2 min-h-[120px] overflow-hidden cursor-pointer hover:bg-muted/50 border-b border-r border-border',
-                  !isSameMonth(day, currentMonth) && 'bg-muted/50 text-muted-foreground'
-                )}
-                onClick={() => handleDayClick(day)}
-              >
-                <time
-                  dateTime={format(day, 'yyyy-MM-dd')}
-                  className={cn(
-                    'font-medium',
-                    isToday(day) &&
-                      'flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground'
-                  )}
-                >
-                  {format(day, 'd')}
-                </time>
-                <div className="mt-1 flex-1 overflow-y-auto">
-                  {isLoading && (
-                    <div className="w-full h-4 bg-muted rounded animate-pulse mt-1"></div>
-                  )}
-                  {dayActivities.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="mt-1 p-1 text-xs rounded-md bg-primary/10 text-primary-foreground/90 truncate"
-                      title={`${activity.name} (${activity.duration} min)`}
-                    >
-                      <span className="font-bold text-primary">{activity.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+          {calendarGrid}
         </div>
       </div>
 
