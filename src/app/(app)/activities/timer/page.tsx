@@ -11,28 +11,35 @@ export default function TimerPage() {
 
     return (
         <div className="flex h-screen w-screen items-center justify-center bg-background p-2 sm:p-4">
-            <div className="w-full max-w-md">
-                <Tabs defaultValue="timer" className="w-full" onValueChange={(value) => setMode(value as 'timer' | 'stopwatch')}>
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="timer">
-                            <Timer className="mr-2 h-4 w-4" />
+            <div className="w-full max-w-2xl">
+                <Tabs 
+                    defaultValue="timer" 
+                    className="flex flex-col sm:flex-row gap-4 sm:gap-8" 
+                    onValueChange={(value) => setMode(value as 'timer' | 'stopwatch')}
+                    orientation="vertical"
+                >
+                    <TabsList className="grid w-full sm:w-auto sm:grid-rows-2 sm:grid-cols-1">
+                        <TabsTrigger value="timer" className="py-4">
+                            <Timer className="mr-2 h-5 w-5" />
                             Timer
                         </TabsTrigger>
-                        <TabsTrigger value="stopwatch">
-                            <Clock className="mr-2 h-4 w-4" />
+                        <TabsTrigger value="stopwatch" className="py-4">
+                            <Clock className="mr-2 h-5 w-5" />
                             Stopwatch
                         </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="timer">
-                        <div className="min-h-[550px]">
-                            <ActivityTimer mode="timer" />
-                        </div>
-                    </TabsContent>
-                    <TabsContent value="stopwatch">
-                         <div className="min-h-[550px]">
-                            <ActivityTimer mode="stopwatch" />
-                        </div>
-                    </TabsContent>
+                    <div className="flex-1">
+                        <TabsContent value="timer">
+                            <div className="min-h-[550px]">
+                                <ActivityTimer mode="timer" />
+                            </div>
+                        </TabsContent>
+                        <TabsContent value="stopwatch">
+                            <div className="min-h-[550px]">
+                                <ActivityTimer mode="stopwatch" />
+                            </div>
+                        </TabsContent>
+                    </div>
                 </Tabs>
             </div>
         </div>
