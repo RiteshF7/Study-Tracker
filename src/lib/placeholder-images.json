@@ -5,6 +5,24 @@
       "description": "An illustration showing charts and graphs, representing an empty state for the dashboard.",
       "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhbmFseXRpY3N8ZW58MHx8fHwxNzMyMDY5MjM4fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "data analytics"
+    },
+    {
+      "id": "mascot-default",
+      "description": "A friendly cartoon mascot waving.",
+      "imageUrl": "https://images.unsplash.com/photo-1752479910178-1bbeac45da07?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjYXJ0b29uJTIwbWFzY290fGVufDB8fHx8MTc2Mjc2ODYwMnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cartoon mascot"
+    },
+    {
+      "id": "mascot-happy",
+      "description": "A happy and celebrating cartoon mascot.",
+      "imageUrl": "https://images.unsplash.com/photo-1745215745078-6ef0e0102d65?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8aGFwcHklMjBtYXNjb3R8ZW58MHx8fHwxNzYyNzY4NjAyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "happy mascot"
+    },
+    {
+      "id": "mascot-sleepy",
+      "description": "A sleepy cartoon mascot yawning.",
+      "imageUrl": "https://images.unsplash.com/photo-1594296317324-b28e34c568dd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8c2xlZXB5JTIwbWFzY290fGVufDB8fHx8MTc2Mjc2ODYwMnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sleepy mascot"
     }
   ]
 }

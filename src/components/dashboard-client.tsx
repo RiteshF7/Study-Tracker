@@ -41,6 +41,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
+import { Mascot } from "./mascot";
 
 const activityChartConfig = {
   duration: {
@@ -420,11 +421,14 @@ export function DashboardClient() {
 
   return (
     <div className="space-y-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground">
-            Welcome back, {userProfile?.name || 'Student'}!
-        </h2>
-        <p className="text-muted-foreground">Here's a snapshot of your progress.</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">
+              Welcome back, {userProfile?.name || 'Student'}!
+          </h2>
+          <p className="text-muted-foreground">Here's a snapshot of your progress.</p>
+        </div>
+        <Mascot studyTimeToday={studyTimeToday} />
       </div>
 
       {userProfile?.learningGoals && (
