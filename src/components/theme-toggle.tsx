@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Moon, Sun, Sparkles, Code, Tv, Palette } from "lucide-react"
+import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
@@ -27,32 +27,13 @@ export function ThemeToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="mr-2 h-4 w-4" />
           Light
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <Moon className="mr-2 h-4 w-4" />
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("peazehub-dark")}>
-          <Palette className="mr-2 h-4 w-4" />
-          Peazehub
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("violet-dark")}>
-          <Sparkles className="mr-2 h-4 w-4" />
-          Violet
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("matrix-dark")}>
-          <Code className="mr-2 h-4 w-4" />
-          Matrix
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("disney-dark")}>
-          <Sparkles className="mr-2 h-4 w-4" />
-          Disney
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("cn-dark")}>
-          <Tv className="mr-2 h-4 w-4" />
-          CN
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          System
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
