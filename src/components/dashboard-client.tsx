@@ -26,7 +26,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useMemo, useState } from "react";
-import { format, subDays, parseISO, startOfDay, parse, eachDayOfInterval, startOfWeek, isSameWeek, endOfWeek, eachWeekOfInterval, addDays, getWeek, subMonths, differenceInDays, addMonths, addWeeks, isToday, subWeeks, sub } from "date-fns";
+import { format, subDays, parseISO, startOfDay, parse, eachDayOfInterval, startOfWeek, isSameWeek, endOfWeek, eachWeekOfInterval, addDays, getWeek, subMonths, differenceInDays, addMonths, addWeeks, isToday, subWeeks, sub, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle, ChevronDown, Flame, ChevronLeft, ChevronRight } from "lucide-react";
@@ -129,6 +129,8 @@ export function DashboardClient() {
   const [problemTimeRange, setProblemTimeRange] = useState<TimeRangeKey>('7d');
   const [activityEndDate, setActivityEndDate] = useState(() => startOfDay(new Date()));
   const [problemEndDate, setProblemEndDate] = useState(() => startOfDay(new Date()));
+  const [calendarMonth, setCalendarMonth] = useState(startOfMonth(new Date()));
+
   
   const userDocRef = useMemoFirebase(() => 
     user ? doc(firestore, "users", user.uid) : null
@@ -190,6 +192,62 @@ export function DashboardClient() {
     return { streakCount: streak, streakDates: dates };
 
   }, [activities]);
+
+   const dailyStudyDurations = useMemo(() => {
+    const durations = new Map<string, number>();
+    if (!activities) return durations;
+
+    activities.forEach(activity => {
+        if (activity.type === 'Study' || activity.type === 'Class') {
+            const dateStr = format(parseISO(activity.date), 'yyyy-MM-dd');
+            durations.set(dateStr, (durations.get(dateStr) || 0) + activity.duration);
+        }
+    });
+    return durations;
+  }, [activities]);
+
+   const calendarModifiers = useMemo(() => {
+    const monthInterval = { start: startOfMonth(calendarMonth), end: endOfMonth(calendarMonth) };
+    const studiedDays: Date[] = [];
+    const skippedDays: Date[] = [];
+
+    eachDayOfInterval(monthInterval).forEach(day => {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      if (dailyStudyDurations.has(dateStr)) {
+        studiedDays.push(day);
+      } else {
+        if (day <= new Date()) { // Only mark past days as skipped
+          skippedDays.push(day);
+        }
+      }
+    });
+
+    return { studied: studiedDays, skipped: skippedDays };
+  }, [calendarMonth, dailyStudyDurations]);
+
+  const calendarModifierStyles = useMemo(() => {
+    const styles: Record<string, React.CSSProperties> = {};
+    const maxGlowMinutes = 12 * 60; // 12 hours
+
+    calendarModifiers.studied.forEach(day => {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      const duration = dailyStudyDurations.get(dateStr) || 0;
+      const intensity = Math.min(duration / maxGlowMinutes, 1);
+      
+      const glowColor = `hsl(var(--primary) / ${intensity * 0.8})`;
+
+      styles[dateStr] = {
+        boxShadow: `0 0 ${intensity * 20}px ${intensity * 5}px ${glowColor}`,
+        // Keep a visible border that fades slightly with intensity
+        borderColor: `hsl(var(--primary) / ${0.2 + intensity * 0.4})`,
+        color: `hsl(var(--primary-foreground) / ${0.8 + intensity * 0.2})`,
+      };
+    });
+
+    return {
+      studied: (date: Date) => styles[format(date, 'yyyy-MM-dd')] || {},
+    };
+  }, [calendarModifiers.studied, dailyStudyDurations]);
   
   const getInterval = (endDate: Date, timeRange: TimeRangeKey) => {
      switch (timeRange) {
@@ -566,17 +624,20 @@ export function DashboardClient() {
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Your {streakCount}-Day Study Streak</DialogTitle>
+                    <DialogTitle>Your Study Heat Map</DialogTitle>
                     <DialogDescription>
-                        Keep up the great work! Here are the days you've studied consecutively.
+                        Days glow brighter based on study duration. Black days were skipped.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex justify-center py-4">
                     <Calendar
-                        month={streakDates[0] || new Date()}
-                        modifiers={{ streak: streakDates }}
+                        month={calendarMonth}
+                        onMonthChange={setCalendarMonth}
+                        modifiers={calendarModifiers}
+                        modifiersStyles={calendarModifierStyles}
                         modifiersClassNames={{
-                            streak: 'bg-primary/20 text-primary-foreground rounded-full',
+                            skipped: 'day-skipped',
+                            studied: 'day-studied',
                         }}
                         className="p-0"
                     />
@@ -764,5 +825,7 @@ export function DashboardClient() {
     </div>
   );
 }
+
+    
 
     
