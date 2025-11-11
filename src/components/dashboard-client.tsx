@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import { format, subDays, parseISO, startOfDay, eachDayOfInterval, getWeek, getDay, isSameDay } from "date-fns";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle, ChevronDown, Flame, ChevronLeft, ChevronRight } from "lucide-react";
+import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle, ChevronDown, Flame, ChevronLeft, ChevronRight, Trophy } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import Link from "next/link";
@@ -18,6 +18,7 @@ import { ActivityHistory } from "./activity-history";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Calendar } from "./ui/calendar";
 import { cn } from "@/lib/utils";
+import { generateMockActivities } from "@/lib/mock-data";
 
 type UserProfile = {
   name?: string;
@@ -65,9 +66,13 @@ export function DashboardClient() {
   const isLoading = isLoadingActivities || isLoadingProblems || isLoadingProfile;
   
   const studyActivities = useMemo(() => {
-    if (!activities) return [];
-    return activities.filter(a => a.type === 'Study' || a.type === 'Class');
-  }, [activities]);
+    let allActivities = activities;
+    if (!isLoadingActivities && (!activities || activities.length === 0)) {
+        allActivities = generateMockActivities(365);
+    }
+    if (!allActivities) return [];
+    return allActivities.filter(a => a.type === 'Study' || a.type === 'Class');
+  }, [activities, isLoadingActivities]);
 
 
   if (isLoading) {
@@ -78,7 +83,7 @@ export function DashboardClient() {
       )
   }
 
-  if (!activities || activities.length === 0) {
+  if (!activities || activities.length === 0 && studyActivities.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-16">
         <h2 className="text-2xl font-semibold mb-2">
@@ -105,7 +110,11 @@ export function DashboardClient() {
                       <TodaysMotivation goals={userProfile?.learningGoals} />
                   </div>
                   <div className="md:col-span-2">
-                      <StatsCards activities={studyActivities} targetHours={userProfile?.targetHours} />
+                     <DialogTrigger asChild>
+                         <div className="cursor-pointer h-full">
+                            <StatsCards activities={studyActivities} targetHours={userProfile?.targetHours} />
+                         </div>
+                    </DialogTrigger>
                   </div>
               </div>
           </div>

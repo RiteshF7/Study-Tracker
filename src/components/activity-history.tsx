@@ -6,7 +6,7 @@ import type { Activity } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
-import { subDays, format, startOfWeek, addDays, getDay, startOfYear, getMonth, endOfYear } from 'date-fns';
+import { subDays, format, startOfWeek, addDays, getDay, startOfYear, getMonth, endOfYear, parseISO } from 'date-fns';
 
 const getIntensity = (minutes: number) => {
     if (minutes === 0) return 0;
@@ -54,8 +54,9 @@ export function ActivityHistory({ activities }: { activities: Activity[] }) {
     const activityByDate = useMemo(() => {
         const map = new Map<string, number>();
         activities.forEach(a => {
-            if (a.createdAt && a.createdAt.toDate) {
-                const dateKey = format(a.createdAt.toDate(), 'yyyy-MM-dd');
+            if (a.createdAt) {
+                const date = (a.createdAt as any).toDate ? (a.createdAt as any).toDate() : parseISO(a.date);
+                const dateKey = format(date, 'yyyy-MM-dd');
                 map.set(dateKey, (map.get(dateKey) || 0) + a.duration);
             }
         });
