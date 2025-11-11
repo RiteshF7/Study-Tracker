@@ -6,7 +6,7 @@ import type { Activity } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
-import { subDays, format, startOfWeek, addDays } from 'date-fns';
+import { subDays, format, startOfWeek, addDays, getDay, startOfYear, getMonth, endOfYear } from 'date-fns';
 
 const getIntensity = (minutes: number) => {
     if (minutes === 0) return 0;
@@ -62,26 +62,45 @@ export function ActivityHistory({ activities }: { activities: Activity[] }) {
         return map;
     }, [activities]);
 
-    const squares = useMemo(() => {
+    const { squares, monthLabels } = useMemo(() => {
         const today = new Date();
-        const yearAgo = subDays(today, 365);
-        const firstDay = startOfWeek(yearAgo);
+        const firstDayOfYear = startOfYear(today);
+        const firstDayToRender = startOfWeek(firstDayOfYear);
+        const lastDayOfYear = endOfYear(today);
 
         const days = [];
-        let day = firstDay;
-        while (day <= today) {
+        let day = firstDayToRender;
+        while (day <= lastDayOfYear) {
             days.push(day);
             day = addDays(day, 1);
         }
         
-        return days.map(d => {
+        const squaresData = days.map(d => {
             const dateKey = format(d, 'yyyy-MM-dd');
             return {
                 date: d,
                 minutes: activityByDate.get(dateKey) || 0
             };
         });
+
+        const monthLabelsData = [];
+        let lastMonth = -1;
+        for (let i = 0; i < squaresData.length; i += 7) {
+            const week = squaresData.slice(i, i + 7);
+            const firstDayOfWeek = week[0]?.date;
+            if(firstDayOfWeek) {
+                const currentMonth = getMonth(firstDayOfWeek);
+                if (currentMonth !== lastMonth) {
+                    monthLabelsData.push({ label: format(firstDayOfWeek, 'MMM'), weekIndex: Math.floor(i / 7) });
+                    lastMonth = currentMonth;
+                }
+            }
+        }
+
+        return { squares: squaresData, monthLabels: monthLabelsData };
     }, [activityByDate]);
+    
+    const weekdayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
     return (
         <Card>
@@ -90,11 +109,27 @@ export function ActivityHistory({ activities }: { activities: Activity[] }) {
                     ACTIVITY HISTORY
                 </CardTitle>
             </CardHeader>
-            <CardContent>
-                <div className="flex flex-wrap gap-1">
-                    {squares.map(({ date, minutes }) => (
-                         <DaySquare key={date.toString()} date={date} minutes={minutes} />
-                    ))}
+            <CardContent className="overflow-x-auto">
+                <div className="relative">
+                    <div className="grid grid-flow-col gap-1" style={{ gridTemplateRows: 'repeat(7, auto)' }}>
+                         {squares.map(({ date, minutes }) => (
+                             <DaySquare key={date.toString()} date={date} minutes={minutes} />
+                        ))}
+                    </div>
+                     <div className="absolute top-0 -mt-5 flex" style={{ left: '26px' }}>
+                        {monthLabels.map(({ label, weekIndex }) => (
+                            <div key={label} className="text-xs text-muted-foreground" style={{ position: 'absolute', left: `${weekIndex * 16}px` }}>
+                                {label}
+                            </div>
+                        ))}
+                    </div>
+                     <div className="absolute left-0 -ml-5 top-0 flex flex-col gap-[3px]">
+                        {weekdayLabels.map((label, i) => (
+                           <div key={i} className="text-xs text-muted-foreground" style={{ height: '12px', lineHeight: '12px' }}>
+                                {i % 2 !== 0 ? label : ''}
+                            </div>
+                        ))}
+                    </div>
                 </div>
                  <div className="flex justify-end items-center gap-2 mt-4 text-xs text-muted-foreground">
                     Less

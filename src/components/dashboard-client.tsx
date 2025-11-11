@@ -15,6 +15,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { GamificationCard } from "./gamification-card";
 import { StatsCards } from "./stats-cards";
 import { ActivityHistory } from "./activity-history";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Calendar } from "./ui/calendar";
+import { cn } from "@/lib/utils";
 
 type UserProfile = {
   name?: string;
@@ -92,24 +95,34 @@ export function DashboardClient() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 space-y-4">
-            <GamificationCard activities={studyActivities} />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-1">
-                    <TodaysMotivation goals={userProfile?.learningGoals} />
-                </div>
-                <div className="md:col-span-2">
-                    <StatsCards activities={studyActivities} targetHours={userProfile?.targetHours} />
-                </div>
-            </div>
-        </div>
-        <div className="lg:col-span-1">
-            {/* Placeholder for future cards like 'Today's Focus' */}
+    <Dialog>
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 space-y-4">
+              <GamificationCard activities={studyActivities} />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-1">
+                      <TodaysMotivation goals={userProfile?.learningGoals} />
+                  </div>
+                  <div className="md:col-span-2">
+                      <StatsCards activities={studyActivities} targetHours={userProfile?.targetHours} />
+                  </div>
+              </div>
+          </div>
+          <div className="lg:col-span-1">
+              {/* Placeholder for future cards like 'Today's Focus' */}
+          </div>
         </div>
       </div>
-      <ActivityHistory activities={studyActivities} />
-    </div>
+       <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Activity Heat Map</DialogTitle>
+            <DialogDescription>
+              Your study activity over the past year. Darker shades mean more study time.
+            </DialogDescription>
+          </DialogHeader>
+          <ActivityHistory activities={studyActivities} />
+      </DialogContent>
+    </Dialog>
   );
 }
