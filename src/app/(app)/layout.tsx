@@ -11,6 +11,7 @@ import { AppNav } from "@/components/app-nav";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -21,8 +22,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-4">
-          <div className="flex items-center gap-2 mt-4">
-            <SidebarTrigger />
+          <div className="flex items-center gap-2 mt-8">
+            <SidebarTrigger className="shadow-[0_0_15px_hsl(var(--glow)/0.5)] hover:shadow-[0_0_20px_hsl(var(--glow)/0.7)]" />
           </div>
           <div className="relative ml-auto flex-1 md:grow-0">
             {/* Search not implemented */}
