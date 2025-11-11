@@ -73,7 +73,7 @@ export function StatsCards({ activities, targetHours = 100, type }: StatsCardsPr
                     FOCUS INSIGHTS
                 </CardTitle>
             </CardHeader>
-            <CardContent className="flex justify-around">
+            <CardContent className="grid grid-cols-2 gap-4">
                 <div className="text-center">
                     <p className="text-xs text-muted-foreground">LAST 7 DAYS</p>
                     <p className="text-2xl font-bold text-primary">{formatHours(avg7 * 7)}</p>

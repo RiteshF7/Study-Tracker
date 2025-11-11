@@ -3,7 +3,7 @@
 
 import type { Activity, Problem } from "@/lib/types";
 import { useMemo } from "react";
-import { format, subDays, parseISO, startOfDay } from "date-fns";
+import { format, subDays, parseISO, startOfDay, differenceInDays } from "date-fns";
 import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle, ChevronDown, Flame, ChevronLeft, ChevronRight, Trophy, Pencil } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
@@ -16,6 +16,7 @@ import { ActivityHistory } from "./activity-history";
 import { generateMockActivities } from "@/lib/mock-data";
 import { TodaysFocusCard } from "./todays-focus-card";
 import { StreakCard } from "./streak-card";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 type UserProfile = {
   name?: string;
@@ -46,6 +47,40 @@ export function DashboardClient() {
     }
     return activities;
   }, [activities, isLoadingActivities]);
+
+  const [bestStreak, setBestStreak] = useLocalStorage<number>('best-streak', 0);
+
+  const currentStreak = useMemo(() => {
+    if (!allActivities || allActivities.length === 0) {
+      return 0;
+    }
+
+    const uniqueDates = [...new Set(allActivities.map(a => a.date))]
+      .map(d => startOfDay(parseISO(d)))
+      .sort((a, b) => b.getTime() - a.getTime());
+
+    let streak = 0;
+    if (uniqueDates.length > 0) {
+      const today = startOfDay(new Date());
+      const firstDate = uniqueDates[0];
+      
+      if (differenceInDays(today, firstDate) <= 1) {
+        streak = 1;
+        for (let i = 1; i < uniqueDates.length; i++) {
+          if (differenceInDays(uniqueDates[i-1], uniqueDates[i]) === 1) {
+            streak++;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+    
+    if (streak > bestStreak) {
+        setBestStreak(streak);
+    }
+    return streak;
+  }, [allActivities, bestStreak, setBestStreak]);
 
   if (isLoading) {
       return (
@@ -78,7 +113,8 @@ export function DashboardClient() {
         <div className="xl:col-span-2 space-y-6">
           <GamificationCard activities={allActivities} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StreakCard activities={allActivities} />
+            <StreakCard type="current" value={currentStreak} />
+            <StreakCard type="best" value={bestStreak} />
           </div>
           <StatsCards activities={allActivities} targetHours={userProfile?.targetHours} type="focus" />
         </div>
