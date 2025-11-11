@@ -63,7 +63,7 @@ export function AppNav() {
           <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
             <BookOpenCheck className="w-5 h-5 text-white" />
           </div>
-          <h1 className="text-xl font-semibold font-headline">StudyTrack</h1>
+          <h1 className="text-xl font-semibold font-headline group-data-[collapsible=icon]:hidden">StudyTrack</h1>
         </div>
       </SidebarHeader>
       <SidebarContent className="p-2">
