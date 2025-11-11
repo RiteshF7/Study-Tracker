@@ -112,10 +112,7 @@ export function DashboardClient() {
         {/* Left Column */}
         <div className="xl:col-span-2 space-y-6">
           <GamificationCard activities={allActivities} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StreakCard type="current" value={currentStreak} />
-            <StreakCard type="best" value={bestStreak} />
-          </div>
+          <StreakCard currentStreak={currentStreak} bestStreak={bestStreak} />
           <StatsCards activities={allActivities} targetHours={userProfile?.targetHours} type="focus" />
         </div>
 

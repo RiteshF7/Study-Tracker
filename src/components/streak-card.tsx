@@ -3,26 +3,31 @@
 
 import { Card, CardContent } from './ui/card';
 import { Flame, Trophy } from 'lucide-react';
+import { Separator } from './ui/separator';
 
 interface StreakCardProps {
-  type: 'current' | 'best';
-  value: number;
+  currentStreak: number;
+  bestStreak: number;
 }
 
-export function StreakCard({ type, value }: StreakCardProps) {
-  const isCurrent = type === 'current';
-  const title = isCurrent ? 'DAY STREAK' : 'BEST STREAK';
-  const color = isCurrent ? 'text-orange-400' : 'text-yellow-400';
-  const Icon = isCurrent ? Flame : Trophy;
-
+export function StreakCard({ currentStreak, bestStreak }: StreakCardProps) {
   return (
     <Card>
-      <CardContent className="p-4 flex items-center justify-between">
-        <div className="text-center">
-          <p className={`text-4xl font-bold ${color}`}>{value}</p>
-          <p className="text-xs text-muted-foreground">{title}</p>
+      <CardContent className="p-4 grid grid-cols-2 divide-x divide-border">
+        <div className="flex items-center justify-between p-2">
+          <div className="text-center">
+            <p className="text-4xl font-bold text-orange-400">{currentStreak}</p>
+            <p className="text-xs text-muted-foreground">DAY STREAK</p>
+          </div>
+          <Flame className="w-10 h-10 text-orange-400" />
         </div>
-        <Icon className={`w-10 h-10 ${color}`} />
+        <div className="flex items-center justify-between p-2">
+          <div className="text-center">
+            <p className="text-4xl font-bold text-yellow-400">{bestStreak}</p>
+            <p className="text-xs text-muted-foreground">BEST STREAK</p>
+          </div>
+          <Trophy className="w-10 h-10 text-yellow-400" />
+        </div>
       </CardContent>
     </Card>
   );
