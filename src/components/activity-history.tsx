@@ -129,7 +129,7 @@ export function ActivityHistory({ activities }: { activities: Activity[] }) {
                             </div>
                             <div className="absolute top-0 -mt-5 flex">
                                 {monthLabels.map(({ label, weekIndex }) => (
-                                    <div key={label} className="text-xs text-muted-foreground" style={{ position: 'absolute', left: `${weekIndex * 16}px` }}>
+                                    <div key={`${label}-${weekIndex}`} className="text-xs text-muted-foreground" style={{ position: 'absolute', left: `${weekIndex * 16}px` }}>
                                         {label}
                                     </div>
                                 ))}
