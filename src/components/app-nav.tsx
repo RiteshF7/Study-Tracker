@@ -77,6 +77,7 @@ export function AppNav() {
                     "bg-primary/10 text-primary hover:bg-primary/20 font-semibold": 
                       pathname.startsWith(item.href),
                   })}
+                  tooltip={item.label}
                 >
                   <item.icon className="mr-2 h-5 w-5" />
                   <span>{item.label}</span>
@@ -94,6 +95,7 @@ export function AppNav() {
                 <SidebarMenuButton
                   isActive={pathname === "/settings"}
                   className="w-full justify-start text-muted-foreground"
+                  tooltip="Settings"
                 >
                   <Settings className="mr-2 h-5 w-5" />
                   <span>Settings</span>
@@ -102,7 +104,7 @@ export function AppNav() {
           </SidebarMenuItem>
           <SidebarMenuItem>
             {/* In a real app, this would trigger a logout function */}
-            <SidebarMenuButton className="w-full justify-start text-muted-foreground hover:text-destructive">
+            <SidebarMenuButton className="w-full justify-start text-muted-foreground hover:text-destructive" tooltip="Logout">
               <LogOut className="mr-2 h-5 w-5" />
               <span>Logout</span>
             </SidebarMenuButton>
