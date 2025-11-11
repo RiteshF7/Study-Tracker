@@ -112,25 +112,28 @@ export function ActivityHistory({ activities }: { activities: Activity[] }) {
             </CardHeader>
             <CardContent>
                 <div className="overflow-x-auto">
-                    <div className="relative py-6">
-                        <div className="grid grid-flow-col gap-1" style={{ gridTemplateRows: 'repeat(7, auto)' }}>
-                            {squares.map(({ date, minutes }) => (
-                                <DaySquare key={date.toString()} date={date} minutes={minutes} />
-                            ))}
-                        </div>
-                        <div className="absolute top-0 -mt-5 flex" style={{ left: '26px' }}>
-                            {monthLabels.map(({ label, weekIndex }) => (
-                                <div key={label} className="text-xs text-muted-foreground" style={{ position: 'absolute', left: `${weekIndex * 16}px` }}>
-                                    {label}
-                                </div>
-                            ))}
-                        </div>
-                        <div className="absolute left-0 -ml-5 top-6 flex flex-col gap-[3px]">
+                    <div className="flex gap-4">
+                        <div className="flex flex-col gap-[3px] pt-5">
                             {weekdayLabels.map((label, i) => (
                             <div key={i} className="text-xs text-muted-foreground" style={{ height: '12px', lineHeight: '12px' }}>
                                     {i % 2 !== 0 ? label : ''}
                                 </div>
                             ))}
+                        </div>
+
+                        <div className="relative">
+                            <div className="grid grid-flow-col gap-1" style={{ gridTemplateRows: 'repeat(7, auto)' }}>
+                                {squares.map(({ date, minutes }, index) => (
+                                    <DaySquare key={index} date={date} minutes={minutes} />
+                                ))}
+                            </div>
+                            <div className="absolute top-0 -mt-5 flex">
+                                {monthLabels.map(({ label, weekIndex }) => (
+                                    <div key={label} className="text-xs text-muted-foreground" style={{ position: 'absolute', left: `${weekIndex * 16}px` }}>
+                                        {label}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
