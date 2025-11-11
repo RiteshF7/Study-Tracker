@@ -207,23 +207,20 @@ export function DashboardClient() {
   }, [activities]);
 
    const calendarModifiers = useMemo(() => {
-    const monthInterval = { start: startOfMonth(calendarMonth), end: endOfMonth(calendarMonth) };
-    const studiedDays: Date[] = [];
-    const skippedDays: Date[] = [];
+    const allDaysWithStudy = Array.from(dailyStudyDurations.keys()).map(dateStr => parseISO(dateStr));
+    const today = startOfDay(new Date());
 
-    eachDayOfInterval(monthInterval).forEach(day => {
-      const dateStr = format(day, 'yyyy-MM-dd');
-      if (dailyStudyDurations.has(dateStr)) {
-        studiedDays.push(day);
-      } else {
-        if (day <= new Date()) { // Only mark past days as skipped
-          skippedDays.push(day);
-        }
-      }
-    });
+    const allPastDaysInApp = activities && activities.length > 0
+        ? eachDayOfInterval({
+            start: startOfDay(parseISO(activities.reduce((earliest, a) => a.date < earliest.date ? a : earliest).date)),
+            end: today
+        })
+        : [];
+    
+    const skippedDays = allPastDaysInApp.filter(day => !dailyStudyDurations.has(format(day, 'yyyy-MM-dd')));
 
-    return { studied: studiedDays, skipped: skippedDays };
-  }, [calendarMonth, dailyStudyDurations]);
+    return { studied: allDaysWithStudy, skipped: skippedDays };
+  }, [dailyStudyDurations, activities]);
 
   const calendarModifierStyles = useMemo(() => {
     const styles: Record<string, React.CSSProperties> = {};
@@ -238,7 +235,6 @@ export function DashboardClient() {
 
       styles[dateStr] = {
         boxShadow: `0 0 ${intensity * 20}px ${intensity * 5}px ${glowColor}`,
-        // Keep a visible border that fades slightly with intensity
         borderColor: `hsl(var(--primary) / ${0.2 + intensity * 0.4})`,
         color: `hsl(var(--primary-foreground) / ${0.8 + intensity * 0.2})`,
       };
@@ -825,6 +821,8 @@ export function DashboardClient() {
     </div>
   );
 }
+
+    
 
     
 
