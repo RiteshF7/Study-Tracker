@@ -21,7 +21,7 @@ export function ThemeProviderWrapper({ children }: { children: ReactNode }) {
       attribute="class"
       defaultTheme="peazehub"
       disableTransitionOnChange
-      themes={['light', 'dark', 'peazehub', 'violet-dark', 'matrix-dark', 'disney-dark', 'cn-dark']}
+      themes={['light', 'dark', 'peazehub', 'violet-dark', 'matrix-dark', 'disney-dark', 'cn-dark', 'sunset', 'latte']}
     >
       {children}
     </ThemeProvider>
