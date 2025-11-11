@@ -115,6 +115,98 @@ body {
     --sidebar-ring: 150 70% 50%;
     --glow: 150 70% 50%;
   }
+
+  .violet-dark {
+    --background: 260 15% 10%;
+    --foreground: 260 10% 95%;
+    --card: 260 15% 12%;
+    --card-foreground: 260 10% 95%;
+    --popover: 260 15% 8%;
+    --popover-foreground: 260 10% 95%;
+    --primary: 260 85% 65%;
+    --primary-foreground: 260 10% 5%;
+    --secondary: 260 15% 20%;
+    --secondary-foreground: 260 10% 95%;
+    --muted: 260 15% 20%;
+    --muted-foreground: 260 10% 65%;
+    --accent: 300 80% 70%;
+    --accent-foreground: 260 10% 95%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 260 15% 25%;
+    --input: 260 15% 25%;
+    --ring: 260 85% 65%;
+    --glow: 260 85% 65%;
+  }
+
+  .matrix-dark {
+    --background: 120 100% 3%;
+    --foreground: 120 80% 60%;
+    --card: 120 100% 5%;
+    --card-foreground: 120 80% 60%;
+    --popover: 120 100% 2%;
+    --popover-foreground: 120 80% 60%;
+    --primary: 120 80% 60%;
+    --primary-foreground: 120 100% 3%;
+    --secondary: 120 100% 8%;
+    --secondary-foreground: 120 80% 60%;
+    --muted: 120 100% 8%;
+    --muted-foreground: 120 80% 40%;
+    --accent: 120 70% 70%;
+    --accent-foreground: 120 100% 3%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 0%;
+    --border: 120 100% 10%;
+    --input: 120 100% 10%;
+    --ring: 120 80% 60%;
+    --glow: 120 80% 60%;
+  }
+
+  .disney-dark {
+    --background: 210 50% 10%;
+    --foreground: 210 30% 90%;
+    --card: 210 50% 15%;
+    --card-foreground: 210 30% 90%;
+    --popover: 210 50% 8%;
+    --popover-foreground: 210 30% 90%;
+    --primary: 40 100% 50%;
+    --primary-foreground: 210 50% 5%;
+    --secondary: 210 50% 25%;
+    --secondary-foreground: 210 30% 90%;
+    --muted: 210 50% 25%;
+    --muted-foreground: 210 30% 60%;
+    --accent: 330 90% 60%;
+    --accent-foreground: 210 30% 90%;
+    --destructive: 0 80% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 50% 30%;
+    --input: 210 50% 30%;
+    --ring: 40 100% 50%;
+    --glow: 40 100% 50%;
+  }
+
+  .cn-dark {
+    --background: 0 0% 5%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 50 100% 50%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 0%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 180 100% 50%;
+    --glow: 180 100% 50%;
+  }
 }
 
 @layer base {
