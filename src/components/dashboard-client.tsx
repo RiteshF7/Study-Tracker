@@ -2,7 +2,7 @@
 "use client";
 
 import type { Activity, Problem } from "@/lib/types";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { format, subDays, parseISO, startOfDay, differenceInDays } from "date-fns";
 import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle, ChevronDown, Flame, ChevronLeft, ChevronRight, Trophy, Pencil } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
@@ -17,6 +17,8 @@ import { generateMockActivities } from "@/lib/mock-data";
 import { TodaysFocusCard } from "./todays-focus-card";
 import { StreakCard } from "./streak-card";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { ActivityTimer } from "./activity-timer";
+import { LiveSessionCard } from "./live-session-card";
 
 type UserProfile = {
   name?: string;
@@ -26,6 +28,14 @@ type UserProfile = {
 
 export function DashboardClient() {
   const { firestore, user } = useFirebase();
+
+  const [isTiming, setIsTiming] = useState(false);
+  const [timerConfig, setTimerConfig] = useState({
+    mode: 'timer' as 'timer' | 'stopwatch',
+    activityName: '',
+    activityType: 'Study' as Activity['type'],
+    duration: 25
+  });
 
   const userDocRef = useMemoFirebase(() => 
     user ? doc(firestore, "users", user.uid) : null
@@ -82,6 +92,27 @@ export function DashboardClient() {
     return streak;
   }, [allActivities, bestStreak, setBestStreak]);
 
+  const handleStartTimer = (config: typeof timerConfig) => {
+    setTimerConfig(config);
+    setIsTiming(true);
+  };
+
+  const handleSessionEnd = () => {
+    setIsTiming(false);
+  };
+
+  if (isTiming) {
+    return (
+      <ActivityTimer
+        mode={timerConfig.mode}
+        initialActivityName={timerConfig.activityName}
+        initialActivityType={timerConfig.activityType}
+        initialDuration={timerConfig.duration}
+        onSessionEnd={handleSessionEnd}
+      />
+    );
+  }
+
   if (isLoading) {
       return (
           <div className="flex items-center justify-center text-center py-16">
@@ -90,7 +121,7 @@ export function DashboardClient() {
       )
   }
 
-  if (allActivities.length === 0) {
+  if (allActivities.length === 0 && !isTiming) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-16">
         <h2 className="text-2xl font-semibold mb-2">
@@ -108,11 +139,12 @@ export function DashboardClient() {
 
   return (
     <div className="space-y-6">
+       <LiveSessionCard onStartTimer={handleStartTimer} />
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Left Column */}
         <div className="xl:col-span-2 space-y-6">
           <GamificationCard activities={allActivities} />
-          <StreakCard currentStreak={currentStreak} bestStreak={bestStreak} />
+           <StreakCard currentStreak={currentStreak} bestStreak={bestStreak} />
           <StatsCards activities={allActivities} targetHours={userProfile?.targetHours} type="focus" />
         </div>
 
