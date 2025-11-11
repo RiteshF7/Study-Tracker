@@ -1,3 +1,4 @@
+
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -10,6 +11,7 @@ import {
   BookOpenCheck,
   LogOut,
   CalendarDays,
+  Settings,
 } from "lucide-react";
 import {
   SidebarHeader,
@@ -70,10 +72,10 @@ export function AppNav() {
             <SidebarMenuItem key={item.href}>
               <Link href={item.href} passHref>
                 <SidebarMenuButton
-                  isActive={pathname === item.href}
-                  className={cn("w-full justify-start text-base", { // Increased font size
-                    "bg-primary/10 text-primary hover:bg-primary/20 font-semibold": // Higher contrast
-                      pathname === item.href,
+                  isActive={pathname.startsWith(item.href)}
+                  className={cn("w-full justify-start text-base", { 
+                    "bg-primary/10 text-primary hover:bg-primary/20 font-semibold": 
+                      pathname.startsWith(item.href),
                   })}
                 >
                   <item.icon className="mr-2 h-5 w-5" />
@@ -87,6 +89,17 @@ export function AppNav() {
       <SidebarFooter className="p-2">
         <SidebarSeparator />
         <SidebarMenu>
+           <SidebarMenuItem>
+             <Link href="/settings" passHref>
+                <SidebarMenuButton
+                  isActive={pathname === "/settings"}
+                  className="w-full justify-start text-muted-foreground"
+                >
+                  <Settings className="mr-2 h-5 w-5" />
+                  <span>Settings</span>
+                </SidebarMenuButton>
+              </Link>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             {/* In a real app, this would trigger a logout function */}
             <SidebarMenuButton className="w-full justify-start text-muted-foreground hover:text-destructive">

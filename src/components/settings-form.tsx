@@ -35,11 +35,13 @@ const profileSchema = z.object({
     message: "Name must be at least 2 characters.",
   }),
   learningGoals: z.string().optional(),
+  targetHours: z.coerce.number().positive().optional(),
 });
 
 type UserProfile = {
     name?: string;
     learningGoals?: string;
+    targetHours?: number;
 }
 
 export function SettingsForm() {
@@ -58,6 +60,7 @@ export function SettingsForm() {
     defaultValues: {
       name: "",
       learningGoals: "",
+      targetHours: 150,
     },
   });
 
@@ -66,6 +69,7 @@ export function SettingsForm() {
       form.reset({ 
           name: userProfile?.name || user.displayName || "",
           learningGoals: userProfile?.learningGoals || "",
+          targetHours: userProfile?.targetHours || 150,
       });
     }
   }, [user, userProfile, form]);
@@ -84,6 +88,7 @@ export function SettingsForm() {
     setDocumentNonBlocking(userDocRef, { 
         name: values.name,
         learningGoals: values.learningGoals,
+        targetHours: values.targetHours,
         email: user.email,
         id: user.uid,
     }, { merge: true });
@@ -123,16 +128,32 @@ export function SettingsForm() {
               name="learningGoals"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Learning Goals</FormLabel>
+                  <FormLabel>Daily Motivation</FormLabel>
                   <FormControl>
                     <Textarea 
-                        placeholder="e.g., 'Ace my upcoming board exams' or 'Publish my first research paper.'" 
+                        placeholder="e.g., 'Focus on the process, not just the outcome'" 
                         {...field}
-                        rows={4}
+                        rows={2}
                     />
                   </FormControl>
                    <FormDescription>
-                    The goal you mention will be represented on your home screen just to keep you reminded.
+                    A motivational quote that will appear on your dashboard.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="targetHours"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Target Hours</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="e.g., 150" {...field} />
+                  </FormControl>
+                   <FormDescription>
+                    Set a target number of hours for your progress tracking.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
