@@ -1,27 +1,31 @@
 
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, type FC } from 'react';
 import type { Activity } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
-import { Star } from 'lucide-react';
+import { Star, Trophy } from 'lucide-react';
 import { Progress } from './ui/progress';
+import { cn } from '@/lib/utils';
+import { Crown } from './icons/crown';
 
 interface Level {
   name: string;
   minHours: number;
+  icon: FC<any>;
   iconColor: string;
+  badgeColor: string;
 }
 
 const levels: Level[] = [
-  { name: 'Bronze', minHours: 0, iconColor: 'text-orange-400' },
-  { name: 'Silver', minHours: 50, iconColor: 'text-gray-400' },
-  { name: 'Gold', minHours: 150, iconColor: 'text-yellow-400' },
-  { name: 'Platinum', minHours: 300, iconColor: 'text-cyan-400' },
-  { name: 'Diamond', minHours: 500, iconColor: 'text-blue-400' },
-  { name: 'Emerald', minHours: 750, iconColor: 'text-emerald-400' },
-  { name: 'Master', minHours: 1000, iconColor: 'text-purple-400' },
-  { name: 'Grandmaster', minHours: 1500, iconColor: 'text-red-400' },
+  { name: 'Bronze', minHours: 0, icon: Trophy, iconColor: 'text-orange-400', badgeColor: 'border-orange-400/50' },
+  { name: 'Silver', minHours: 50, icon: Star, iconColor: 'text-gray-400', badgeColor: 'border-gray-400/50' },
+  { name: 'Gold', minHours: 150, icon: Trophy, iconColor: 'text-yellow-400', badgeColor: 'border-yellow-400/50' },
+  { name: 'Platinum', minHours: 300, icon: Star, iconColor: 'text-cyan-400', badgeColor: 'border-cyan-400/50' },
+  { name: 'Diamond', minHours: 500, icon: Star, iconColor: 'text-blue-400', badgeColor: 'border-blue-400/50' },
+  { name: 'Emerald', minHours: 750, icon: Star, iconColor: 'text-emerald-400', badgeColor: 'border-emerald-400/50' },
+  { name: 'Legendary', minHours: 1000, icon: Crown, iconColor: 'text-purple-400', badgeColor: 'border-purple-400/50' },
+  { name: 'Mythic', minHours: 1500, icon: Crown, iconColor: 'text-red-400', badgeColor: 'border-red-400/50' },
 ];
 
 interface GamificationCardProps {
@@ -59,27 +63,53 @@ export function GamificationCard({ activities }: GamificationCardProps) {
 
   return (
     <Card className="h-full">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-4">
-          <div className="bg-primary/10 p-2 rounded-lg">
-            <Star className={`w-8 h-8 ${currentLevel.iconColor}`} />
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+           <div className={cn("p-2 rounded-lg bg-card", currentLevel.badgeColor, 'border')}>
+            <currentLevel.icon className={`w-8 h-8 ${currentLevel.iconColor}`} />
           </div>
-          <div>
+          <div className="flex-1">
             <div className="flex items-baseline gap-2">
               <h3 className="text-xl font-bold">{currentLevel.name}</h3>
               <span className="text-xs font-semibold bg-muted text-muted-foreground px-2 py-0.5 rounded-full">Level {currentLevelIndex + 1}</span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {totalHours.toFixed(0)} hrs
+            <p className="text-sm text-muted-foreground">
+              <span className="font-bold text-foreground">{totalHours.toFixed(0)} hrs</span>
               {nextLevel && ` | Progress to ${nextLevel.name}: ${hoursToNextLevel.toFixed(0)} hrs left`}
             </p>
+            {nextLevel && (
+                <div className="mt-2 space-y-1">
+                    <div className='flex justify-end'>
+                        <span className="text-xs font-semibold text-primary">{progressPercentage.toFixed(1)}%</span>
+                    </div>
+                    <Progress value={progressPercentage} className="h-2 bg-primary/20"/>
+                </div>
+            )}
           </div>
         </div>
-        {nextLevel && (
-          <div className="mt-4">
-            <Progress value={progressPercentage} className="h-2"/>
-          </div>
-        )}
+        
+        <div className="mt-6">
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+                {levels.map((level, index) => {
+                    const isAchieved = index <= currentLevelIndex;
+                    return (
+                        <div key={level.name} className="flex flex-col items-center gap-1 text-center">
+                            <div className={cn(
+                                "w-12 h-12 flex items-center justify-center rounded-lg border-2",
+                                isAchieved ? level.badgeColor : 'border-dashed border-border',
+                                isAchieved ? 'bg-card' : 'bg-muted/30'
+                            )}>
+                                <level.icon className={cn("w-6 h-6", isAchieved ? level.iconColor : 'text-muted-foreground/50')} />
+                            </div>
+                            <p className={cn("text-xs font-medium", isAchieved ? 'text-foreground' : 'text-muted-foreground')}>
+                                {level.name}
+                            </p>
+                        </div>
+                    )
+                })}
+            </div>
+        </div>
+
       </CardContent>
     </Card>
   );

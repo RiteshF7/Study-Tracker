@@ -2,11 +2,9 @@
 "use client";
 
 import type { Activity, Problem } from "@/lib/types";
-import { useMemo, useState } from "react";
-import { format, subDays, parseISO, startOfDay, eachDayOfInterval, getWeek, getDay, isSameDay } from "date-fns";
-import Image from "next/image";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle, ChevronDown, Flame, ChevronLeft, ChevronRight, Trophy } from "lucide-react";
+import { useMemo } from "react";
+import { format, subDays, parseISO, startOfDay } from "date-fns";
+import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle, ChevronDown, Flame, ChevronLeft, ChevronRight, Trophy, Pencil } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import Link from "next/link";
@@ -15,33 +13,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { GamificationCard } from "./gamification-card";
 import { StatsCards } from "./stats-cards";
 import { ActivityHistory } from "./activity-history";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { Calendar } from "./ui/calendar";
-import { cn } from "@/lib/utils";
 import { generateMockActivities } from "@/lib/mock-data";
+import { TodaysFocusCard } from "./todays-focus-card";
+import { StreakCard } from "./streak-card";
 
 type UserProfile = {
   name?: string;
   learningGoals?: string;
   targetHours?: number;
-}
-
-function TodaysMotivation({ goals }: { goals?: string }) {
-    // In a real app, this could be fetched from a service or be user-editable.
-    const motivation = goals || "Focus on the process, not just the outcome";
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-purple-400"></div>
-                    DAILY MOTIVATION
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p className="text-sm italic">"{motivation}"</p>
-            </CardContent>
-        </Card>
-    )
 }
 
 export function DashboardClient() {
@@ -56,24 +35,17 @@ export function DashboardClient() {
     user ? collection(firestore, "users", user.uid, "activities") : null
   , [firestore, user]);
   
-  const problemsCollection = useMemoFirebase(() =>
-    user ? collection(firestore, "users", user.uid, "problems") : null
-  , [firestore, user]);
-
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesCollection);
-  const { data: problems, isLoading: isLoadingProblems } = useCollection<Problem>(problemsCollection);
   
-  const isLoading = isLoadingActivities || isLoadingProblems || isLoadingProfile;
+  const isLoading = isLoadingActivities || isLoadingProfile;
   
-  const studyActivities = useMemo(() => {
-    let allActivities = activities;
-    if (!isLoadingActivities && (!activities || activities.length === 0)) {
-        allActivities = generateMockActivities(365);
+  const allActivities = useMemo(() => {
+    if (isLoadingActivities) return [];
+    if (!activities || activities.length === 0) {
+        return generateMockActivities(365);
     }
-    if (!allActivities) return [];
-    return allActivities.filter(a => a.type === 'Study' || a.type === 'Class');
+    return activities;
   }, [activities, isLoadingActivities]);
-
 
   if (isLoading) {
       return (
@@ -83,7 +55,7 @@ export function DashboardClient() {
       )
   }
 
-  if (!activities || activities.length === 0 && studyActivities.length === 0) {
+  if (allActivities.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-16">
         <h2 className="text-2xl font-semibold mb-2">
@@ -100,38 +72,26 @@ export function DashboardClient() {
   }
 
   return (
-    <Dialog>
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 space-y-4">
-              <GamificationCard activities={studyActivities} />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="md:col-span-1">
-                      <TodaysMotivation goals={userProfile?.learningGoals} />
-                  </div>
-                  <div className="md:col-span-2">
-                     <DialogTrigger asChild>
-                         <div className="cursor-pointer h-full">
-                            <StatsCards activities={studyActivities} targetHours={userProfile?.targetHours} />
-                         </div>
-                    </DialogTrigger>
-                  </div>
-              </div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Left Column */}
+        <div className="xl:col-span-2 space-y-6">
+          <GamificationCard activities={allActivities} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <StreakCard activities={allActivities} />
           </div>
-          <div className="lg:col-span-1">
-              {/* Placeholder for future cards like 'Today's Focus' */}
-          </div>
+          <StatsCards activities={allActivities} targetHours={userProfile?.targetHours} type="focus" />
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          <TodaysFocusCard activities={allActivities} />
+          <StatsCards activities={allActivities} targetHours={userProfile?.targetHours} type="progress" />
         </div>
       </div>
-       <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Activity Heat Map</DialogTitle>
-            <DialogDescription>
-              Your study activity over the past year. Darker shades mean more study time.
-            </DialogDescription>
-          </DialogHeader>
-          <ActivityHistory activities={studyActivities} />
-      </DialogContent>
-    </Dialog>
+      <div>
+        <ActivityHistory activities={allActivities} />
+      </div>
+    </div>
   );
 }
