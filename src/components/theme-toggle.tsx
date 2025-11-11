@@ -35,6 +35,18 @@ export function ThemeToggle() {
         <DropdownMenuItem onClick={() => setTheme("peazehub")}>
           Peazehub
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("violet-dark")}>
+          Violet Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("matrix-dark")}>
+          Matrix Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("disney-dark")}>
+          Disney Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("cn-dark")}>
+          CN Dark
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

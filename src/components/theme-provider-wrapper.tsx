@@ -12,6 +12,7 @@ export function ThemeProviderWrapper({ children }: { children: ReactNode }) {
   }, []);
 
   if (!isMounted) {
+    // Return children directly on the server to avoid hydration mismatch
     return <>{children}</>;
   }
 
@@ -20,6 +21,7 @@ export function ThemeProviderWrapper({ children }: { children: ReactNode }) {
       attribute="class"
       defaultTheme="peazehub"
       disableTransitionOnChange
+      themes={['light', 'dark', 'peazehub', 'violet-dark', 'matrix-dark', 'disney-dark', 'cn-dark']}
     >
       {children}
     </ThemeProvider>
