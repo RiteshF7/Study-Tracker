@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Mascot } from "./mascot";
+import { Calendar } from "./ui/calendar";
 
 const activityChartConfig = {
   duration: {
@@ -157,31 +158,36 @@ export function DashboardClient() {
   }, [realActivities, realProblems, isLoadingActivities, isLoadingProblems, isLoadingProfile]);
 
 
-  const studyStreak = useMemo(() => {
-    if (!activities || activities.length === 0) return 0;
-    
-    const uniqueDates = [...new Set(activities.map(a => a.date))].map(d => startOfDay(parseISO(d))).sort((a, b) => b.getTime() - a.getTime());
+  const { streakCount, streakDates } = useMemo(() => {
+    if (!activities || activities.length === 0) return { streakCount: 0, streakDates: [] };
 
-    if (uniqueDates.length === 0) return 0;
+    const uniqueDates = [...new Set(activities.map(a => a.date))]
+      .map(d => startOfDay(parseISO(d)))
+      .sort((a, b) => b.getTime() - a.getTime());
+
+    if (uniqueDates.length === 0) return { streakCount: 0, streakDates: [] };
 
     let streak = 0;
+    const dates: Date[] = [];
     const today = startOfDay(new Date());
     const firstDate = uniqueDates[0];
 
     // Check if the most recent activity was today or yesterday
     if (differenceInDays(today, firstDate) <= 1) {
       streak = 1;
+      dates.push(firstDate);
       for (let i = 1; i < uniqueDates.length; i++) {
         const diff = differenceInDays(uniqueDates[i-1], uniqueDates[i]);
         if (diff === 1) {
           streak++;
+          dates.push(uniqueDates[i]);
         } else {
           break; // Streak is broken
         }
       }
     }
     
-    return streak;
+    return { streakCount: streak, streakDates: dates };
 
   }, [activities]);
   
@@ -545,16 +551,38 @@ export function DashboardClient() {
             )}
           </DialogContent>
         </Dialog>
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
-                <Flame className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{studyStreak} days</div>
-                <p className="text-xs text-muted-foreground">Consecutive days of activity</p>
-            </CardContent>
-        </Card>
+        <Dialog>
+            <DialogTrigger asChild>
+                <Card className="cursor-pointer">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
+                        <Flame className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{streakCount} days</div>
+                        <p className="text-xs text-muted-foreground">Consecutive days of activity</p>
+                    </CardContent>
+                </Card>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Your {streakCount}-Day Study Streak</DialogTitle>
+                    <DialogDescription>
+                        Keep up the great work! Here are the days you've studied consecutively.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-center py-4">
+                    <Calendar
+                        month={streakDates[0] || new Date()}
+                        modifiers={{ streak: streakDates }}
+                        modifiersClassNames={{
+                            streak: 'bg-primary/20 text-primary-foreground rounded-full',
+                        }}
+                        className="p-0"
+                    />
+                </div>
+            </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -736,3 +764,5 @@ export function DashboardClient() {
     </div>
   );
 }
+
+    
