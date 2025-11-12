@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Brush } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Brush, Line, Legend } from "recharts"
 import { format, subDays, startOfDay, parseISO } from "date-fns"
 
 import {
@@ -79,7 +79,7 @@ export function FocusChart({ activities }: FocusChartProps) {
         </div>
         <div className="flex-1 min-h-0">
             <ChartContainer config={chartConfig} className="w-full h-full">
-                <BarChart accessibilityLayer data={chartData}>
+                <AreaChart accessibilityLayer data={chartData}>
                     <CartesianGrid vertical={false} />
                     <XAxis
                         dataKey="date"
@@ -97,15 +97,35 @@ export function FocusChart({ activities }: FocusChartProps) {
                         tickFormatter={(value) => `${value}`}
                     />
                     <Tooltip
-                        cursor={false}
+                        cursor={true}
                         content={<ChartTooltipContent
                             labelFormatter={(label) => format(parseISO(label), 'eeee, MMM d')}
                             formatter={(value) => `${value} min`}
-                            indicator="dot"
+                            indicator="line"
                         />}
                     />
-                    <Bar dataKey="duration" fill="var(--color-duration)" radius={4} />
-                    <Brush
+                    <defs>
+                        <linearGradient id="fillDuration" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                            offset="5%"
+                            stopColor="var(--color-duration)"
+                            stopOpacity={0.8}
+                        />
+                        <stop
+                            offset="95%"
+                            stopColor="var(--color-duration)"
+                            stopOpacity={0.1}
+                        />
+                        </linearGradient>
+                    </defs>
+                    <Area
+                        dataKey="duration"
+                        type="natural"
+                        fill="url(#fillDuration)"
+                        stroke="var(--color-duration)"
+                        stackId="a"
+                    />
+                     <Brush
                       dataKey="date"
                       height={30}
                       stroke="hsl(var(--primary))"
@@ -113,7 +133,7 @@ export function FocusChart({ activities }: FocusChartProps) {
                       endIndex={brushDomain.endIndex}
                       tickFormatter={(value) => format(parseISO(chartData[value as number]?.date || new Date()), "MMM")}
                     />
-                </BarChart>
+                </AreaChart>
             </ChartContainer>
         </div>
     </div>
