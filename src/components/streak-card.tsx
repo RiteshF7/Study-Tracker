@@ -12,17 +12,18 @@ interface StreakCardProps {
 
 export function StreakCard({ currentStreak, bestStreak }: StreakCardProps) {
   return (
-    <Card>
-      <CardContent className="p-4 grid grid-cols-2 divide-x divide-border">
-        <div className="flex items-center justify-between p-2">
-          <div className="text-center">
+    <Card className="h-full">
+      <CardContent className="p-4 flex flex-col justify-around h-full gap-4">
+        <div className="flex items-center justify-between">
+          <div>
             <p className="text-4xl font-bold text-orange-400">{currentStreak}</p>
             <p className="text-xs text-muted-foreground">DAY STREAK</p>
           </div>
           <Flame className="w-10 h-10 text-orange-400" />
         </div>
-        <div className="flex items-center justify-between p-2">
-          <div className="text-center">
+        <Separator />
+        <div className="flex items-center justify-between">
+          <div>
             <p className="text-4xl font-bold text-yellow-400">{bestStreak}</p>
             <p className="text-xs text-muted-foreground">BEST STREAK</p>
           </div>
