@@ -16,7 +16,7 @@ import { Trash2 } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection, doc, query, orderBy } from "firebase/firestore";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
-import { ProblemForm } from "./problem-form";
+import { ManualEntryDialog } from "./manual-entry-dialog";
 import { PlusCircle } from "lucide-react";
 
 export function ProblemTracker() {
@@ -40,11 +40,6 @@ export function ProblemTracker() {
     <>
       <div className="flex flex-row items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold leading-none tracking-tight">Your Problems</h2>
-          <ProblemForm triggerButton={
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" /> Track Problems
-            </Button>
-          } />
         </div>
         <div>
           <Table>
@@ -83,7 +78,7 @@ export function ProblemTracker() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center">
-                    No problems tracked yet.
+                    No problems tracked yet. Use the "Manual" button on the Home page to log an activity.
                   </TableCell>
                 </TableRow>
               )}
