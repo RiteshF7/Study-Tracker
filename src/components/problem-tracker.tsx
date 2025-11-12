@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Problem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +16,13 @@ import { Trash2 } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection, doc, query, orderBy } from "firebase/firestore";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
-import { ManualEntryDialog } from "./manual-entry-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { ProblemForm } from "./problem-form";
 import { PlusCircle } from "lucide-react";
 
 export function ProblemTracker() {
   const { firestore, user } = useFirebase();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const problemsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -40,6 +42,20 @@ export function ProblemTracker() {
     <>
       <div className="flex flex-row items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold leading-none tracking-tight">Your Problems</h2>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Track Problems
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Track Problems Solved</DialogTitle>
+              </DialogHeader>
+              <ProblemForm onFormSubmit={() => setIsDialogOpen(false)} />
+            </DialogContent>
+          </Dialog>
         </div>
         <div>
           <Table>
@@ -78,7 +94,7 @@ export function ProblemTracker() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center">
-                    No problems tracked yet. Use the "Manual" button on the Home page to log an activity.
+                    No problems tracked yet. Click "Track Problems" to add one.
                   </TableCell>
                 </TableRow>
               )}
