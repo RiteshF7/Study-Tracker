@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
+import { useAuth } from "@/firebase";
 
 const navItems = [
   {
@@ -56,6 +57,13 @@ const navItems = [
 
 export function AppNav() {
   const pathname = usePathname();
+  const auth = useAuth();
+
+  const handleLogout = () => {
+    if (auth) {
+      auth.signOut();
+    }
+  };
 
   return (
     <>
@@ -104,8 +112,11 @@ export function AppNav() {
               </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            {/* In a real app, this would trigger a logout function */}
-            <SidebarMenuButton className="w-full justify-start text-muted-foreground hover:text-destructive" tooltip="Logout">
+            <SidebarMenuButton 
+              onClick={handleLogout}
+              className="w-full justify-start text-muted-foreground hover:text-destructive" 
+              tooltip="Logout"
+            >
               <LogOut className="mr-2 h-5 w-5" />
               <span>Logout</span>
             </SidebarMenuButton>
