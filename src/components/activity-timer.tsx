@@ -194,7 +194,7 @@ export function ActivityTimer({
   return (
     <div className="w-full max-w-lg mx-auto text-center pt-8">
       <div className={cn("space-y-8 flex flex-col items-center", isFinished && "animate-blink")}>
-        <p className="text-2xl text-muted-foreground">{isFinished ? "Session Finished!" : `Timing session for (${mode}):`}</p>
+        <p className="text-2xl text-muted-foreground">{isFinished ? "Session Finished!" : `Timing session for:`}</p>
         <h1 className="text-6xl font-bold font-headline">{initialActivityName}</h1>
         
         <div className={cn("relative w-[400px] h-[400px]", mode === 'stopwatch' && isTiming && 'animate-pulse')}>

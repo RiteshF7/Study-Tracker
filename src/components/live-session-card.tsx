@@ -42,23 +42,15 @@ const durationPresets = [15, 25, 45, 60];
 
 export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   const [mode, setMode] = useState<'timer' | 'stopwatch'>('timer');
-  const [activityType, setActivityType] = useState<Activity['type']>('Study');
+  const activityType: Activity['type'] = 'Study';
   const [category, setCategory] = useState('');
   const [duration, setDuration] = useState(25);
   
-  const [activityTypes, setActivityTypes] = useLocalStorage<string[]>(
-    "custom-activity-types",
-    ["Study", "Class", "Break", "Other"]
-  );
    const [problemCategories, setProblemCategories] = useLocalStorage<string[]>(
     "custom-problem-categories",
     []
   );
 
-  const [isAddTypeOpen, setIsAddTypeOpen] = useState(false);
-  const [isManageTypesOpen, setIsManageTypesOpen] = useState(false);
-  const [newActivityType, setNewActivityType] = useState("");
-  
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
   const [newCategory, setNewCategory] = useState("");
@@ -82,28 +74,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
       });
       return;
     }
-    onStartTimer({ mode, activityName: activityType, activityType, duration, category });
-  };
-
-  const handleAddNewType = () => {
-    if (newActivityType.trim() && !activityTypes.includes(newActivityType.trim())) {
-      const newType = newActivityType.trim();
-      setActivityTypes([...activityTypes, newType]);
-      setActivityType(newType as Activity['type']);
-      setIsAddTypeOpen(false);
-      setNewActivityType("");
-    } else if (activityTypes.includes(newActivityType.trim())) {
-      setActivityType(newActivityType.trim() as Activity['type']);
-      setIsAddTypeOpen(false);
-      setNewActivityType("");
-    }
-  };
-
-  const handleRemoveType = (typeToRemove: string) => {
-    setActivityTypes(activityTypes.filter(type => type !== typeToRemove));
-    if (activityType === typeToRemove) {
-      setActivityType('Other');
-    }
+    onStartTimer({ mode, activityName: category, activityType, duration, category });
   };
   
   const handleAddNewCategory = () => {
@@ -142,31 +113,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                         </TabsList>
                     </Tabs>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="type-select">Type</Label>
-                        <Select
-                            onValueChange={(value) => {
-                            if (value === "add_new") setIsAddTypeOpen(true);
-                            else if (value === "manage") setIsManageTypesOpen(true);
-                            else setActivityType(value as Activity['type']);
-                            }}
-                            value={activityType}
-                        >
-                            <SelectTrigger id="type-select">
-                                <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {activityTypes.map((t) => (
-                                <SelectItem key={t} value={t}>{t}</SelectItem>
-                                ))}
-                                <SelectSeparator />
-                                <SelectItem value="add_new">Add New...</SelectItem>
-                                <SelectItem value="manage" className="text-muted-foreground">Manage Types...</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    {activityType === 'Study' && (
-                       <div className="grid gap-2 sm:col-span-2">
+                    <div className="grid gap-2 sm:col-span-2">
                         <Label htmlFor="category-select">Category</Label>
                         <Select
                             onValueChange={(value) => {
@@ -189,7 +136,6 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                             </SelectContent>
                         </Select>
                     </div>
-                    )}
                     </div>
                     <div className="grid gap-2 mt-8">
                         <Label htmlFor="duration-input">Duration (minutes)</Label>
@@ -245,23 +191,6 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
         </CardContent>
     </Card>
     
-    <Dialog open={isAddTypeOpen} onOpenChange={setIsAddTypeOpen}>
-      <DialogContent><DialogHeader><DialogTitle>Add New Activity Type</DialogTitle></DialogHeader>
-        <div className="py-4"><Input placeholder="e.g., Lab Work" value={newActivityType} onChange={(e) => setNewActivityType(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddNewType()} /></div>
-        <DialogFooter><Button variant="outline" onClick={() => setIsAddTypeOpen(false)}>Cancel</Button><Button onClick={handleAddNewType}>Add</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-    <Dialog open={isManageTypesOpen} onOpenChange={setIsManageTypesOpen}>
-      <DialogContent><DialogHeader><DialogTitle>Manage Activity Types</DialogTitle></DialogHeader>
-        <div className="py-4 space-y-2 max-h-60 overflow-y-auto">
-          {activityTypes.filter(t => !['Study', 'Class', 'Break', 'Other'].includes(t)).length > 0 ?
-            activityTypes.filter(t => !['Study', 'Class', 'Break', 'Other'].includes(t)).map(type => (
-              <div key={type} className="flex items-center justify-between p-2 rounded-md border"><span>{type}</span><Button variant="ghost" size="icon" onClick={() => handleRemoveType(type)}><Trash2 className="h-4 w-4 text-destructive" /></Button></div>
-            )) : <p className="text-sm text-muted-foreground text-center">No custom types.</p>}
-        </div><DialogFooter><Button onClick={() => setIsManageTypesOpen(false)}>Done</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-    
      <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
         <DialogContent>
             <DialogHeader><DialogTitle>Add New Category</DialogTitle></DialogHeader>
@@ -309,6 +238,3 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
     </>
   );
 }
-
-    
-    
