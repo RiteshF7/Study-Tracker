@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useCallback } from 'react';
@@ -9,8 +10,10 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
     // This effect runs only on the client, after hydration
     let item;
     try {
-      item = window.localStorage.getItem(key);
-      setStoredValue(item ? JSON.parse(item) : initialValue);
+      if (typeof window !== "undefined") {
+        item = window.localStorage.getItem(key);
+        setStoredValue(item ? JSON.parse(item) : initialValue);
+      }
     } catch (error) {
       console.log(error);
       setStoredValue(initialValue);
