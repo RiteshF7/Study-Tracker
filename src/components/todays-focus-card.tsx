@@ -92,7 +92,7 @@ export function TodaysFocusCard({ activities }: TodaysFocusCardProps) {
           </CardFooter>
         </Card>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl h-[65vh]">
+      <DialogContent className="max-w-4xl h-[70vh]">
         <DialogHeader>
           <DialogTitle>Focus Analysis</DialogTitle>
         </DialogHeader>
