@@ -11,7 +11,6 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { GamificationCard } from "./gamification-card";
-import { StatsCards } from "./stats-cards";
 import { ActivityHistory } from "./activity-history";
 import { generateMockActivities } from "@/lib/mock-data";
 import { TodaysFocusCard } from "./todays-focus-card";
@@ -147,9 +146,8 @@ export function DashboardClient() {
         <div className="lg:col-span-1">
             <StreakCard currentStreak={currentStreak} bestStreak={bestStreak} />
         </div>
-        <div className="lg:col-span-1 grid gap-6">
+        <div className="lg:col-span-1">
             <TodaysFocusCard activities={allActivities} />
-            <StatsCards activities={allActivities} targetHours={userProfile?.targetHours} type="focus" />
         </div>
       </div>
       <div>
