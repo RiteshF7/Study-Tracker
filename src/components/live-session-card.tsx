@@ -23,9 +23,10 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Play, Timer, Clock, Trash2 } from "lucide-react";
+import { Play, Timer, Clock, Trash2, Plus, Minus } from "lucide-react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from "./ui/separator";
 
 interface LiveSessionCardProps {
     onStartTimer: (config: {
@@ -202,14 +203,32 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                                         </Button>
                                     ))}
                                 </div>
-                                <Input
-                                    id="duration-input"
-                                    type="number"
-                                    value={duration}
-                                    onChange={(e) => setDuration(parseInt(e.target.value, 10) || 0)}
-                                    placeholder="Custom"
-                                    className="w-24 h-10"
-                                />
+                                <div className="flex items-center gap-1">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-10 w-10"
+                                        onClick={() => setDuration(d => Math.max(1, d - 1))}
+                                    >
+                                        <Minus className="h-4 w-4" />
+                                    </Button>
+                                    <Input
+                                        id="duration-input"
+                                        type="number"
+                                        value={duration}
+                                        onChange={(e) => setDuration(parseInt(e.target.value, 10) || 0)}
+                                        placeholder="Custom"
+                                        className="w-16 h-10 text-center"
+                                    />
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-10 w-10"
+                                        onClick={() => setDuration(d => d + 1)}
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     )}
