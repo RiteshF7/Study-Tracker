@@ -1,8 +1,13 @@
+
 "use server";
 
 import { intelligentScheduleRecommendation, IntelligentScheduleRecommendationOutput } from "@/ai/flows/intelligent-schedule-recommendation";
 import { editSchedule, EditScheduleOutput } from "@/ai/flows/edit-schedule-flow";
-import type { Activity, Problem } from "@/lib/types";
+import type { Activity, Problem, Todo } from "@/lib/types";
+import { collection, writeBatch, doc } from "firebase/firestore";
+import { getFirestore } from "firebase-admin/firestore";
+import { app } from '@/firebase/server';
+
 
 export type SchedulerState = {
   recommendation?: IntelligentScheduleRecommendationOutput | null;
@@ -80,3 +85,47 @@ export async function refineScheduleAction(
     return { ...prevState, error: errorMessage };
   }
 }
+
+export type AddToTodoState = {
+    error?: string | null;
+    message?: string | null;
+}
+
+export async function addScheduleToTodos(
+    prevState: AddToTodoState,
+    formData: FormData
+): Promise<AddToTodoState> {
+    const scheduleStr = formData.get("schedule") as string;
+    const userId = formData.get("userId") as string;
+
+    if (!scheduleStr || !userId) {
+        return { error: "Missing required data." };
+    }
+
+    const schedule = JSON.parse(scheduleStr);
+
+    try {
+        const db = getFirestore(app);
+        const todosCollection = collection(db, "users", userId, "todos");
+        const batch = writeBatch(db);
+
+        schedule.forEach((item: { time: string; activity: string }) => {
+            const newTodoRef = doc(todosCollection);
+            const todo: Omit<Todo, 'id'> = {
+                title: `${item.activity} (${item.time})`,
+                completed: false,
+                userId: userId,
+                createdAt: new Date() as any, // Firestore admin SDK handles Timestamps
+            };
+            batch.set(newTodoRef, todo);
+        });
+
+        await batch.commit();
+
+        return { message: "Schedule successfully added to your to-do list!" };
+    } catch (e: any) {
+        console.error(e);
+        return { error: "Failed to add schedule to to-do list." };
+    }
+}
+

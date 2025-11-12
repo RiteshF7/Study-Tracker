@@ -3,7 +3,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { getScheduleRecommendation, refineScheduleAction, SchedulerState } from "@/lib/actions";
+import { getScheduleRecommendation, refineScheduleAction, addScheduleToTodos, SchedulerState, AddToTodoState } from "@/lib/actions";
 import type { Activity, Problem } from "@/lib/types";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
@@ -11,16 +11,21 @@ import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Wand2, Sparkles } from "lucide-react";
+import { Loader2, Wand2, Sparkles, PlusCircle } from "lucide-react";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Input } from "./ui/input";
 
-const initialState: SchedulerState = {
+const initialSchedulerState: SchedulerState = {
   recommendation: null,
   error: null,
 };
+
+const initialTodoState: AddToTodoState = {
+    error: null,
+    message: null,
+}
 
 function SubmitButton({ text, icon: Icon }: { text: string; icon: React.ElementType }) {
   const { pending } = useFormStatus();
@@ -41,9 +46,29 @@ function SubmitButton({ text, icon: Icon }: { text: string; icon: React.ElementT
   );
 }
 
+function AddToTodoButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" disabled={pending} variant="outline" size="sm">
+             {pending ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adding...
+                </>
+            ) : (
+                <>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add to To-Do List
+                </>
+            )}
+        </Button>
+    )
+}
+
 export function AiScheduler() {
   const { firestore, user } = useFirebase();
   const editFormRef = useRef<HTMLFormElement>(null);
+  const addToTodoFormRef = useRef<HTMLFormElement>(null);
 
   const activitiesCollection = useMemoFirebase(() => 
     user ? collection(firestore, "users", user.uid, "activities") : null
@@ -56,8 +81,9 @@ export function AiScheduler() {
   const { data: activities } = useCollection<Activity>(activitiesCollection);
   const { data: problems } = useCollection<Problem>(problemsCollection);
 
-  const [generateState, generateFormAction] = useActionState(getScheduleRecommendation, initialState);
-  const [editState, editFormAction] = useActionState(refineScheduleAction, initialState);
+  const [generateState, generateFormAction] = useActionState(getScheduleRecommendation, initialSchedulerState);
+  const [editState, editFormAction] = useActionState(refineScheduleAction, initialSchedulerState);
+  const [addToTodoState, addToTodoAction] = useActionState(addScheduleToTodos, initialTodoState);
   
   const [currentSchedule, setCurrentSchedule] = useState<SchedulerState['recommendation']>(null);
 
@@ -91,6 +117,22 @@ export function AiScheduler() {
         setCurrentSchedule(editState.recommendation);
     }
   }, [editState, toast]);
+
+  useEffect(() => {
+    if (addToTodoState.error) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: addToTodoState.error,
+        });
+    }
+    if (addToTodoState.message) {
+        toast({
+            title: "Success!",
+            description: addToTodoState.message,
+        });
+    }
+  }, [addToTodoState, toast]);
 
   return (
     <div className="grid md:grid-cols-2 gap-8 items-start">
@@ -178,6 +220,13 @@ export function AiScheduler() {
                   </TableBody>
                 </Table>
               </CardContent>
+              <CardFooter>
+                <form action={addToTodoAction} ref={addToTodoFormRef}>
+                    <input type="hidden" name="schedule" value={JSON.stringify(currentSchedule.scheduleRecommendation)} />
+                    <input type="hidden" name="userId" value={user?.uid} />
+                    <AddToTodoButton />
+                </form>
+              </CardFooter>
             </Card>
             {currentSchedule.reasoning && (
               <Card>
