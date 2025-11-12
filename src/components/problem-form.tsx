@@ -45,7 +45,7 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
 
   const [problemCategories, setProblemCategories] = useLocalStorage<string[]>(
     "custom-problem-categories",
-    defaultProblemCategories.map(c => c.name)
+    []
   );
 
   const form = useForm<z.infer<typeof problemSchema>>({
@@ -200,8 +200,8 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
         <DialogContent>
             <DialogHeader><DialogTitle>Manage Categories</DialogTitle></DialogHeader>
             <div className="py-4 space-y-2 max-h-60 overflow-y-auto">
-                {problemCategories.filter(cat => !defaultProblemCategories.map(c=>c.name).includes(cat)).length > 0 ?
-                    problemCategories.filter(cat => !defaultProblemCategories.map(c=>c.name).includes(cat)).map(cat => (
+                {problemCategories.length > 0 ?
+                    problemCategories.map(cat => (
                         <div key={cat} className="flex items-center justify-between p-2 rounded-md border">
                             <span>{cat}</span>
                             <Button variant="ghost" size="icon" onClick={() => handleRemoveCategory(cat)}>
