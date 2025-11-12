@@ -4,7 +4,6 @@
 import { intelligentScheduleRecommendation, IntelligentScheduleRecommendationOutput } from "@/ai/flows/intelligent-schedule-recommendation";
 import { editSchedule, EditScheduleOutput } from "@/ai/flows/edit-schedule-flow";
 import type { Activity, Problem, Todo } from "@/lib/types";
-import { collection, writeBatch, doc } from "firebase/firestore";
 import { getFirestore } from "firebase-admin/firestore";
 import { app } from '@/firebase/server';
 
@@ -106,11 +105,11 @@ export async function addScheduleToTodos(
 
     try {
         const db = getFirestore(app);
-        const todosCollection = collection(db, "users", userId, "todos");
-        const batch = writeBatch(db);
+        const todosCollection = db.collection("users").doc(userId).collection("todos");
+        const batch = db.batch();
 
         schedule.forEach((item: { time: string; activity: string }) => {
-            const newTodoRef = doc(todosCollection);
+            const newTodoRef = todosCollection.doc();
             const todo: Omit<Todo, 'id'> = {
                 title: `${item.activity} (${item.time})`,
                 completed: false,
@@ -124,8 +123,7 @@ export async function addScheduleToTodos(
 
         return { message: "Schedule successfully added to your to-do list!" };
     } catch (e: any) {
-        console.error(e);
-        return { error: "Failed to add schedule to to-do list." };
+        console.error("Failed to add schedule to todos:", e);
+        return { error: "Failed to add schedule to to-do list. " + (e as Error).message };
     }
 }
-
