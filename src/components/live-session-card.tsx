@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Play, Timer, Clock, Trash2 } from "lucide-react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from "./ui/separator";
 
 interface LiveSessionCardProps {
     onStartTimer: (config: {
@@ -127,76 +128,84 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
             <CardTitle>Start a Live Session</CardTitle>
             <CardDescription>Track your focus in real-time with a timer or stopwatch.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-            <Tabs defaultValue="timer" onValueChange={(v) => setMode(v as 'timer' | 'stopwatch')} className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="timer"><Timer className="mr-2 h-4 w-4" />Timer</TabsTrigger>
-                    <TabsTrigger value="stopwatch"><Clock className="mr-2 h-4 w-4" />Stopwatch</TabsTrigger>
-                </TabsList>
-            </Tabs>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                  <Label htmlFor="activity-name">Activity Name</Label>
-                  <Select
-                      onValueChange={(value) => {
-                        if (value === "add_new") setIsAddNameOpen(true);
-                        else if (value === "manage") setIsManageNamesOpen(true);
-                        else setActivityName(value);
-                      }}
-                      value={activityName}
-                    >
-                      <SelectTrigger id="activity-name">
-                          <SelectValue placeholder="Select or create..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {pastActivityNames.map((name) => (
-                          <SelectItem key={name} value={name}>{name}</SelectItem>
-                        ))}
-                        {pastActivityNames.length > 0 && <SelectSeparator />}
-                        <SelectItem value="add_new">Add New...</SelectItem>
-                        <SelectItem value="manage" className="text-muted-foreground">Manage Names...</SelectItem>
-                      </SelectContent>
-                    </Select>
-              </div>
-              <div className="grid gap-2">
-                  <Label htmlFor="type-select">Type</Label>
-                  <Select
-                    onValueChange={(value) => {
-                      if (value === "add_new") setIsAddTypeOpen(true);
-                      else if (value === "manage") setIsManageTypesOpen(true);
-                      else setActivityType(value as Activity['type']);
-                    }}
-                    value={activityType}
-                  >
-                    <SelectTrigger id="type-select">
-                        <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {activityTypes.map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
-                        <SelectSeparator />
-                        <SelectItem value="add_new">Add New...</SelectItem>
-                        <SelectItem value="manage" className="text-muted-foreground">Manage Types...</SelectItem>
-                    </SelectContent>
-                  </Select>
-              </div>
-          </div>
-           {mode === 'timer' && (
-            <div className="grid gap-2">
-                <Label htmlFor="duration-input">Duration (minutes)</Label>
-                <Input
-                  id="duration-input"
-                  type="number"
-                  value={duration}
-                  onChange={(e) => setDuration(parseInt(e.target.value, 10) || 0)}
-                  placeholder="e.g., 25"
-                />
+        <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-8">
+                <div className="space-y-6">
+                    <Tabs defaultValue="timer" onValueChange={(v) => setMode(v as 'timer' | 'stopwatch')} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="timer"><Timer className="mr-2 h-4 w-4" />Timer</TabsTrigger>
+                            <TabsTrigger value="stopwatch"><Clock className="mr-2 h-4 w-4" />Stopwatch</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="activity-name">Activity Name</Label>
+                        <Select
+                            onValueChange={(value) => {
+                                if (value === "add_new") setIsAddNameOpen(true);
+                                else if (value === "manage") setIsManageNamesOpen(true);
+                                else setActivityName(value);
+                            }}
+                            value={activityName}
+                            >
+                            <SelectTrigger id="activity-name">
+                                <SelectValue placeholder="Select or create..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {pastActivityNames.map((name) => (
+                                <SelectItem key={name} value={name}>{name}</SelectItem>
+                                ))}
+                                {pastActivityNames.length > 0 && <SelectSeparator />}
+                                <SelectItem value="add_new">Add New...</SelectItem>
+                                <SelectItem value="manage" className="text-muted-foreground">Manage Names...</SelectItem>
+                            </SelectContent>
+                            </Select>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="type-select">Type</Label>
+                        <Select
+                            onValueChange={(value) => {
+                            if (value === "add_new") setIsAddTypeOpen(true);
+                            else if (value === "manage") setIsManageTypesOpen(true);
+                            else setActivityType(value as Activity['type']);
+                            }}
+                            value={activityType}
+                        >
+                            <SelectTrigger id="type-select">
+                                <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {activityTypes.map((t) => (
+                                <SelectItem key={t} value={t}>{t}</SelectItem>
+                                ))}
+                                <SelectSeparator />
+                                <SelectItem value="add_new">Add New...</SelectItem>
+                                <SelectItem value="manage" className="text-muted-foreground">Manage Types...</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    </div>
+                    {mode === 'timer' && (
+                        <div className="grid gap-2">
+                            <Label htmlFor="duration-input">Duration (minutes)</Label>
+                            <Input
+                            id="duration-input"
+                            type="number"
+                            value={duration}
+                            onChange={(e) => setDuration(parseInt(e.target.value, 10) || 0)}
+                            placeholder="e.g., 25"
+                            />
+                        </div>
+                    )}
+                </div>
+                <div className="flex items-center justify-center">
+                    <Separator orientation="vertical" className="h-40 hidden md:block" />
+                    <Button size="lg" onClick={handleStart} className="w-full md:w-auto h-24 md:h-32 text-2xl px-12 md:px-16 rounded-full flex flex-col">
+                        <Play className="h-8 w-8 mb-2" /> 
+                        <span>Start</span>
+                    </Button>
+                </div>
             </div>
-          )}
-           <Button size="lg" onClick={handleStart} className="w-full">
-              <Play className="mr-2 h-5 w-5" /> Start {mode === 'timer' ? 'Timer' : 'Stopwatch'}
-          </Button>
         </CardContent>
     </Card>
     
