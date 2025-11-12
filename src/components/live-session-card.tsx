@@ -218,7 +218,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                 </div>
                 <div className="flex items-center justify-center">
                     <Separator orientation="vertical" className="h-40 hidden md:block" />
-                    <Button size="lg" onClick={handleStart} className="w-full md:w-auto h-24 md:h-32 text-2xl px-12 md:px-16 rounded-full flex flex-col">
+                    <Button size="lg" onClick={handleStart} className="w-32 h-32 text-2xl rounded-full flex flex-col">
                         <Play className="h-8 w-8 mb-2" /> 
                         <span>Start</span>
                     </Button>
