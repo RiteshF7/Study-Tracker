@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Brush, Line, Legend } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Brush, Line, Legend, LineChart } from "recharts"
 import { format, subDays, startOfDay, parseISO, addDays } from "date-fns"
 
 import {
@@ -75,7 +75,7 @@ export function FocusChart({ activities }: FocusChartProps) {
     endIndex: chartData.length -1
   };
   
-  const currentRangeLabel = `${format(parseISO(chartData[0]?.date), "MMM d")} - ${format(parseISO(chartData[chartData.length - 1]?.date), "MMM d, yyyy")}`;
+  const currentRangeLabel = chartData.length > 0 ? `${format(parseISO(chartData[0]?.date), "MMM d")} - ${format(parseISO(chartData[chartData.length - 1]?.date), "MMM d, yyyy")}`: "";
 
 
   return (
@@ -105,7 +105,7 @@ export function FocusChart({ activities }: FocusChartProps) {
         </div>
         <div className="flex-1 min-h-0">
             <ChartContainer config={chartConfig} className="w-full h-full">
-                <AreaChart accessibilityLayer data={chartData}>
+                <LineChart accessibilityLayer data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 0 }}>
                     <CartesianGrid vertical={false} />
                     <XAxis
                         dataKey="date"
@@ -148,9 +148,16 @@ export function FocusChart({ activities }: FocusChartProps) {
                         dataKey="duration"
                         type="natural"
                         fill="url(#fillDuration)"
-                        stroke="var(--color-duration)"
+                        stroke="none"
                         stackId="a"
                     />
+                     <Line 
+                        dataKey="duration" 
+                        type="natural" 
+                        stroke="var(--color-duration)" 
+                        strokeWidth={2}
+                        dot={false}
+                     />
                      <Brush
                       dataKey="date"
                       height={30}
@@ -159,7 +166,7 @@ export function FocusChart({ activities }: FocusChartProps) {
                       endIndex={brushDomain.endIndex}
                       tickFormatter={(value) => format(parseISO(chartData[value as number]?.date || new Date()), "MMM")}
                     />
-                </AreaChart>
+                </LineChart>
             </ChartContainer>
         </div>
     </div>
