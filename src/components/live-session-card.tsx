@@ -188,7 +188,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                     </div>
                     </div>
                     {mode === 'timer' && (
-                        <div className="grid gap-2">
+                        <div className="grid gap-2 mt-8">
                             <Label htmlFor="duration-input">Duration (minutes)</Label>
                             <div className="flex items-center gap-2">
                                 <div className="grid grid-cols-4 gap-2 flex-1">
