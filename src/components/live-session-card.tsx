@@ -42,7 +42,6 @@ const durationPresets = [15, 25, 45, 60];
 
 export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   const [mode, setMode] = useState<'timer' | 'stopwatch'>('timer');
-  const [activityName, setActivityName] = useState('');
   const [activityType, setActivityType] = useState<Activity['type']>('Study');
   const [category, setCategory] = useState('');
   const [duration, setDuration] = useState(25);
@@ -67,14 +66,6 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   const { toast } = useToast();
 
   const handleStart = () => {
-    if (!activityName) {
-      toast({
-        variant: "destructive",
-        title: "No Activity Name",
-        description: "Please enter a name for your activity.",
-      });
-      return;
-    }
      if (activityType === 'Study' && !category) {
       toast({
         variant: "destructive",
@@ -91,7 +82,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
       });
       return;
     }
-    onStartTimer({ mode, activityName, activityType, duration, category });
+    onStartTimer({ mode, activityName: activityType, activityType, duration, category });
   };
 
   const handleAddNewType = () => {
@@ -151,15 +142,6 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                         </TabsList>
                     </Tabs>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="activity-name">Activity Name</Label>
-                        <Input
-                            id="activity-name"
-                            placeholder="e.g., Quantum Physics"
-                            value={activityName}
-                            onChange={(e) => setActivityName(e.target.value)}
-                        />
-                    </div>
                     <div className="grid gap-2">
                         <Label htmlFor="type-select">Type</Label>
                         <Select
@@ -328,4 +310,5 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   );
 }
 
+    
     
