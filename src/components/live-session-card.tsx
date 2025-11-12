@@ -26,8 +26,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Play, Timer, Clock, Trash2 } from "lucide-react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from "./ui/separator";
-import { cn } from "@/lib/utils";
 
 interface LiveSessionCardProps {
     onStartTimer: (config: {
@@ -126,7 +124,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
 
   return (
     <>
-    <Card>
+      <Card>
         <CardHeader>
             <CardTitle>Start a Live Session</CardTitle>
             <CardDescription>Track your focus in real-time with a timer or stopwatch.</CardDescription>
@@ -217,9 +215,8 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                     )}
                 </div>
                 <div className="flex items-center justify-center">
-                    <Separator orientation="vertical" className="h-40 hidden md:block" />
                     <Button size="lg" onClick={handleStart} className="w-32 h-32 text-2xl rounded-full flex flex-col">
-                        <Play className="h-8 w-8 mb-2" /> 
+                        <Play className="h-16 w-16" /> 
                         <span>Start</span>
                     </Button>
                 </div>
