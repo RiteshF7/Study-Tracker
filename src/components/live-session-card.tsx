@@ -27,6 +27,7 @@ import { Play, Timer, Clock, Trash2 } from "lucide-react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "./ui/separator";
+import { cn } from "@/lib/utils";
 
 interface LiveSessionCardProps {
     onStartTimer: (config: {
@@ -36,6 +37,8 @@ interface LiveSessionCardProps {
         duration: number,
     }) => void;
 }
+
+const durationPresets = [15, 25, 45, 60];
 
 export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   const [mode, setMode] = useState<'timer' | 'stopwatch'>('timer');
@@ -188,13 +191,28 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                     {mode === 'timer' && (
                         <div className="grid gap-2">
                             <Label htmlFor="duration-input">Duration (minutes)</Label>
-                            <Input
-                            id="duration-input"
-                            type="number"
-                            value={duration}
-                            onChange={(e) => setDuration(parseInt(e.target.value, 10) || 0)}
-                            placeholder="e.g., 25"
-                            />
+                            <div className="flex items-center gap-2">
+                                <div className="grid grid-cols-4 gap-2 flex-1">
+                                    {durationPresets.map((preset) => (
+                                        <Button
+                                            key={preset}
+                                            variant={duration === preset ? "default" : "outline"}
+                                            onClick={() => setDuration(preset)}
+                                            className="h-10"
+                                        >
+                                            {preset}
+                                        </Button>
+                                    ))}
+                                </div>
+                                <Input
+                                    id="duration-input"
+                                    type="number"
+                                    value={duration}
+                                    onChange={(e) => setDuration(parseInt(e.target.value, 10) || 0)}
+                                    placeholder="Custom"
+                                    className="w-24 h-10"
+                                />
+                            </div>
                         </div>
                     )}
                 </div>
