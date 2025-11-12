@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -24,8 +25,11 @@ export function ManualEntryDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
-         <DialogHeader>
-            <DialogTitle>Log Activity</DialogTitle>
+        <DialogHeader>
+          <DialogTitle>Log Activity Manually</DialogTitle>
+          <DialogDescription>
+            Add a past study session or other activity to your log.
+          </DialogDescription>
         </DialogHeader>
         <ManualActivityForm onFormSubmit={() => setOpen(false)} />
       </DialogContent>
