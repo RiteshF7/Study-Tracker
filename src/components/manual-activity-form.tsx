@@ -42,7 +42,6 @@ import { defaultProblemCategories } from "@/lib/types";
 const manualActivitySchema = z.object({
   name: z.string().min(1, "Name is required"),
   type: z.string().min(1, "Type is required"),
-  category: z.string().optional(),
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute."),
   startTime: z.string().min(1, "Start time is required"),
 });
@@ -90,7 +89,6 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     defaultValues: {
       name: "",
       type: "Study",
-      category: "",
       duration: 30,
       startTime: "09:00",
     },
@@ -103,7 +101,6 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
       form.reset({
         name: "",
         type: "Study",
-        category: "",
         duration: 30,
         startTime: "09:00",
       });
@@ -156,10 +153,9 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
   function onSubmit(values: z.infer<typeof manualActivitySchema>) {
     if (!activitiesCollection || !user) return;
     
-    const newActivity: Omit<Activity, 'id' | 'createdAt'> & { createdAt: any } = {
+    const newActivity: Omit<Activity, 'id' | 'createdAt' | 'category'> & { createdAt: any } = {
       name: values.name,
       type: values.type as Activity['type'],
-      category: values.category,
       duration: values.duration,
       date: new Date().toISOString().split("T")[0],
       startTime: values.startTime,
@@ -213,7 +209,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
             )}
           />
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
               <FormField
                 control={form.control}
                 name="type"
@@ -251,30 +247,6 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
                   </FormItem>
                 )}
               />
-              {activityType === 'Study' && (
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                  <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                              <SelectTrigger>
-                                  <SelectValue placeholder="Select a category" />
-                              </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                              {defaultProblemCategories.map(cat => (
-                                  <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
-                              ))}
-                          </SelectContent>
-                      </Select>
-                      <FormMessage />
-                  </FormItem>
-                  )}
-              />
-              )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
