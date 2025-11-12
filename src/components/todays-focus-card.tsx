@@ -92,11 +92,11 @@ export function TodaysFocusCard({ activities }: TodaysFocusCardProps) {
           </CardFooter>
         </Card>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl h-[70vh]">
+      <DialogContent className="max-w-4xl h-[65vh]">
         <DialogHeader>
           <DialogTitle>Focus Analysis</DialogTitle>
         </DialogHeader>
-        <div className="h-full py-4">
+        <div className="flex-1 flex flex-col min-h-0 py-4">
           <FocusChart activities={activities} />
         </div>
       </DialogContent>

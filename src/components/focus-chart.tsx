@@ -148,7 +148,9 @@ export function FocusChart({ activities }: FocusChartProps) {
                         dataKey="duration"
                         type="natural"
                         fill="url(#fillDuration)"
+                        fillOpacity={0.4}
                         stroke="var(--color-duration)"
+                        strokeWidth={2}
                         stackId="a"
                     />
                      <Brush
@@ -157,7 +159,10 @@ export function FocusChart({ activities }: FocusChartProps) {
                       stroke="hsl(var(--primary))"
                       startIndex={brushDomain.startIndex}
                       endIndex={brushDomain.endIndex}
-                      tickFormatter={(value) => format(parseISO(chartData[value as number]?.date || new Date()), "MMM")}
+                      tickFormatter={(value) => {
+                          const date = chartData[value as number]?.date;
+                          return date ? format(parseISO(date), "MMM") : "";
+                      }}
                     />
                 </AreaChart>
             </ChartContainer>
