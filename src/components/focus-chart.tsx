@@ -78,7 +78,7 @@ export function FocusChart({ activities }: FocusChartProps) {
                 </Button>
             ))}
         </div>
-        <div className="flex-1">
+        <div className="flex-grow">
             <ChartContainer config={chartConfig} className="w-full h-full">
                 <BarChart accessibilityLayer data={chartData}>
                     <CartesianGrid vertical={false} />

@@ -96,7 +96,7 @@ export function TodaysFocusCard({ activities }: TodaysFocusCardProps) {
         <DialogHeader>
           <DialogTitle>Focus Analysis</DialogTitle>
         </DialogHeader>
-        <div className="h-full py-4">
+        <div className="h-[calc(100%-2rem)] py-4 flex flex-col">
           <FocusChart activities={activities} />
         </div>
       </DialogContent>
