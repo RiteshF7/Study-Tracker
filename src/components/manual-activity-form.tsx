@@ -169,12 +169,11 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     addDocumentNonBlocking(activitiesCollection, newActivity);
     
     if (onFormSubmit) onFormSubmit();
-    else setOpen(false);
   }
 
   const formContent = (
     <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="name"
@@ -306,26 +305,16 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
               )}
             />
           </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="secondary">Cancel</Button>
-            </DialogClose>
+          <div className="flex justify-end pt-4">
             <Button type="submit">Log Activity</Button>
-          </DialogFooter>
+          </div>
         </form>
       </Form>
   );
 
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Log Activity Manually</DialogTitle>
-          </DialogHeader>
-          {formContent}
-        </DialogContent>
-      </Dialog>
+      {formContent}
       <Dialog open={isAddNameOpen} onOpenChange={setIsAddNameOpen}>
         <DialogContent>
           <DialogHeader>

@@ -92,6 +92,56 @@
         "createdAt"
       ]
     },
+    "Problem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Problem",
+      "type": "object",
+      "description": "Represents a set of problems solved by a student.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Problem entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Problem)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name or topic of the problems solved."
+        },
+        "category": {
+          "type": "string",
+          "description": "The subject or category of the problems."
+        },
+        "count": {
+          "type": "number",
+          "description": "The number of problems solved in this entry."
+        },
+        "notes": {
+          "type": "string",
+          "description": "User's notes or reflections on the problems."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date the problems were solved in YYYY-MM-DD format.",
+          "format": "date"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the entry was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "category",
+        "count",
+        "date",
+        "createdAt"
+      ]
+    },
     "Todo": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Todo",
@@ -173,6 +223,26 @@
             {
               "name": "activityId",
               "description": "The unique identifier of the activity."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/problems/{problemId}",
+        "definition": {
+          "entityName": "Problem",
+          "schema": {
+            "$ref": "#/backend/entities/Problem"
+          },
+          "description": "Stores problems solved by a user. Path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "problemId",
+              "description": "The unique identifier of the problem entry."
             }
           ]
         }

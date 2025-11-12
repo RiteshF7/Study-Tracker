@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { DialogFooter, DialogClose } from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -68,7 +67,7 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="name"
@@ -132,12 +131,9 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
             </FormItem>
           )}
         />
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button type="button" variant="secondary">Cancel</Button>
-          </DialogClose>
+        <div className="flex justify-end pt-4">
           <Button type="submit">Track Problems</Button>
-        </DialogFooter>
+        </div>
       </form>
     </Form>
   );

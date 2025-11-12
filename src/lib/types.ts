@@ -13,6 +13,17 @@ export type Activity = {
   userId: string;
 };
 
+export type Problem = {
+  id?: string;
+  name: string;
+  category: string;
+  count: number;
+  notes: string;
+  date: string; // YYYY-MM-DD
+  createdAt: Timestamp;
+  userId: string;
+};
+
 export type ProblemCategory = {
   id: string;
   name: string;
