@@ -26,7 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Play, Timer, Clock, Trash2, Plus, Minus } from "lucide-react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from "./ui/separator";
+import { ManualActivityForm } from "./manual-activity-form";
 
 interface LiveSessionCardProps {
     onStartTimer: (config: {
@@ -126,9 +126,12 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   return (
     <>
       <Card>
-        <CardHeader>
-            <CardTitle>Start a Live Session</CardTitle>
-            <CardDescription>Track your focus in real-time with a timer or stopwatch.</CardDescription>
+        <CardHeader className="flex-row justify-between items-center">
+            <div>
+              <CardTitle>Start a Live Session</CardTitle>
+              <CardDescription>Track your focus in real-time with a timer or stopwatch.</CardDescription>
+            </div>
+            <ManualActivityForm />
         </CardHeader>
         <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-8">
