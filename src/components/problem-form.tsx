@@ -24,6 +24,7 @@ import { useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Trash2 } from "lucide-react";
+import { defaultProblemCategories } from "@/lib/types";
 
 const problemSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -44,7 +45,7 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
 
   const [problemCategories, setProblemCategories] = useLocalStorage<string[]>(
     "custom-problem-categories",
-    []
+    defaultProblemCategories.map(c => c.name)
   );
 
   const form = useForm<z.infer<typeof problemSchema>>({
@@ -135,7 +136,7 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
                         {problemCategories.map(cat => (
                             <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                         ))}
-                        <SelectSeparator />
+                        {problemCategories.length > 0 && <SelectSeparator />}
                         <SelectItem value="add_new">Add New...</SelectItem>
                         <SelectItem value="manage" className="text-muted-foreground">Manage Categories...</SelectItem>
                     </SelectContent>
@@ -185,7 +186,12 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
                     placeholder="e.g., Organic Chemistry"
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddNewCategory()}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddNewCategory();
+                      }
+                    }}
                 />
             </div>
             <DialogFooter>
@@ -199,8 +205,8 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
         <DialogContent>
             <DialogHeader><DialogTitle>Manage Categories</DialogTitle></DialogHeader>
             <div className="py-4 space-y-2 max-h-60 overflow-y-auto">
-                {problemCategories.length > 0 ?
-                    problemCategories.map(cat => (
+                {problemCategories.filter(cat => !defaultProblemCategories.map(c => c.name).includes(cat)).length > 0 ?
+                    problemCategories.filter(cat => !defaultProblemCategories.map(c => c.name).includes(cat)).map(cat => (
                         <div key={cat} className="flex items-center justify-between p-2 rounded-md border">
                             <span>{cat}</span>
                             <Button variant="ghost" size="icon" onClick={() => handleRemoveCategory(cat)}>
