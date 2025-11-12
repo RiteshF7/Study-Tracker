@@ -27,6 +27,7 @@ interface ActivityTimerProps {
     mode: TimerMode;
     initialActivityName: string;
     initialActivityType: Activity['type'];
+    initialCategory?: string;
     initialDuration: number; // in minutes
     onSessionEnd: () => void;
 }
@@ -38,6 +39,7 @@ export function ActivityTimer({
     mode,
     initialActivityName,
     initialActivityType,
+    initialCategory,
     initialDuration,
     onSessionEnd
 }: ActivityTimerProps) {
@@ -147,6 +149,7 @@ export function ActivityTimer({
             const newActivity: Omit<Activity, 'id' | 'createdAt'> & { createdAt: any, startTime: string } = {
                 name: initialActivityName,
                 type: initialActivityType,
+                category: initialCategory,
                 duration: durationInMinutes,
                 date: new Date().toISOString().split("T")[0],
                 startTime: new Date(startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),

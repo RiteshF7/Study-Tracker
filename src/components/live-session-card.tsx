@@ -34,6 +34,7 @@ interface LiveSessionCardProps {
         mode: 'timer' | 'stopwatch',
         activityName: string,
         activityType: Activity['type'],
+        category?: string,
         duration: number,
     }) => void;
 }
@@ -44,12 +45,17 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   const [mode, setMode] = useState<'timer' | 'stopwatch'>('timer');
   const [activityName, setActivityName] = useState('');
   const [activityType, setActivityType] = useState<Activity['type']>('Study');
+  const [category, setCategory] = useState('');
   const [duration, setDuration] = useState(25);
   
   const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
   const [activityTypes, setActivityTypes] = useLocalStorage<string[]>(
     "custom-activity-types",
     ["Study", "Class", "Break", "Other"]
+  );
+   const [problemCategories, setProblemCategories] = useLocalStorage<string[]>(
+    "custom-problem-categories",
+    []
   );
 
   const [isAddNameOpen, setIsAddNameOpen] = useState(false);
@@ -59,6 +65,10 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   const [isAddTypeOpen, setIsAddTypeOpen] = useState(false);
   const [isManageTypesOpen, setIsManageTypesOpen] = useState(false);
   const [newActivityType, setNewActivityType] = useState("");
+  
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
 
   const { toast } = useToast();
 
@@ -71,6 +81,14 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
       });
       return;
     }
+     if (activityType === 'Study' && !category) {
+      toast({
+        variant: "destructive",
+        title: "No Category",
+        description: "Please select a category for your study session.",
+      });
+      return;
+    }
     if (mode === 'timer' && duration <= 0) {
       toast({
         variant: "destructive",
@@ -79,7 +97,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
       });
       return;
     }
-    onStartTimer({ mode, activityName, activityType, duration });
+    onStartTimer({ mode, activityName, activityType, duration, category });
   };
 
   const handleAddNewName = () => {
@@ -121,6 +139,23 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
     setActivityTypes(activityTypes.filter(type => type !== typeToRemove));
     if (activityType === typeToRemove) {
       setActivityType('Other');
+    }
+  };
+  
+  const handleAddNewCategory = () => {
+    if (newCategory.trim() && !problemCategories.includes(newCategory.trim())) {
+      const cat = newCategory.trim();
+      setProblemCategories([...problemCategories, cat]);
+      setCategory(cat);
+      setIsAddCategoryOpen(false);
+      setNewCategory("");
+    }
+  };
+
+  const handleRemoveCategory = (categoryToRemove: string) => {
+    setProblemCategories(problemCategories.filter(cat => cat !== categoryToRemove));
+    if (category === categoryToRemove) {
+      setCategory('');
     }
   };
 
@@ -190,6 +225,31 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                             </SelectContent>
                         </Select>
                     </div>
+                    {activityType === 'Study' && (
+                       <div className="grid gap-2 sm:col-span-2">
+                        <Label htmlFor="category-select">Category</Label>
+                        <Select
+                            onValueChange={(value) => {
+                                if (value === "add_new") setIsAddCategoryOpen(true);
+                                else if (value === "manage") setIsManageCategoriesOpen(true);
+                                else setCategory(value);
+                            }}
+                            value={category}
+                        >
+                            <SelectTrigger id="category-select">
+                                <SelectValue placeholder="Select or create category..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {problemCategories.map((cat) => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                ))}
+                                {problemCategories.length > 0 && <SelectSeparator />}
+                                <SelectItem value="add_new">Add New...</SelectItem>
+                                <SelectItem value="manage" className="text-muted-foreground">Manage Categories...</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    )}
                     </div>
                     <div className="grid gap-2 mt-8">
                         <Label htmlFor="duration-input">Duration (minutes)</Label>
@@ -276,6 +336,51 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
             )) : <p className="text-sm text-muted-foreground text-center">No custom types.</p>}
         </div><DialogFooter><Button onClick={() => setIsManageTypesOpen(false)}>Done</Button></DialogFooter>
       </DialogContent>
+    </Dialog>
+    
+     <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
+        <DialogContent>
+            <DialogHeader><DialogTitle>Add New Category</DialogTitle></DialogHeader>
+            <div className="py-4">
+                <Input
+                    placeholder="e.g., Organic Chemistry"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddNewCategory();
+                      }
+                    }}
+                />
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddCategoryOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddNewCategory}>Add</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog open={isManageCategoriesOpen} onOpenChange={setIsManageCategoriesOpen}>
+        <DialogContent>
+            <DialogHeader><DialogTitle>Manage Categories</DialogTitle></DialogHeader>
+            <div className="py-4 space-y-2 max-h-60 overflow-y-auto">
+                {problemCategories.length > 0 ?
+                    problemCategories.map(cat => (
+                        <div key={cat} className="flex items-center justify-between p-2 rounded-md border">
+                            <span>{cat}</span>
+                            <Button variant="ghost" size="icon" onClick={() => handleRemoveCategory(cat)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                        </div>
+                    ))
+                    : <p className="text-sm text-muted-foreground text-center">No custom categories added yet.</p>
+                }
+            </div>
+            <DialogFooter>
+                <Button onClick={() => setIsManageCategoriesOpen(false)}>Done</Button>
+            </DialogFooter>
+        </DialogContent>
     </Dialog>
     </>
   );

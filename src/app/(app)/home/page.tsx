@@ -12,6 +12,7 @@ export default function HomePage() {
     mode: 'timer' as 'timer' | 'stopwatch',
     activityName: '',
     activityType: 'Study' as Activity['type'],
+    category: '',
     duration: 25,
   });
 
@@ -30,6 +31,7 @@ export default function HomePage() {
         mode={timerConfig.mode}
         initialActivityName={timerConfig.activityName}
         initialActivityType={timerConfig.activityType}
+        initialCategory={timerConfig.category}
         initialDuration={timerConfig.duration}
         onSessionEnd={handleSessionEnd}
       />
