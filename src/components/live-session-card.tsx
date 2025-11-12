@@ -187,51 +187,49 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                         </Select>
                     </div>
                     </div>
-                    {mode === 'timer' && (
-                        <div className="grid gap-2 mt-8">
-                            <Label htmlFor="duration-input">Duration (minutes)</Label>
-                            <div className="flex items-center gap-2">
-                                <div className="grid grid-cols-4 gap-2 flex-1">
-                                    {durationPresets.map((preset) => (
-                                        <Button
-                                            key={preset}
-                                            variant={duration === preset ? "default" : "outline"}
-                                            onClick={() => setDuration(preset)}
-                                            className="h-10"
-                                        >
-                                            {preset}
-                                        </Button>
-                                    ))}
-                                </div>
-                                <div className="flex items-center gap-1">
+                    <div className="grid gap-2 mt-8">
+                        <Label htmlFor="duration-input">Duration (minutes)</Label>
+                        <div className="flex items-center gap-2">
+                            <div className="grid grid-cols-4 gap-2 flex-1">
+                                {durationPresets.map((preset) => (
                                     <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-10 w-10"
-                                        onClick={() => setDuration(d => Math.max(1, d - 1))}
+                                        key={preset}
+                                        variant={duration === preset ? "default" : "outline"}
+                                        onClick={() => setDuration(preset)}
+                                        className="h-10"
                                     >
-                                        <Minus className="h-4 w-4" />
+                                        {preset}
                                     </Button>
-                                    <Input
-                                        id="duration-input"
-                                        type="number"
-                                        value={duration}
-                                        onChange={(e) => setDuration(parseInt(e.target.value, 10) || 0)}
-                                        placeholder="Custom"
-                                        className="w-16 h-10 text-center"
-                                    />
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-10 w-10"
-                                        onClick={() => setDuration(d => d + 1)}
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                </div>
+                                ))}
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-10 w-10"
+                                    onClick={() => setDuration(d => Math.max(1, d - 1))}
+                                >
+                                    <Minus className="h-4 w-4" />
+                                </Button>
+                                <Input
+                                    id="duration-input"
+                                    type="number"
+                                    value={duration}
+                                    onChange={(e) => setDuration(parseInt(e.target.value, 10) || 0)}
+                                    placeholder="Custom"
+                                    className="w-16 h-10 text-center"
+                                />
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-10 w-10"
+                                    onClick={() => setDuration(d => d + 1)}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </Button>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
                 <div className="flex items-center justify-center">
                     <Button size="lg" onClick={handleStart} className="w-32 h-32 text-2xl rounded-full flex flex-col">
@@ -278,5 +276,3 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
     </>
   );
 }
-
-    
