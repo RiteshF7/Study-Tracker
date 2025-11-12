@@ -175,7 +175,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Activity Name</FormLabel>
+                <FormLabel>Category</FormLabel>
                 <Select
                   onValueChange={(value) => {
                     if (value === "add_new") {
