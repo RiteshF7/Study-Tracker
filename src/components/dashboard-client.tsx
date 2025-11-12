@@ -140,17 +140,15 @@ export function DashboardClient() {
   return (
     <div className="space-y-6">
       <LiveSessionCard onStartTimer={handleStartTimer} />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3 h-full">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3 lg:row-span-2 h-full">
             <GamificationCard activities={allActivities} />
         </div>
         <div className="lg:col-span-1">
             <StreakCard currentStreak={currentStreak} bestStreak={bestStreak} />
         </div>
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-1 grid gap-6">
             <TodaysFocusCard activities={allActivities} />
-        </div>
-        <div className="lg:col-span-2">
             <StatsCards activities={allActivities} targetHours={userProfile?.targetHours} type="focus" />
         </div>
       </div>
