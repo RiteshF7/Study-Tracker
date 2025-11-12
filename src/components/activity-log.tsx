@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection, doc, query, orderBy } from "firebase/firestore";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { Badge } from "./ui/badge";
 
 export function ActivityLog() {
   const { firestore, user } = useFirebase();
@@ -59,6 +60,7 @@ export function ActivityLog() {
               <TableHead>Date</TableHead>
               <TableHead>Activity</TableHead>
               <TableHead>Type</TableHead>
+              <TableHead>Category</TableHead>
               <TableHead>Duration (min)</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -66,7 +68,7 @@ export function ActivityLog() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   Loading activities...
                 </TableCell>
               </TableRow>
@@ -75,7 +77,8 @@ export function ActivityLog() {
                 <TableRow key={activity.id}>
                   <TableCell>{activity.date}</TableCell>
                   <TableCell className="font-medium">{activity.name}</TableCell>
-                  <TableCell>{activity.type}</TableCell>
+                  <TableCell><Badge variant="secondary">{activity.type}</Badge></TableCell>
+                  <TableCell>{activity.category || 'N/A'}</TableCell>
                   <TableCell>{activity.duration}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => deleteActivity(activity.id!)}>
@@ -86,7 +89,7 @@ export function ActivityLog() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   No activities logged in the last 30 days.
                 </TableCell>
               </TableRow>

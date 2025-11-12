@@ -3,13 +3,13 @@
  * @fileoverview Firestore Security Rules for StudyTrack Journal application.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model. Each user has full control over their profile and associated activities and problems.
+ * This ruleset enforces a strict user-ownership model. Each user has full control over their profile and associated activities.
  *
  * Data Structure:
- * The data is structured under the `/users/{userId}` path, with subcollections for activities and problems.
+ * The data is structured under the `/users/{userId}` path, with subcollections for activities and todos.
  * /users/{userId} - User profile information
  * /users/{userId}/activities/{activityId} - Activities for each user
- * /users/{userId}/problems/{problemId} - Problems solved by each user
+ * /users/{userId}/todos/{todoId} - To-do items for each user
  */
 rules_version = '2';
 service cloud.firestore {
@@ -45,25 +45,6 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes; allows owner to read and list.
      */
     match /users/{userId}/activities/{activityId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId && request.resource.data.startTime != null;
-      allow update: if isOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isOwner(userId);
-    }
-
-    /**
-     * @description Controls access to problems solved for each user.
-     * @path /users/{userId}/problems/{problemId}
-     * @allow (create) User with ID 'user_abc' can create a problem log under their ID: request.auth.uid == 'user_abc'
-     * @allow (get) User with ID 'user_abc' can read a problem log under their ID: request.auth.uid == 'user_abc'
-     * @allow (update) User with ID 'user_abc' can update a problem log under their ID: request.auth.uid == 'user_abc'
-     * @allow (delete) User with ID 'user_abc' can delete a problem log under their ID: request.auth.uid == 'user_abc'
-     * @allow (list) User with ID 'user_abc' can list their problem logs: request.auth.uid == 'user_abc'
-     * @deny (create) User with ID 'user_xyz' cannot create a problem log for 'user_abc': request.auth.uid != 'user_abc'
-     * @principle Enforces document ownership for writes; allows owner to read and list.
-     */
-    match /users/{userId}/problems/{problemId} {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
       allow create: if isOwner(userId) && request.resource.data.userId == userId;

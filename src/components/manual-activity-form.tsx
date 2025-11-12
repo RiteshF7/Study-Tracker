@@ -9,10 +9,8 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
@@ -33,16 +31,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PlusCircle, Trash2 } from "lucide-react";
-import { useCollection, useFirebase, useUser, useMemoFirebase } from "@/firebase";
+import { Trash2 } from "lucide-react";
+import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import type { Activity } from "@/lib/types";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { defaultProblemCategories } from "@/lib/types";
 
 const manualActivitySchema = z.object({
   name: z.string().min(1, "Name is required"),
   type: z.string().min(1, "Type is required"),
+  category: z.string().optional(),
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute."),
   startTime: z.string().min(1, "Start time is required"),
 });
@@ -90,16 +90,20 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     defaultValues: {
       name: "",
       type: "Study",
+      category: "",
       duration: 30,
       startTime: "09:00",
     },
   });
+
+  const activityType = form.watch("type");
 
   useEffect(() => {
     if (open) {
       form.reset({
         name: "",
         type: "Study",
+        category: "",
         duration: 30,
         startTime: "09:00",
       });
@@ -155,6 +159,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     const newActivity: Omit<Activity, 'id' | 'createdAt'> & { createdAt: any } = {
       name: values.name,
       type: values.type as Activity['type'],
+      category: values.category,
       duration: values.duration,
       date: new Date().toISOString().split("T")[0],
       startTime: values.startTime,
@@ -208,43 +213,71 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Type</FormLabel>
-                <Select onValueChange={(value) => {
-                    if (value === "add_new") {
-                      setIsAddTypeOpen(true);
-                    } else if (value === "manage") {
-                      setIsManageTypesOpen(true);
-                    } else {
-                      field.onChange(value);
-                    }
-                  }}
-                  value={field.value}
-                  defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an activity type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {activityTypes.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t}
-                      </SelectItem>
-                    ))}
-                    <SelectSeparator />
-                    <SelectItem value="add_new">Add New...</SelectItem>
-                    <SelectItem value="manage" className="text-muted-foreground">Manage Types...</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          
+          <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <Select onValueChange={(value) => {
+                        if (value === "add_new") {
+                          setIsAddTypeOpen(true);
+                        } else if (value === "manage") {
+                          setIsManageTypesOpen(true);
+                        } else {
+                          field.onChange(value);
+                        }
+                      }}
+                      value={field.value}
+                      defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an activity type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {activityTypes.map((t) => (
+                          <SelectItem key={t} value={t}>
+                            {t}
+                          </SelectItem>
+                        ))}
+                        <SelectSeparator />
+                        <SelectItem value="add_new">Add New...</SelectItem>
+                        <SelectItem value="manage" className="text-muted-foreground">Manage Types...</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {activityType === 'Study' && (
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                  <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Select a category" />
+                              </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                              {defaultProblemCategories.map(cat => (
+                                  <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                              ))}
+                          </SelectContent>
+                      </Select>
+                      <FormMessage />
+                  </FormItem>
+                  )}
+              />
+              )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -288,10 +321,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Log an Activity Manually</DialogTitle>
-            <DialogDescription>
-              Add a past study session or other activity to your log.
-            </DialogDescription>
+            <DialogTitle>Log Activity Manually</DialogTitle>
           </DialogHeader>
           {formContent}
         </DialogContent>
@@ -389,5 +419,3 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     </>
   );
 }
-
-    

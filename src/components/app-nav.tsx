@@ -43,11 +43,6 @@ const navItems = [
     label: "Tracker",
   },
   {
-    href: "/problems",
-    icon: Target,
-    label: "Problem Tracker",
-  },
-  {
     href: "/scheduler",
     icon: BrainCircuit,
     label: "AI Scheduler",

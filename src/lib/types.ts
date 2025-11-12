@@ -5,6 +5,7 @@ export type Activity = {
   id?: string;
   name: string;
   type: 'Study' | 'Class' | 'Break' | 'Other';
+  category?: string;
   duration: number; // in minutes
   date: string; // YYYY-MM-DD
   startTime: string; // HH:MM
@@ -25,17 +26,6 @@ export const defaultProblemCategories: ProblemCategory[] = [
   { id: 'cs', name: 'Computer Science' },
   { id: 'history', name: 'History' },
 ];
-
-export type Problem = {
-  id?: string;
-  name: string;
-  count: number;
-  notes: string;
-  category: string;
-  date: string; // YYYY-MM-DD
-  createdAt: Timestamp;
-  userId: string;
-};
 
 export type Todo = {
   id?: string;
