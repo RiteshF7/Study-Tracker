@@ -47,7 +47,6 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   const [category, setCategory] = useState('');
   const [duration, setDuration] = useState(25);
   
-  const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
   const [activityTypes, setActivityTypes] = useLocalStorage<string[]>(
     "custom-activity-types",
     ["Study", "Class", "Break", "Other"]
@@ -56,10 +55,6 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
     "custom-problem-categories",
     []
   );
-
-  const [isAddNameOpen, setIsAddNameOpen] = useState(false);
-  const [isManageNamesOpen, setIsManageNamesOpen] = useState(false);
-  const [newActivityName, setNewActivityName] = useState("");
 
   const [isAddTypeOpen, setIsAddTypeOpen] = useState(false);
   const [isManageTypesOpen, setIsManageTypesOpen] = useState(false);
@@ -97,27 +92,6 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
       return;
     }
     onStartTimer({ mode, activityName, activityType, duration, category });
-  };
-
-  const handleAddNewName = () => {
-    if (newActivityName.trim() && !pastActivityNames.includes(newActivityName.trim())) {
-      const newName = newActivityName.trim();
-      setPastActivityNames([...pastActivityNames, newName]);
-      setActivityName(newName);
-      setIsAddNameOpen(false);
-      setNewActivityName("");
-    } else if (pastActivityNames.includes(newActivityName.trim())) {
-      setActivityName(newActivityName.trim());
-      setIsAddNameOpen(false);
-      setNewActivityName("");
-    }
-  };
-
-  const handleRemoveName = (nameToRemove: string) => {
-    setPastActivityNames(pastActivityNames.filter(name => name !== nameToRemove));
-    if (activityName === nameToRemove) {
-      setActivityName('');
-    }
   };
 
   const handleAddNewType = () => {
@@ -179,26 +153,12 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="grid gap-2">
                         <Label htmlFor="activity-name">Activity Name</Label>
-                        <Select
-                            onValueChange={(value) => {
-                                if (value === "add_new") setIsAddNameOpen(true);
-                                else if (value === "manage") setIsManageNamesOpen(true);
-                                else setActivityName(value);
-                            }}
+                        <Input
+                            id="activity-name"
+                            placeholder="e.g., Quantum Physics"
                             value={activityName}
-                            >
-                            <SelectTrigger id="activity-name">
-                                <SelectValue placeholder="Select or create..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {pastActivityNames.map((name) => (
-                                <SelectItem key={name} value={name}>{name}</SelectItem>
-                                ))}
-                                {pastActivityNames.length > 0 && <SelectSeparator />}
-                                <SelectItem value="add_new">Add New...</SelectItem>
-                                <SelectItem value="manage" className="text-muted-foreground">Manage Names...</SelectItem>
-                            </SelectContent>
-                            </Select>
+                            onChange={(e) => setActivityName(e.target.value)}
+                        />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="type-select">Type</Label>
@@ -303,22 +263,6 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
         </CardContent>
     </Card>
     
-    <Dialog open={isAddNameOpen} onOpenChange={setIsAddNameOpen}>
-      <DialogContent>
-        <DialogHeader><DialogTitle>Add New Activity Name</DialogTitle></DialogHeader>
-        <div className="py-4"><Input placeholder="e.g., Quantum Physics" value={newActivityName} onChange={(e) => setNewActivityName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddNewName()} /></div>
-        <DialogFooter><Button variant="outline" onClick={() => setIsAddNameOpen(false)}>Cancel</Button><Button onClick={handleAddNewName}>Add</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-    <Dialog open={isManageNamesOpen} onOpenChange={setIsManageNamesOpen}>
-      <DialogContent><DialogHeader><DialogTitle>Manage Activity Names</DialogTitle></DialogHeader>
-        <div className="py-4 space-y-2 max-h-60 overflow-y-auto">
-          {pastActivityNames.length > 0 ? pastActivityNames.map(name => (
-              <div key={name} className="flex items-center justify-between p-2 rounded-md border"><span>{name}</span><Button variant="ghost" size="icon" onClick={() => handleRemoveName(name)}><Trash2 className="h-4 w-4 text-destructive" /></Button></div>
-          )) : <p className="text-sm text-muted-foreground text-center">No custom names.</p>}
-        </div><DialogFooter><Button onClick={() => setIsManageNamesOpen(false)}>Done</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
     <Dialog open={isAddTypeOpen} onOpenChange={setIsAddTypeOpen}>
       <DialogContent><DialogHeader><DialogTitle>Add New Activity Type</DialogTitle></DialogHeader>
         <div className="py-4"><Input placeholder="e.g., Lab Work" value={newActivityType} onChange={(e) => setNewActivityType(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddNewType()} /></div>
@@ -383,3 +327,5 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
     </>
   );
 }
+
+    
