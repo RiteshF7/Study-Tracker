@@ -40,7 +40,7 @@ const navItems = [
   {
     href: "/activities",
     icon: ListTodo,
-    label: "Activity Log",
+    label: "Tracker",
   },
   {
     href: "/problems",
