@@ -169,7 +169,7 @@ export function ManualActivityForm() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button variant="outline">
-            <PlusCircle className="mr-2 h-4 w-4" /> Log Manually
+            <PlusCircle className="mr-2 h-4 w-4" /> Manual
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
