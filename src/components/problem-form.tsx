@@ -20,7 +20,11 @@ import { collection, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import type { Problem } from "@/lib/types";
 import { defaultProblemCategories } from "@/lib/types";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "./ui/select";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectSeparator } from "./ui/select";
+import { useState } from "react";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Trash2 } from "lucide-react";
 
 const problemSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -35,6 +39,14 @@ interface ProblemFormProps {
 
 export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
   const { firestore, user } = useFirebase();
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+
+  const [problemCategories, setProblemCategories] = useLocalStorage<string[]>(
+    "custom-problem-categories",
+    defaultProblemCategories.map(c => c.name)
+  );
 
   const form = useForm<z.infer<typeof problemSchema>>({
     resolver: zodResolver(problemSchema),
@@ -65,7 +77,26 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
     if (onFormSubmit) onFormSubmit();
   }
 
+  const handleAddNewCategory = () => {
+    if (newCategory.trim() && !problemCategories.includes(newCategory.trim())) {
+      const category = newCategory.trim();
+      setProblemCategories([...problemCategories, category]);
+      form.setValue('category', category);
+      setIsAddCategoryOpen(false);
+      setNewCategory("");
+    }
+  };
+
+  const handleRemoveCategory = (categoryToRemove: string) => {
+    setProblemCategories(problemCategories.filter(cat => cat !== categoryToRemove));
+    if (form.getValues('category') === categoryToRemove) {
+      form.setValue('category', '');
+    }
+  };
+
+
   return (
+    <>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
@@ -88,16 +119,26 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={(value) => {
+                    if (value === "add_new") setIsAddCategoryOpen(true);
+                    else if (value === "manage") setIsManageCategoriesOpen(true);
+                    else field.onChange(value);
+                  }}
+                  value={field.value}
+                >
                     <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                        {defaultProblemCategories.map(cat => (
-                            <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                        {problemCategories.map(cat => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                         ))}
+                        <SelectSeparator />
+                        <SelectItem value="add_new">Add New...</SelectItem>
+                        <SelectItem value="manage" className="text-muted-foreground">Manage Categories...</SelectItem>
                     </SelectContent>
                 </Select>
                 <FormMessage />
@@ -136,5 +177,46 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
         </div>
       </form>
     </Form>
+
+    <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
+        <DialogContent>
+            <DialogHeader><DialogTitle>Add New Category</DialogTitle></DialogHeader>
+            <div className="py-4">
+                <Input
+                    placeholder="e.g., Organic Chemistry"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddNewCategory()}
+                />
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddCategoryOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddNewCategory}>Add</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog open={isManageCategoriesOpen} onOpenChange={setIsManageCategoriesOpen}>
+        <DialogContent>
+            <DialogHeader><DialogTitle>Manage Categories</DialogTitle></DialogHeader>
+            <div className="py-4 space-y-2 max-h-60 overflow-y-auto">
+                {problemCategories.filter(cat => !defaultProblemCategories.map(c=>c.name).includes(cat)).length > 0 ?
+                    problemCategories.filter(cat => !defaultProblemCategories.map(c=>c.name).includes(cat)).map(cat => (
+                        <div key={cat} className="flex items-center justify-between p-2 rounded-md border">
+                            <span>{cat}</span>
+                            <Button variant="ghost" size="icon" onClick={() => handleRemoveCategory(cat)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                        </div>
+                    ))
+                    : <p className="text-sm text-muted-foreground text-center">No custom categories added yet.</p>
+                }
+            </div>
+            <DialogFooter>
+                <Button onClick={() => setIsManageCategoriesOpen(false)}>Done</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+    </>
   );
 }
