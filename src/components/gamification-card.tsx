@@ -63,7 +63,7 @@ export function GamificationCard({ activities }: GamificationCardProps) {
 
   return (
     <Card className="h-full">
-      <CardContent className="p-6">
+      <CardContent className="p-6 flex flex-col h-full">
         <div className="flex items-start gap-4">
            <div className={cn("p-2 rounded-lg bg-card", currentLevel.badgeColor, 'border')}>
             <currentLevel.icon className={`w-8 h-8 ${currentLevel.iconColor}`} />
@@ -88,8 +88,8 @@ export function GamificationCard({ activities }: GamificationCardProps) {
           </div>
         </div>
         
-        <div className="mt-6">
-            <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+        <div className="mt-6 flex-1 flex items-center">
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-2 w-full">
                 {levels.map((level, index) => {
                     const isAchieved = index <= currentLevelIndex;
                     return (

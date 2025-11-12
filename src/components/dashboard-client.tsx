@@ -141,7 +141,7 @@ export function DashboardClient() {
     <div className="space-y-6">
       <LiveSessionCard onStartTimer={handleStartTimer} />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 h-full">
             <GamificationCard activities={allActivities} />
         </div>
         <div className="lg:col-span-1">
