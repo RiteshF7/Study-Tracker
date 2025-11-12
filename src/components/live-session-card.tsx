@@ -132,7 +132,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
         </CardHeader>
         <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-8">
-                <div className="space-y-6">
+                <div className="space-y-8">
                     <Tabs defaultValue="timer" onValueChange={(v) => setMode(v as 'timer' | 'stopwatch')} className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
                             <TabsTrigger value="timer"><Timer className="mr-2 h-4 w-4" />Timer</TabsTrigger>
@@ -243,7 +243,6 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
         </CardContent>
     </Card>
     
-    {/* Dialogs for managing names and types */}
     <Dialog open={isAddNameOpen} onOpenChange={setIsAddNameOpen}>
       <DialogContent>
         <DialogHeader><DialogTitle>Add New Activity Name</DialogTitle></DialogHeader>
