@@ -44,11 +44,15 @@ const manualActivitySchema = z.object({
   name: z.string().min(1, "Name is required"),
   type: z.string().min(1, "Type is required"),
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute."),
-  date: z.string().min(1, "Date is required"),
   startTime: z.string().min(1, "Start time is required"),
 });
 
-export function ManualActivityForm() {
+interface ManualActivityFormProps {
+  onFormSubmit?: () => void;
+}
+
+
+export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
   const [open, setOpen] = useState(false);
   
   const [isAddNameOpen, setIsAddNameOpen] = useState(false);
@@ -87,7 +91,6 @@ export function ManualActivityForm() {
       name: "",
       type: "Study",
       duration: 30,
-      date: new Date().toISOString().split("T")[0],
       startTime: "09:00",
     },
   });
@@ -98,7 +101,6 @@ export function ManualActivityForm() {
         name: "",
         type: "Study",
         duration: 30,
-        date: new Date().toISOString().split("T")[0],
         startTime: "09:00",
       });
     }
@@ -154,24 +156,136 @@ export function ManualActivityForm() {
       name: values.name,
       type: values.type as Activity['type'],
       duration: values.duration,
-      date: values.date,
+      date: new Date().toISOString().split("T")[0],
       startTime: values.startTime,
       userId: user.uid,
       createdAt: serverTimestamp(),
     };
     addDocumentNonBlocking(activitiesCollection, newActivity);
     
-    setOpen(false);
+    if (onFormSubmit) onFormSubmit();
+    else setOpen(false);
   }
+
+  const formContent = (
+    <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Activity Name</FormLabel>
+                <Select
+                  onValueChange={(value) => {
+                    if (value === "add_new") {
+                      setIsAddNameOpen(true);
+                    } else if (value === "manage") {
+                      setIsManageNamesOpen(true);
+                    } else {
+                      field.onChange(value);
+                    }
+                  }}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select an activity name" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {pastActivityNames.map((name) => (
+                      <SelectItem key={name} value={name}>
+                        {name}
+                      </SelectItem>
+                    ))}
+                      {(pastActivityNames.length > 0) && <SelectSeparator />}
+                    <SelectItem value="add_new">Add New...</SelectItem>
+                    <SelectItem value="manage" className="text-muted-foreground">Manage Names...</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Type</FormLabel>
+                <Select onValueChange={(value) => {
+                    if (value === "add_new") {
+                      setIsAddTypeOpen(true);
+                    } else if (value === "manage") {
+                      setIsManageTypesOpen(true);
+                    } else {
+                      field.onChange(value);
+                    }
+                  }}
+                  value={field.value}
+                  defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select an activity type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {activityTypes.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
+                    ))}
+                    <SelectSeparator />
+                    <SelectItem value="add_new">Add New...</SelectItem>
+                    <SelectItem value="manage" className="text-muted-foreground">Manage Types...</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="duration"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Duration (min)</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+              <FormField
+              control={form.control}
+              name="startTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Start Time</FormLabel>
+                  <FormControl>
+                    <Input type="time" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">Cancel</Button>
+            </DialogClose>
+            <Button type="submit">Log Activity</Button>
+          </DialogFooter>
+        </form>
+      </Form>
+  );
 
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline">
-            <PlusCircle className="mr-2 h-4 w-4" /> Manual
-          </Button>
-        </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Log an Activity Manually</DialogTitle>
@@ -179,132 +293,7 @@ export function ManualActivityForm() {
               Add a past study session or other activity to your log.
             </DialogDescription>
           </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Activity Name</FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        if (value === "add_new") {
-                          setIsAddNameOpen(true);
-                        } else if (value === "manage") {
-                          setIsManageNamesOpen(true);
-                        } else {
-                          field.onChange(value);
-                        }
-                      }}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an activity name" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {pastActivityNames.map((name) => (
-                          <SelectItem key={name} value={name}>
-                            {name}
-                          </SelectItem>
-                        ))}
-                         {(pastActivityNames.length > 0) && <SelectSeparator />}
-                        <SelectItem value="add_new">Add New...</SelectItem>
-                        <SelectItem value="manage" className="text-muted-foreground">Manage Names...</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Type</FormLabel>
-                    <Select onValueChange={(value) => {
-                        if (value === "add_new") {
-                          setIsAddTypeOpen(true);
-                        } else if (value === "manage") {
-                          setIsManageTypesOpen(true);
-                        } else {
-                          field.onChange(value);
-                        }
-                      }}
-                      value={field.value}
-                      defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an activity type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {activityTypes.map((t) => (
-                          <SelectItem key={t} value={t}>
-                           {t}
-                          </SelectItem>
-                        ))}
-                        <SelectSeparator />
-                        <SelectItem value="add_new">Add New...</SelectItem>
-                        <SelectItem value="manage" className="text-muted-foreground">Manage Types...</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="duration"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Duration (min)</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="startTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Time</FormLabel>
-                      <FormControl>
-                        <Input type="time" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary">Cancel</Button>
-                </DialogClose>
-                <Button type="submit">Log Activity</Button>
-              </DialogFooter>
-            </form>
-          </Form>
+          {formContent}
         </DialogContent>
       </Dialog>
       <Dialog open={isAddNameOpen} onOpenChange={setIsAddNameOpen}>
@@ -400,3 +389,5 @@ export function ManualActivityForm() {
     </>
   );
 }
+
+    
