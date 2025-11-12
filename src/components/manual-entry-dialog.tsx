@@ -37,22 +37,21 @@ export function ManualEntryDialog() {
             Log a past activity or track problems you've solved.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-8 items-start">
             <div>
                 <h3 className="text-lg font-medium mb-4">Log Activity</h3>
                 <ManualActivityForm onFormSubmit={handleFormSubmit} />
             </div>
-            <div className="flex flex-col">
-                 <div className="hidden md:block">
-                    <Separator orientation="vertical" className="h-full" />
-                 </div>
-                 <div className="md:hidden">
-                    <Separator orientation="horizontal" className="w-full" />
-                 </div>
-            </div>
-            <div>
-                <h3 className="text-lg font-medium mb-4">Track Problems</h3>
-                <ProblemForm onFormSubmit={handleFormSubmit} />
+            <div className="relative">
+                <div className="absolute inset-0 flex items-center md:hidden">
+                    <Separator />
+                </div>
+                 <div className="absolute inset-y-0 left-0 w-px bg-border hidden md:block" />
+
+                <div className="md:ml-8">
+                    <h3 className="text-lg font-medium mb-4 mt-8 md:mt-0">Track Problems</h3>
+                    <ProblemForm onFormSubmit={handleFormSubmit} />
+                </div>
             </div>
         </div>
       </DialogContent>
