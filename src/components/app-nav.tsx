@@ -12,6 +12,7 @@ import {
   LogOut,
   CalendarDays,
   Settings,
+  Home
 } from "lucide-react";
 import {
   SidebarHeader,
@@ -26,6 +27,11 @@ import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 
 const navItems = [
+  {
+    href: "/home",
+    icon: Home,
+    label: "Home",
+  },
   {
     href: "/dashboard",
     icon: LayoutDashboard,
