@@ -19,7 +19,6 @@ import { useFirebase } from "@/firebase";
 import { collection, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import type { Problem } from "@/lib/types";
-import { defaultProblemCategories } from "@/lib/types";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectSeparator } from "./ui/select";
 import { useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
