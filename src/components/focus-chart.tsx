@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/chart"
 import type { Activity } from "@/lib/types"
 import { Button } from "./ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card"
 
 type TimeRange = 7 | 30 | 90 | 180;
 
@@ -78,7 +77,7 @@ export function FocusChart({ activities }: FocusChartProps) {
                 </Button>
             ))}
         </div>
-        <div className="flex-grow">
+        <div className="flex-1 min-h-0">
             <ChartContainer config={chartConfig} className="w-full h-full">
                 <BarChart accessibilityLayer data={chartData}>
                     <CartesianGrid vertical={false} />
