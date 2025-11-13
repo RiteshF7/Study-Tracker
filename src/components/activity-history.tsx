@@ -54,8 +54,8 @@ export function ActivityHistory({ activities }: { activities: Activity[] }) {
     const activityByDate = useMemo(() => {
         const map = new Map<string, number>();
         activities.forEach(a => {
-            if (a.createdAt) {
-                const date = (a.createdAt as any).toDate ? (a.createdAt as any).toDate() : parseISO(a.date);
+            if (a.date) {
+                const date = parseISO(a.date);
                 const dateKey = format(date, 'yyyy-MM-dd');
                 map.set(dateKey, (map.get(dateKey) || 0) + a.duration);
             }
