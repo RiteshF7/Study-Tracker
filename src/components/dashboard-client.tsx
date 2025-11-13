@@ -1,18 +1,15 @@
 
 "use client";
 
-import type { Activity, Problem } from "@/lib/types";
-import { useMemo, useState } from "react";
-import { format, subDays, parseISO, startOfDay, differenceInDays } from "date-fns";
-import { BarChart3, Clock, Target, TrendingUp, Goal, CheckCircle, ChevronDown, Flame, ChevronLeft, ChevronRight, Trophy, Pencil } from "lucide-react";
+import type { Activity } from "@/lib/types";
+import { useMemo } from "react";
+import { parseISO, startOfDay, differenceInDays } from "date-fns";
 import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { GamificationCard } from "./gamification-card";
 import { ActivityHistory } from "./activity-history";
-import { generateMockActivities } from "@/lib/mock-data";
 import { TodaysFocusCard } from "./todays-focus-card";
 import { StreakCard } from "./streak-card";
 import { useLocalStorage } from "@/hooks/use-local-storage";
@@ -40,13 +37,9 @@ export function DashboardClient() {
   const isLoading = isLoadingActivities || isLoadingProfile;
   
   const allActivities = useMemo(() => {
-    if (isLoadingActivities) return [];
-    if (!activities || activities.length === 0) {
-        // Return an empty array if you don't want mock data in production
-        return [];
-    }
+    if (!activities) return [];
     return activities;
-  }, [activities, isLoadingActivities]);
+  }, [activities]);
 
   const [bestStreak, setBestStreak] = useLocalStorage<number>('best-streak', 0);
 
@@ -101,7 +94,7 @@ export function DashboardClient() {
           Start by logging your study activities to see your progress beautifully visualized here.
         </p>
          <Button asChild className="mt-4">
-            <Link href="/activities">Log an Activity</Link>
+            <Link href="/home">Log an Activity</Link>
         </Button>
       </div>
     );

@@ -146,7 +146,7 @@ export function ActivityTimer({
         }
 
         if (durationInMinutes > 0) {
-            const newActivity: Omit<Activity, 'id' | 'createdAt'> & { createdAt: any, startTime: string } = {
+            const newActivity: Omit<Activity, 'id' | 'createdAt'> = {
                 name: initialActivityName,
                 type: initialActivityType,
                 category: initialCategory,
@@ -154,10 +154,9 @@ export function ActivityTimer({
                 date: new Date().toISOString().split("T")[0],
                 startTime: new Date(startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
                 userId: user.uid,
-                createdAt: serverTimestamp(),
             };
             
-            addDocumentNonBlocking(activitiesCollection, newActivity);
+            addDocumentNonBlocking(activitiesCollection, { ...newActivity, createdAt: serverTimestamp() });
             
             toast({
                 title: "Activity Logged!",
