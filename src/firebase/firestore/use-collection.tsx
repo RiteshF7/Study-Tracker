@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Query,
   onSnapshot,
@@ -57,26 +57,35 @@ export function useCollection<T = any>(
   type StateDataType = ResultItemType[] | null;
 
   const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
-  // Memoize the query to ensure it's stable across re-renders unless its definition changes.
-  const memoizedQuery = useMemo(() => targetRefOrQuery, [targetRefOrQuery]);
-
+  // Use a ref to store the previous query to compare against the new one.
+  const prevQueryRef = useRef<Query<DocumentData> | CollectionReference<DocumentData> | null | undefined>(null);
+  
   useEffect(() => {
-    // If the query is null or undefined, reset state and do nothing.
-    if (!memoizedQuery) {
-      setData(null);
-      setIsLoading(false);
-      setError(null);
-      return;
+    // Check if the new query is actually different from the old one.
+    const hasQueryChanged = 
+        (prevQueryRef.current && !targetRefOrQuery) ||
+        (!prevQueryRef.current && targetRefOrQuery) ||
+        (targetRefOrQuery && prevQueryRef.current && !queryEqual(targetRefOrQuery, prevQueryRef.current));
+    
+    // If the query is null or hasn't changed, do nothing.
+    if (!targetRefOrQuery || !hasQueryChanged) {
+        if (!targetRefOrQuery) {
+            setData(null);
+            setIsLoading(false);
+            setError(null);
+        }
+        return;
     }
 
+    prevQueryRef.current = targetRefOrQuery;
     setIsLoading(true);
     setError(null);
 
     const unsubscribe = onSnapshot(
-      memoizedQuery,
+      targetRefOrQuery,
       (snapshot: QuerySnapshot<DocumentData>) => {
         const results: ResultItemType[] = snapshot.docs.map(doc => ({
           ...(doc.data() as T),
@@ -88,9 +97,9 @@ export function useCollection<T = any>(
       },
       (error: FirestoreError) => {
         const path: string =
-          memoizedQuery.type === 'collection'
-            ? (memoizedQuery as CollectionReference).path
-            : (memoizedQuery as unknown as InternalQuery)._query.path.canonicalString();
+          targetRefOrQuery.type === 'collection'
+            ? (targetRefOrQuery as CollectionReference).path
+            : (targetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString();
 
         const contextualError = new FirestorePermissionError({
           operation: 'list',
@@ -108,7 +117,7 @@ export function useCollection<T = any>(
 
     // Cleanup subscription on component unmount or if the query changes.
     return () => unsubscribe();
-  }, [memoizedQuery]); // The effect now correctly depends on the memoized query.
+  }, [targetRefOrQuery]);
 
   return { data, isLoading, error };
 }
