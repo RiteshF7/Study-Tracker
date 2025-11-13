@@ -39,7 +39,7 @@ export interface UseDocResult<T> {
  * @returns {UseDocResult<T>} Object with data, isLoading, error.
  */
 export function useDoc<T = any>(
-  memoizedDocRef: (DocumentReference<DocumentData> & {__memo?: boolean}) | null | undefined,
+  memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
 ): UseDocResult<T> {
   type StateDataType = WithId<T> | null;
 
@@ -88,12 +88,6 @@ export function useDoc<T = any>(
 
     return () => unsubscribe();
   }, [memoizedDocRef]); // Re-run if the memoizedDocRef changes.
-
-  if(memoizedDocRef && !(memoizedDocRef as any).__memo) {
-    // Using console.warn instead of throwing an error to avoid crashing the app in a render loop.
-    // This provides a clear warning to the developer without breaking the UI.
-    console.warn('The document reference passed to useDoc was not created with useMemoFirebase. This can lead to performance issues and infinite loops.', memoizedDocRef);
-  }
 
   return { data, isLoading, error };
 }
