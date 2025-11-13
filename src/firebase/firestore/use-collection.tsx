@@ -67,16 +67,11 @@ export function useCollection<T = any>(
         setData(null);
         setIsLoading(false);
         setError(null);
-        prevQueryRef.current = null;
         return;
     }
 
-    const hasQueryChanged = 
-        !prevQueryRef.current || 
-        !queryEqual(targetRefOrQuery, prevQueryRef.current);
-
-    if (!hasQueryChanged) {
-        return;
+    if (prevQueryRef.current && queryEqual(prevQueryRef.current, targetRefOrQuery)) {
+      return;
     }
 
     prevQueryRef.current = targetRefOrQuery;
