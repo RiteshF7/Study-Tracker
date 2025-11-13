@@ -46,12 +46,11 @@ type UserProfile = {
 
 export function SettingsForm() {
   const { user } = useUser();
-  const { firestore } = useFirebase();
   const { toast } = useToast();
 
-  const userDocRef = useMemoFirebase(() => 
+  const userDocRef = useMemoFirebase((firestore) => 
     user ? doc(firestore, "users", user.uid) : null
-  , [firestore, user]);
+  , [user]);
   
   const { data: userProfile } = useDoc<UserProfile>(userDocRef);
 

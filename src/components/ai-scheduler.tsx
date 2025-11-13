@@ -66,17 +66,17 @@ function AddToTodoButton() {
 }
 
 export function AiScheduler() {
-  const { firestore, user } = useFirebase();
+  const { user } = useFirebase();
   const editFormRef = useRef<HTMLFormElement>(null);
   const addToTodoFormRef = useRef<HTMLFormElement>(null);
 
-  const activitiesQuery = useMemoFirebase(() => 
+  const activitiesQuery = useMemoFirebase((firestore) => 
     user ? collection(firestore, "users", user.uid, "activities") : null
-  , [firestore, user]);
+  , [user]);
 
-  const problemsQuery = useMemoFirebase(() =>
+  const problemsQuery = useMemoFirebase((firestore) =>
     user ? collection(firestore, "users", user.uid, "problems") : null
-  , [firestore, user]);
+  , [user]);
 
   const { data: activities } = useCollection<Activity>(activitiesQuery);
   const { data: problems } = useCollection<Problem>(problemsQuery);

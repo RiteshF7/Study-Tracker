@@ -21,19 +21,19 @@ import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Badge } from "./ui/badge";
 
 export function ActivityLog() {
-  const { firestore, user } = useFirebase();
+  const { user } = useFirebase();
   
-  const activitiesQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
+  const activitiesQuery = useMemoFirebase((firestore) => {
+    if (!user) return null;
     const activitiesCollection = collection(firestore, "users", user.uid, "activities");
     return query(activitiesCollection, orderBy("createdAt", "desc"));
-  }, [firestore, user]);
+  }, [user]);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 
   function deleteActivity(id: string) {
-    if (!user || !firestore) return;
-    const docRef = doc(firestore, "users", user.uid, "activities", id);
+    if (!user) return;
+    const docRef = doc(useFirebase().firestore, "users", user.uid, "activities", id);
     deleteDocumentNonBlocking(docRef);
   }
 

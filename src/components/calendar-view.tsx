@@ -29,22 +29,22 @@ import { collection, query, where, Timestamp } from 'firebase/firestore';
 import { DayView } from './day-view';
 
 export function CalendarView() {
-  const { firestore, user } = useFirebase();
+  const { user } = useFirebase();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const firstDayCurrentMonth = startOfMonth(currentMonth);
   const lastDayCurrentMonth = endOfMonth(currentMonth);
 
-  const activitiesQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
+  const activitiesQuery = useMemoFirebase((firestore) => {
+    if (!user) return null;
     const activitiesCollection = collection(firestore, 'users', user.uid, 'activities');
     return query(
       activitiesCollection,
       where('createdAt', '>=', Timestamp.fromDate(startOfWeek(firstDayCurrentMonth))),
       where('createdAt', '<=', Timestamp.fromDate(endOfWeek(lastDayCurrentMonth)))
     );
-  }, [firestore, user, firstDayCurrentMonth, lastDayCurrentMonth]);
+  }, [user, firstDayCurrentMonth, lastDayCurrentMonth]);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 

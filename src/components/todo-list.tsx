@@ -32,13 +32,13 @@ const todoSchema = z.object({
 });
 
 export function TodoList() {
-  const { firestore, user } = useFirebase();
+  const { user } = useFirebase();
 
-  const todosQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
+  const todosQuery = useMemoFirebase((firestore) => {
+    if (!user) return null;
     const todosCollection = collection(firestore, 'users', user.uid, 'todos');
     return query(todosCollection, orderBy("createdAt", "desc"));
-  }, [firestore, user]);
+  }, [user]);
 
 
   const { data: todos, isLoading } = useCollection<Todo>(todosQuery);
@@ -51,7 +51,10 @@ export function TodoList() {
   });
 
   const onSubmit = (values: z.infer<typeof todoSchema>) => {
-    if (!todosQuery || !user) return;
+    const { firestore, user } = useFirebase();
+    if (!firestore || !user) return;
+    const todosCollection = collection(firestore, 'users', user.uid, 'todos');
+
 
     const newTodo: Omit<Todo, 'id' | 'createdAt'> & { createdAt: any, dueDate?: string } = {
       title: values.title,
@@ -60,17 +63,19 @@ export function TodoList() {
       createdAt: serverTimestamp(),
       ...(values.dueDate && { dueDate: format(values.dueDate, 'yyyy-MM-dd') }),
     };
-    addDocumentNonBlocking(todosQuery.converter ? todosQuery.withConverter(null) : todosQuery, newTodo);
+    addDocumentNonBlocking(todosCollection, newTodo);
     form.reset();
   };
 
   const toggleTodo = (todo: Todo) => {
+    const { firestore, user } = useFirebase();
     if (!user || !firestore || !todo.id) return;
     const docRef = doc(firestore, 'users', user.uid, 'todos', todo.id);
     setDocumentNonBlocking(docRef, { completed: !todo.completed }, { merge: true });
   };
   
   const deleteTodo = (id: string) => {
+    const { firestore, user } = useFirebase();
     if (!user || !firestore) return;
     const docRef = doc(firestore, 'users', user.uid, 'todos', id);
     deleteDocumentNonBlocking(docRef);

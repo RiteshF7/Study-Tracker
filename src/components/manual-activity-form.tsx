@@ -62,7 +62,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
   const [isManageTypesOpen, setIsManageTypesOpen] = useState(false);
   const [newActivityType, setNewActivityType] = useState("");
   
-  const { firestore, user } = useFirebase();
+  const { user } = useFirebase();
 
   const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
   const [activityTypes, setActivityTypes] = useLocalStorage<string[]>(
@@ -70,9 +70,9 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     ["Study", "Class", "Break", "Other"]
   );
 
-  const activitiesQuery = useMemoFirebase(() =>
+  const activitiesQuery = useMemoFirebase((firestore) =>
     user ? collection(firestore, "users", user.uid, "activities") : null
-  , [firestore, user]);
+  , [user]);
 
   const { data: activities } = useCollection<Activity>(activitiesQuery);
 
@@ -151,7 +151,10 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
 
 
   function onSubmit(values: z.infer<typeof manualActivitySchema>) {
-    if (!activitiesQuery || !user) return;
+    const firestore = useFirebase().firestore;
+    if (!firestore || !user) return;
+
+    const activitiesCollection = collection(firestore, "users", user.uid, "activities");
     
     const newActivity: Omit<Activity, 'id' | 'createdAt' | 'category'> & { createdAt: any } = {
       name: values.name,
@@ -162,7 +165,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
       userId: user.uid,
       createdAt: serverTimestamp(),
     };
-    addDocumentNonBlocking(activitiesQuery.converter ? activitiesQuery.withConverter(null) : activitiesQuery, newActivity);
+    addDocumentNonBlocking(activitiesCollection, newActivity);
     
     if (onFormSubmit) onFormSubmit();
   }

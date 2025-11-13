@@ -24,16 +24,16 @@ type UserProfile = {
 }
 
 export function DashboardClient() {
-  const { firestore, user } = useFirebase();
+  const { user } = useFirebase();
 
-  const userDocRef = useMemoFirebase(() => 
+  const userDocRef = useMemoFirebase((firestore) => 
     user ? doc(firestore, "users", user.uid) : null
-  , [firestore, user]);
+  , [user]);
   const { data: userProfile, isLoading: isLoadingProfile } = useDoc<UserProfile>(userDocRef);
   
-  const activitiesCollection = useMemoFirebase(() => 
+  const activitiesCollection = useMemoFirebase((firestore) => 
     user ? collection(firestore, "users", user.uid, "activities") : null
-  , [firestore, user]);
+  , [user]);
   
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesCollection);
   
