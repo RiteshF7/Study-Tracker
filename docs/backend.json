@@ -1,132 +1,23 @@
 {
   "entities": {
-    "JournalEntry": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "JournalEntry",
-      "type": "object",
-      "description": "Represents a journal entry for a student, capturing their daily activities and problem-solving progress.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the journal entry."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the User who created this journal entry. (Relationship: User 1:N JournalEntry)"
-        },
-        "date": {
-          "type": "string",
-          "description": "The date of the journal entry.",
-          "format": "date-time"
-        },
-        "summary": {
-          "type": "string",
-          "description": "A summary or reflection on the day's activities."
-        },
-        "activityIds": {
-          "type": "array",
-          "description": "References to the Activities performed during this journal entry. (Relationship: JournalEntry 1:N Activity)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "problemSetIds": {
-          "type": "array",
-          "description": "References to the ProblemSets solved during this journal entry. (Relationship: JournalEntry 1:N ProblemSet)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "date"
-      ]
-    },
-    "Activity": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Activity",
-      "type": "object",
-      "description": "Represents a specific activity performed by the student, such as studying, attending class, or taking a break.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the activity."
-        },
-        "activityType": {
-          "type": "string",
-          "description": "The type of activity (e.g., 'Study Session', 'Class', 'Break')."
-        },
-        "startTime": {
-          "type": "string",
-          "description": "The start time of the activity.",
-          "format": "date-time"
-        },
-        "endTime": {
-          "type": "string",
-          "description": "The end time of the activity.",
-          "format": "date-time"
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of the activity."
-        }
-      },
-      "required": [
-        "id",
-        "activityType",
-        "startTime",
-        "endTime"
-      ]
-    },
-    "ProblemSet": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ProblemSet",
-      "type": "object",
-      "description": "Represents a set of problems solved by the student, categorized by subject or type.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the problem set."
-        },
-        "subject": {
-          "type": "string",
-          "description": "The subject or type of the problems (e.g., 'Mathematics', 'Physics', 'Coding')."
-        },
-        "questionsSolved": {
-          "type": "number",
-          "description": "The number of questions solved in this set."
-        },
-        "notes": {
-          "type": "string",
-          "description": "Additional notes or observations about the problem set."
-        }
-      },
-      "required": [
-        "id",
-        "subject",
-        "questionsSolved"
-      ]
-    },
     "User": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a user of the application.",
+      "description": "Represents a student user of the StudyTrack Journal.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user."
+          "description": "Unique identifier for the User entity."
         },
         "email": {
           "type": "string",
-          "description": "The email address of the user.",
+          "description": "Email address of the user.",
           "format": "email"
         },
         "name": {
           "type": "string",
-          "description": "The name of the user."
+          "description": "Full name of the user."
         }
       },
       "required": [
@@ -134,11 +25,83 @@
         "email",
         "name"
       ]
+    },
+    "Activity": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Activity",
+      "type": "object",
+      "description": "Represents a logged activity by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Activity entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Activity)"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of when the activity occurred.",
+          "format": "date-time"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of activity (e.g., 'study', 'class', 'break')."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the activity."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "timestamp",
+        "type",
+        "description"
+      ]
+    },
+    "Problem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Problem",
+      "type": "object",
+      "description": "Represents a problem solved by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Problem entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Problem)"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of when the problem was solved.",
+          "format": "date-time"
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the problem (e.g., 'math', 'physics', 'chemistry')."
+        },
+        "response": {
+          "type": "string",
+          "description": "User's response or solution to the problem."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "timestamp",
+        "category",
+        "response"
+      ]
     }
   },
   "auth": {
     "providers": [
-      "google.com",
+      "password",
       "anonymous"
     ]
   },
@@ -151,7 +114,7 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profiles. Secured via path-based ownership. Only the authenticated user can access their own profile.",
+          "description": "Stores user profile information. Only accessible by the authenticated user.",
           "params": [
             {
               "name": "userId",
@@ -161,41 +124,17 @@
         }
       },
       {
-        "path": "/users/{userId}/journalEntries/{journalEntryId}",
-        "definition": {
-          "entityName": "JournalEntry",
-          "schema": {
-            "$ref": "#/backend/entities/JournalEntry"
-          },
-          "description": "Stores journal entries for each user. The userId is denormalized for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "journalEntryId",
-              "description": "The unique identifier of the journal entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/journalEntries/{journalEntryId}/activities/{activityId}",
+        "path": "/users/{userId}/activities/{activityId}",
         "definition": {
           "entityName": "Activity",
           "schema": {
             "$ref": "#/backend/entities/Activity"
           },
-          "description": "Stores activities related to a specific journal entry. The userId and journalEntryId are denormalized for authorization independence.",
+          "description": "Stores activities logged by the user. Only accessible by the authenticated user.",
           "params": [
             {
               "name": "userId",
               "description": "The unique identifier of the user."
-            },
-            {
-              "name": "journalEntryId",
-              "description": "The unique identifier of the journal entry."
             },
             {
               "name": "activityId",
@@ -205,30 +144,26 @@
         }
       },
       {
-        "path": "/users/{userId}/journalEntries/{journalEntryId}/problemSets/{problemSetId}",
+        "path": "/users/{userId}/problems/{problemId}",
         "definition": {
-          "entityName": "ProblemSet",
+          "entityName": "Problem",
           "schema": {
-            "$ref": "#/backend/entities/ProblemSet"
+            "$ref": "#/backend/entities/Problem"
           },
-          "description": "Stores problem sets associated with each journal entry. The userId and journalEntryId are denormalized for authorization independence.",
+          "description": "Stores problems solved by the user. Only accessible by the authenticated user.",
           "params": [
             {
               "name": "userId",
               "description": "The unique identifier of the user."
             },
             {
-              "name": "journalEntryId",
-              "description": "The unique identifier of the journal entry."
-            },
-            {
-              "name": "problemSetId",
-              "description": "The unique identifier of the problem set."
+              "name": "problemId",
+              "description": "The unique identifier of the problem."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure Authorization Independence, Clarity of Intent, and support secure list operations (QAPs). It leverages path-based ownership for user-specific data and denormalization where necessary to avoid `get()` calls in security rules.\n\n*   `/users/{userId}`: Stores user profiles. This collection is secured using path-based rules, ensuring only the authenticated user can access their own profile.\n*   `/users/{userId}/journalEntries/{journalEntryId}`: This subcollection stores journal entries for each user.  By nesting journal entries under the user's document, we establish clear ownership and simplify security rules. Security rules will check that `request.auth.uid == userId`. This also supports atomic operations within a user's journal entries.  The `userId` is also stored within each document to further enable secure reads and writes.\n*   `/users/{userId}/journalEntries/{journalEntryId}/activities/{activityId}`: This subcollection stores activities related to a specific journal entry. Similar to journal entries, activities are nested to establish ownership and are associated with a parent journal entry. The `userId` and `journalEntryId` are denormalized within each activity document for authorization independence.\n*   `/users/{userId}/journalEntries/{journalEntryId}/problemSets/{problemSetId}`: Stores problem sets associated with each journal entry. Similar to activities, problem sets are nested under journal entries, and `userId` and `journalEntryId` are denormalized within each problem set document.\n\nThis structure allows for straightforward security rules based on path and `request.auth.uid`, avoiding complex `get()` calls. It also ensures that list operations are secure, as only the authenticated user can access their data, based on the path."
+    "reasoning": "The Firestore structure is designed to store user activity and problem-solving data for the StudyTrack Journal application. The structure prioritizes authorization independence and simplifies security rules by using path-based ownership for user-specific data.  All user-related data is stored under the `/users/{userId}` path to enforce strict ownership. This eliminates the need for complex `get()` calls in security rules and enables atomic operations.  Specifically:\n\n1.  **Users Collection:**  The `/users/{userId}` collection stores user profile information. Authentication relies on `request.auth.uid`. User documents are only accessible by the authenticated user.\n\n2.  **Activities Collection:** The `/users/{userId}/activities/{activityId}` collection stores activities logged by the user. The `userId` parameter enforces ownership, ensuring that only the authenticated user can access their activity data.  This design follows a hierarchical path for user-owned data, making security rules simple and efficient. The QAP for listing activities is supported because each activity is scoped to the user's path.\n\n3.  **Problems Collection:** Similar to activities, the `/users/{userId}/problems/{problemId}` collection stores problems solved by the user.  The `userId` parameter guarantees that only the authenticated user can access their problem data.  The QAP for listing problems is supported due to path-based scoping of the problems to each user.\n\nThis structure avoids mixing data with different access needs in the same collection (structural segregation). All data within a user's path is private and accessible only to that user. This drastically simplifies security rules and ensures data privacy. The schema also supports clear state modeling and predictable schemas, contributing to maintainability and debuggability."
   }
 }

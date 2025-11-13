@@ -1,29 +1,11 @@
 'use client';
 import {
   Auth, // Import Auth type for type hinting
-  GoogleAuthProvider,
   signInAnonymously,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signInWithPopup,
   // Assume getAuth and app are initialized elsewhere
 } from 'firebase/auth';
-
-/** Initiate Google sign-in (non-blocking). */
-export function initiateGoogleSignIn(authInstance: Auth): void {
-  const provider = new GoogleAuthProvider();
-  signInWithPopup(authInstance, provider).catch((error) => {
-    // Handle Errors here.
-    const errorCode = error.code;
-    if (errorCode === 'auth/popup-closed-by-user') {
-      // This error is expected when the user closes the popup.
-      // We can safely ignore it.
-      return;
-    }
-    // For other errors, we might want to log them.
-    console.error('Google sign-in error:', error);
-  });
-}
 
 /** Initiate anonymous sign-in (non-blocking). */
 export function initiateAnonymousSignIn(authInstance: Auth): void {
