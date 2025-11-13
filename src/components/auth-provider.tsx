@@ -5,7 +5,7 @@ import { useUser } from "@/firebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-const AUTH_ROUTES = ["/login", "/register"];
+const AUTH_ROUTES = ["/"];
 const PUBLIC_ROUTES: string[] = [];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
     if (!user && !isAuthRoute && !isPublicRoute) {
-      router.push("/login");
+      router.push("/");
     } else if (user && isAuthRoute) {
       router.push("/home");
     }
