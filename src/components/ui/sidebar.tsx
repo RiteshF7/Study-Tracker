@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -567,16 +568,18 @@ const SidebarMenuButton = React.forwardRef<
       />
     )
 
-    if (!tooltip) {
+    const tooltipContent = React.useMemo(() => {
+        if (!tooltip) return null;
+        if (typeof tooltip === 'string') {
+            return { children: tooltip };
+        }
+        return tooltip;
+    }, [tooltip]);
+
+    if (!tooltipContent) {
       return button
     }
-
-    if (typeof tooltip === "string") {
-      tooltip = {
-        children: tooltip,
-      }
-    }
-
+    
     return (
       <Tooltip>
         <TooltipTrigger asChild>{button}</TooltipTrigger>
@@ -584,7 +587,7 @@ const SidebarMenuButton = React.forwardRef<
           side="right"
           align="center"
           hidden={state !== "collapsed" || isMobile}
-          {...tooltip}
+          {...tooltipContent}
         />
       </Tooltip>
     )
