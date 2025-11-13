@@ -63,23 +63,18 @@ export function useCollection<T = any>(
   const prevQueryRef = useRef<Query<DocumentData> | CollectionReference<DocumentData> | null | undefined>(null);
   
   useEffect(() => {
-    // Determine if the query has changed.
-    const hasQueryChanged = 
-        (prevQueryRef.current && !targetRefOrQuery) ||
-        (!prevQueryRef.current && targetRefOrQuery) ||
-        (targetRefOrQuery && prevQueryRef.current && !queryEqual(targetRefOrQuery, prevQueryRef.current));
-    
-    // If the query is null or hasn't changed, do nothing.
     if (!targetRefOrQuery) {
-        if (data !== null || isLoading || error) {
-            setData(null);
-            setIsLoading(false);
-            setError(null);
-        }
+        setData(null);
+        setIsLoading(false);
+        setError(null);
         prevQueryRef.current = null;
         return;
     }
-    
+
+    const hasQueryChanged = 
+        !prevQueryRef.current || 
+        !queryEqual(targetRefOrQuery, prevQueryRef.current);
+
     if (!hasQueryChanged) {
         return;
     }
@@ -123,7 +118,7 @@ export function useCollection<T = any>(
     return () => {
       unsubscribe()
     };
-  }, [targetRefOrQuery, data, isLoading, error]);
+  }, [targetRefOrQuery]);
 
   return { data, isLoading, error };
 }

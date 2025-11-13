@@ -52,11 +52,9 @@ export function useDoc<T = any>(
   useEffect(() => {
     
     if (!docRef) {
-        if (data !== null || isLoading || error) {
-          setData(null);
-          setIsLoading(false);
-          setError(null);
-        }
+        setData(null);
+        setIsLoading(false);
+        setError(null);
         prevDocRefPath.current = null;
         return;
     }
@@ -100,7 +98,7 @@ export function useDoc<T = any>(
     return () => {
       unsubscribe();
     }
-  }, [docRef, data, isLoading, error]); // Re-run if the docRef changes.
+  }, [docRef]); // Re-run if the docRef changes.
 
   return { data, isLoading, error };
 }
