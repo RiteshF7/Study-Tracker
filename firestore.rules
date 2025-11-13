@@ -1,3 +1,4 @@
+
 /**
  * @fileoverview Firestore Security Rules for StudyTrack Journal.
  *
@@ -150,6 +151,28 @@ service cloud.firestore {
 
       // Allow the owner to list their own documents.
       allow list: if isSignedIn() && isOwner(userId);
+    }
+
+    /**
+     * @description Protects the /users/{userId}/todos/{todoId} collection.
+     * @path /users/{userId}/todos/{todoId}
+     * @allow (create) Authenticated user can create a todo in their own profile.
+     * @allow (get) Authenticated user can read a todo in their own profile.
+     * @allow (update) Authenticated user can update a todo in their own profile.
+     * @allow (delete) Authenticated user can delete a todo in their own profile.
+     * @allow (list) Authenticated user can list their own todos.
+     * @deny (create) User cannot create a todo in another user's profile.
+     * @deny (get) User cannot read another user's todo.
+     * @deny (update) User cannot update another user's todo.
+     * @deny (delete) User cannot delete another user's todo.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/todos/{todoId} {
+        function isOwner(userId) {
+            return request.auth.uid == userId;
+        }
+
+        allow read, write: if isOwner(userId);
     }
   }
 }

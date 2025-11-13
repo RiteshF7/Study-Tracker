@@ -48,6 +48,11 @@ const navItems = [
     icon: BrainCircuit,
     label: "AI Scheduler",
   },
+  {
+    href: "/planner",
+    icon: CalendarDays,
+    label: "Planner",
+  },
 ];
 
 export function AppNav() {

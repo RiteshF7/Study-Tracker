@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -97,6 +98,47 @@
         "category",
         "response"
       ]
+    },
+    "Todo": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Todo",
+      "type": "object",
+      "description": "Represents a to-do item for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Todo entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Todo)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The content of the to-do item."
+        },
+        "completed": {
+          "type": "boolean",
+          "description": "Whether the to-do item is completed."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the to-do was created.",
+          "format": "date-time"
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Due date for the to-do item.",
+          "format": "date"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "title",
+        "completed",
+        "createdAt"
+      ]
     }
   },
   "auth": {
@@ -161,8 +203,28 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}/todos/{todoId}",
+        "definition": {
+          "entityName": "Todo",
+          "schema": {
+            "$ref": "#/backend/entities/Todo"
+          },
+          "description": "Stores to-do items for the user. Only accessible by the authenticated user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "todoId",
+              "description": "The unique identifier of the to-do item."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to store user activity and problem-solving data for the StudyTrack Journal application. The structure prioritizes authorization independence and simplifies security rules by using path-based ownership for user-specific data.  All user-related data is stored under the `/users/{userId}` path to enforce strict ownership. This eliminates the need for complex `get()` calls in security rules and enables atomic operations.  Specifically:\n\n1.  **Users Collection:**  The `/users/{userId}` collection stores user profile information. Authentication relies on `request.auth.uid`. User documents are only accessible by the authenticated user.\n\n2.  **Activities Collection:** The `/users/{userId}/activities/{activityId}` collection stores activities logged by the user. The `userId` parameter enforces ownership, ensuring that only the authenticated user can access their activity data.  This design follows a hierarchical path for user-owned data, making security rules simple and efficient. The QAP for listing activities is supported because each activity is scoped to the user's path.\n\n3.  **Problems Collection:** Similar to activities, the `/users/{userId}/problems/{problemId}` collection stores problems solved by the user.  The `userId` parameter guarantees that only the authenticated user can access their problem data.  The QAP for listing problems is supported due to path-based scoping of the problems to each user.\n\nThis structure avoids mixing data with different access needs in the same collection (structural segregation). All data within a user's path is private and accessible only to that user. This drastically simplifies security rules and ensures data privacy. The schema also supports clear state modeling and predictable schemas, contributing to maintainability and debuggability."
+    "reasoning": "The Firestore structure is designed to store user activity and problem-solving data for the StudyTrack Journal application. The structure prioritizes authorization independence and simplifies security rules by using path-based ownership for user-specific data. All user-related data is stored under the `/users/{userId}` path to enforce strict ownership. This eliminates the need for complex `get()` calls in security rules and enables atomic operations. Specifically:\n\n1.  **Users Collection:**  The `/users/{userId}` collection stores user profile information. Authentication relies on `request.auth.uid`. User documents are only accessible by the authenticated user.\n\n2.  **Activities Collection:** The `/users/{userId}/activities/{activityId}` collection stores activities logged by the user. The `userId` parameter enforces ownership, ensuring that only the authenticated user can access their activity data. This design follows a hierarchical path for user-owned data, making security rules simple and efficient. The QAP for listing activities is supported because each activity is scoped to the user's path.\n\n3.  **Problems Collection:** Similar to activities, the `/users/{userId}/problems/{problemId}` collection stores problems solved by the user. The `userId` parameter guarantees that only the authenticated user can access their problem data. The QAP for listing problems is supported due to path-based scoping of the problems to each user.\n\n4.  **Todos Collection:** The `/users/{userId}/todos/{todoId}` collection stores to-do items for the user. Path-based ownership ensures that a user can only access their own to-do items.\n\nThis structure avoids mixing data with different access needs in the same collection (structural segregation). All data within a user's path is private and accessible only to that user. This drastically simplifies security rules and ensures data privacy. The schema also supports clear state modeling and predictable schemas, contributing to maintainability and debuggability."
   }
 }
