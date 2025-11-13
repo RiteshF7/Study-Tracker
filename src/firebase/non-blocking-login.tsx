@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Auth, // Import Auth type for type hinting
@@ -34,6 +35,13 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
 export function initiateGoogleSignIn(authInstance: Auth): void {
     const provider = new GoogleAuthProvider();
     // CRITICAL: Call signInWithPopup directly. Do NOT use 'await signInWithPopup(...)'.
-    signInWithPopup(authInstance, provider);
+    signInWithPopup(authInstance, provider)
+      .catch((error) => {
+        // This error is expected if the user closes the popup.
+        // We can safely ignore it.
+        if (error.code !== 'auth/popup-closed-by-user') {
+          console.error("Google Sign-In Error:", error);
+        }
+      });
     // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
 }
