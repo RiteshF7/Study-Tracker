@@ -4,6 +4,8 @@ import {
   signInAnonymously,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
   // Assume getAuth and app are initialized elsewhere
 } from 'firebase/auth';
 
@@ -25,5 +27,19 @@ export function initiateEmailSignUp(authInstance: Auth, email: string, password:
 export function initiateEmailSignIn(authInstance: Auth, email: string, password: string): void {
   // CRITICAL: Call signInWithEmailAndPassword directly. Do NOT use 'await signInWithEmailAndPassword(...)'.
   signInWithEmailAndPassword(authInstance, email, password);
+  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+}
+
+/** Initiate Google sign-in (non-blocking). */
+export function initiateGoogleSignIn(authInstance: Auth): void {
+  const provider = new GoogleAuthProvider();
+  // CRITICAL: Call signInWithPopup directly. Do NOT use 'await signInWithPopup(...)'.
+  signInWithPopup(authInstance, provider).catch(error => {
+    // This specific error occurs when the user closes the popup.
+    // It's common and can be safely ignored.
+    if (error.code !== 'auth/popup-closed-by-user') {
+      console.error("Google sign-in error:", error);
+    }
+  });
   // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
 }
