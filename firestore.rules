@@ -1,92 +1,122 @@
 /**
- * @fileoverview Firestore Security Rules for StudyTrack Journal application.
+ * @fileoverview Firestore Security Rules for StudyTrack Journal.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model where users can only
- * access their own data, based on their unique user ID.
+ * This ruleset enforces a strict user-ownership model where each user can only
+ * access their own data. All data is nested under the /users/{userId} path,
+ * ensuring complete isolation between users.
  *
  * Data Structure:
- * All user-related data is nested under the /users/{userId} path. This includes
- * user profiles, activity logs, and solved problems.
+ * The Firestore database is structured as follows:
+ * - /users/{userId}: Stores user profile information. Only the user can read
+ *   and write their own profile.
+ * - /users/{userId}/activities/{activityId}: Stores activities logged by the
+ *   user. Only the user can read and write their own activities.
+ * - /users/{userId}/problems/{problemId}: Stores problems solved by the user.
+ *   Only the user can read and write their own problems.
  *
  * Key Security Decisions:
- * - Users can only create, read, update, and delete their own data.
- * - No user listing is allowed to prevent unauthorized access to user data.
- * - Data validation is relaxed to allow rapid prototyping and iteration, but
- *   authorization checks are strictly enforced.
+ * - User listing is disallowed.
+ * - All data is private to the user and no data is shared between users.
+ * - Write operations require authentication and ownership validation.
  *
  * Denormalization for Authorization:
- * The rules rely on path-based authorization, where the user ID in the path
- * is compared to the authenticated user's ID. This eliminates the need for
- * additional reads to determine ownership. For example, the userId on the ActivityLog and ProblemSolved records matches the parent userId in the path.
+ * Not required, because the path-based ownership model is already adequate.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Defines a helper function to check if the authenticated user is the owner of the resource.
-     * @param {string} userId - The user ID to compare against the authenticated user's ID.
-     * @return {boolean} - True if the user is the owner, false otherwise.
-     */
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
-    }
-
-    /**
-     * @description Defines a helper function to check if the authenticated user is the owner of the resource and the resource exists.
-     * @param {string} userId - The user ID to compare against the authenticated user's ID.
-     * @return {boolean} - True if the user is the owner and the resource exists, false otherwise.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Rules for the /users/{userId} collection.
+     * @description Enforces that only the user can access their own profile data.
      * @path /users/{userId}
-     * @allow (create) - Allow a user to create their own profile if the userId matches their auth UID.
-     * @allow (get, update, delete) - Allow a user to read, update and delete their own profile.
-     * @deny (create) - Deny a user to create a profile with a userId that does not match their auth UID.
-     * @deny (get, update, delete) - Deny a user to read, update and delete other users' profiles.
-     * @principle Enforces user-ownership for accessing user profiles.
+     * @allow (create) - User with ID 'user123' can create their profile with matching ID.
+     *   `request.auth.uid == 'user123'` and `request.resource.data.id == 'user123'`
+     * @allow (get) - User with ID 'user123' can read their profile.
+     *   `request.auth.uid == 'user123'`
+     * @allow (update) - User with ID 'user123' can update their profile.
+     *   `request.auth.uid == 'user123'`
+     * @allow (delete) - User with ID 'user123' can delete their profile.
+     *   `request.auth.uid == 'user123'`
+     * @deny (create) - User with ID 'user456' attempts to create profile with ID 'user123'.
+     *   `request.auth.uid == 'user456'` and `request.resource.data.id == 'user123'`
+     * @deny (get) - User with ID 'user456' attempts to read profile of user 'user123'.
+     *   `request.auth.uid == 'user456'`
+     * @principle Enforces user-ownership for profile data.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
+      allow get: if isSignedIn() && isOwner(userId);
       allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.id == request.auth.uid;
-      allow update: if isExistingOwner(userId); // Enforce immutable userId
-      allow delete: if isExistingOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Rules for the /users/{userId}/activityLogs/{activityLogId} collection.
-     * @path /users/{userId}/activityLogs/{activityLogId}
-     * @allow (create, get, update, delete) - Allow a user to create, read, update, and delete their own activity logs.
-     * @deny (create, get, update, delete) - Deny a user to create, read, update, and delete activity logs that do not belong to them.
-     * @principle Enforces user-ownership for accessing activity logs.
+     * @description Enforces that only the user can access their own activity data.
+     * @path /users/{userId}/activities/{activityId}
+     * @allow (create) - User with ID 'user123' can create an activity.
+     *   `request.auth.uid == 'user123'` and `request.resource.data.userId == 'user123'`
+     * @allow (get) - User with ID 'user123' can read their activity.
+     *   `request.auth.uid == 'user123'`
+     * @allow (list) - User with ID 'user123' can list their activities.
+     *   `request.auth.uid == 'user123'`
+     * @allow (update) - User with ID 'user123' can update their activity.
+     *   `request.auth.uid == 'user123'`
+     * @allow (delete) - User with ID 'user123' can delete their activity.
+     *   `request.auth.uid == 'user123'`
+     * @deny (create) - User with ID 'user456' attempts to create an activity for user 'user123'.
+     *   `request.auth.uid == 'user456'` and `request.resource.data.userId == 'user123'`
+     * @deny (get) - User with ID 'user456' attempts to read an activity of user 'user123'.
+     *   `request.auth.uid == 'user456'`
+     * @principle Enforces user-ownership for activity data.
      */
-    match /users/{userId}/activityLogs/{activityLogId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == userId; // Enforce immutable userId
-      allow delete: if isExistingOwner(userId);
+    match /users/{userId}/activities/{activityId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Rules for the /users/{userId}/problemsSolved/{problemSolvedId} collection.
-     * @path /users/{userId}/problemsSolved/{problemSolvedId}
-     * @allow (create, get, update, delete) - Allow a user to create, read, update, and delete their own problems solved entries.
-     * @deny (create, get, update, delete) - Deny a user to create, read, update, and delete problems solved entries that do not belong to them.
-     * @principle Enforces user-ownership for accessing problems solved entries.
+     * @description Enforces that only the user can access their own problem data.
+     * @path /users/{userId}/problems/{problemId}
+     * @allow (create) - User with ID 'user123' can create a problem entry.
+     *   `request.auth.uid == 'user123'` and `request.resource.data.userId == 'user123'`
+     * @allow (get) - User with ID 'user123' can read their problem entry.
+     *   `request.auth.uid == 'user123'`
+     * @allow (list) - User with ID 'user123' can list their problem entries.
+     *   `request.auth.uid == 'user123'`
+     * @allow (update) - User with ID 'user123' can update their problem entry.
+     *   `request.auth.uid == 'user123'`
+     * @allow (delete) - User with ID 'user123' can delete their problem entry.
+     *   `request.auth.uid == 'user123'`
+     * @deny (create) - User with ID 'user456' attempts to create a problem entry for user 'user123'.
+     *   `request.auth.uid == 'user456'` and `request.resource.data.userId == 'user123'`
+     * @deny (get) - User with ID 'user456' attempts to read a problem entry of user 'user123'.
+     *   `request.auth.uid == 'user456'`
+     * @principle Enforces user-ownership for problem data.
      */
-    match /users/{userId}/problemsSolved/{problemSolvedId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == userId; // Enforce immutable userId
-      allow delete: if isExistingOwner(userId);
+    match /users/{userId}/problems/{problemId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
+  }
+
+  // Helper Functions
+  function isSignedIn() {
+    return request.auth != null;
+  }
+
+  function isOwner(userId) {
+    return request.auth.uid == userId;
+  }
+
+  function isExistingOwner(userId) {
+    return isOwner(userId) && resource != null;
   }
 }
