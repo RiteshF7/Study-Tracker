@@ -1,178 +1,137 @@
-
 /**
- * @fileoverview Firestore Security Rules for StudyTrack Journal.
+ * @fileoverview Firestore Security Rules for the Student Journal application.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model. Each user can only
- * access their own profile information, activities, and solved problems.
+ * This ruleset enforces a strict user-ownership model. Each user has complete control over their data,
+ * and no user can access another user's data.  All data is scoped under the `/users/{userId}` path.
  *
  * Data Structure:
- * All data is nested under /users/{userId}, ensuring that all documents and
- * subcollections are owned by the authenticated user.
- *  - /users/{userId}: Stores user profile information.
- *  - /users/{userId}/activities/{activityId}: Stores user activity logs.
- *  - /users/{userId}/problems/{problemId}: Stores user problem-solving data.
+ * - /users/{userId}: Stores user profile information.
+ * - /users/{userId}/journalEntries/{journalEntryId}: Stores journal entries for each user.
+ * - /users/{userId}/journalEntries/{journalEntryId}/activities/{activityId}: Stores activities associated with a specific journal entry.
+ * - /users/{userId}/journalEntries/{journalEntryId}/problems/{problemId}: Stores problems solved, associated with a specific journal entry.
  *
  * Key Security Decisions:
- *  - User data is private and only accessible by the owning user.
- *  - Listing other users is disallowed.
- *  - Self-creation is allowed for the /users/{userId} document.
- *  - No public data or shared resources are currently supported.
+ * - Users can only access their own data.
+ * - Listing operations are restricted to the owner.
+ * - The ruleset does not enforce a specific data schema beyond authorization fields, allowing for rapid prototyping and iteration.
  *
  * Denormalization for Authorization:
- *  - The 'userId' field in the 'Activity' and 'Problem' entities is used to
- *    enforce ownership and MUST match the '{userId}' path parameter.
+ * - The 'userId' is embedded in the path for all subcollections under `/users/{userId}`.
+ *   This allows simple, performant rules based on `request.auth.uid` without needing extra reads.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Protects the /users/{userId} collection.
+     * @description Grants access to user documents based on ownership.
      * @path /users/{userId}
-     * @allow (create) User with matching ID can create their profile.
-     * @allow (get) Authenticated user can read their own profile.
-     * @allow (update) Authenticated user can update their own profile.
-     * @allow (delete) Authenticated user can delete their own profile.
-     * @deny (create) User cannot create a profile with a mismatched ID.
-     * @deny (get) User cannot read another user's profile.
-     * @deny (update) User cannot update another user's profile.
-     * @deny (delete) User cannot delete another user's profile.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User with ID 'user_abc' can create their own profile.
+     *   Request: auth.uid = 'user_abc', resource.data.id = 'user_abc'
+     * @allow (get, update, delete) User with ID 'user_abc' can read/write their own profile.
+     *   Request: auth.uid = 'user_abc'
+     * @deny (create) User with ID 'user_abc' cannot create a profile for another user.
+     *   Request: auth.uid = 'user_abc', resource.data.id = 'user_xyz'
+     * @deny (get, update, delete) User with ID 'user_xyz' cannot read/write the profile of user 'user_abc'.
+     *   Request: auth.uid = 'user_xyz'
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(userId) {
-        return request.auth.uid == userId;
+        return request.auth != null && request.auth.uid == userId;
       }
 
       function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
       }
 
-      // Allow the user to create their own profile if the userId matches their auth.uid.
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
-
-      // Allow the user to get their own profile.
-      allow get: if isSignedIn() && isOwner(userId);
-
-      // Allow the user to update their own profile.
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-
-      // Allow the user to delete their own profile.
-      allow delete: if isExistingOwner(userId);
-
-      // Prevent listing all users.
+      allow get: if isOwner(userId);
       allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Protects the /users/{userId}/activities/{activityId} collection.
-     * @path /users/{userId}/activities/{activityId}
-     * @allow (create) Authenticated user can create an activity in their own profile.
-     * @allow (get) Authenticated user can read an activity in their own profile.
-     * @allow (update) Authenticated user can update an activity in their own profile.
-     * @allow (delete) Authenticated user can delete an activity in their own profile.
-     * @deny (create) User cannot create an activity in another user's profile.
-     * @deny (get) User cannot read another user's activity.
-     * @deny (update) User cannot update another user's activity.
-     * @deny (delete) User cannot delete another user's activity.
-     * @principle Enforces document ownership for all operations.
+     * @description Grants access to journal entry documents based on ownership.
+     * @path /users/{userId}/journalEntries/{journalEntryId}
+     * @allow (create) User with ID 'user_abc' can create a journal entry.
+     *   Request: auth.uid = 'user_abc'
+     * @allow (get, update, delete) User with ID 'user_abc' can read/write their own journal entry.
+     *   Request: auth.uid = 'user_abc'
+     * @deny (get, update, delete) User with ID 'user_xyz' cannot read/write the journal entry of user 'user_abc'.
+     *   Request: auth.uid = 'user_xyz'
+     * @principle Enforces document ownership for writes.
      */
-    match /users/{userId}/activities/{activityId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
+    match /users/{userId}/journalEntries/{journalEntryId} {
       function isOwner(userId) {
-        return request.auth.uid == userId;
+        return request.auth != null && request.auth.uid == userId;
       }
 
       function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
       }
 
-      // Allow the user to create an activity if the userId matches their auth.uid.
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-
-      // Allow the user to get their own activity.
-      allow get: if isSignedIn() && isOwner(userId);
-
-      // Allow the user to update their own activity.
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-
-      // Allow the user to delete their own activity.
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
-
-      // Allow the owner to list their own documents.
-      allow list: if isSignedIn() && isOwner(userId);
     }
 
     /**
-     * @description Protects the /users/{userId}/problems/{problemId} collection.
-     * @path /users/{userId}/problems/{problemId}
-     * @allow (create) Authenticated user can create a problem in their own profile.
-     * @allow (get) Authenticated user can read a problem in their own profile.
-     * @allow (update) Authenticated user can update a problem in their own profile.
-     * @allow (delete) Authenticated user can delete a problem in their own profile.
-     * @deny (create) User cannot create a problem in another user's profile.
-     * @deny (get) User cannot read another user's problem.
-     * @deny (update) User cannot update another user's problem.
-     * @deny (delete) User cannot delete another user's problem.
-     * @principle Enforces document ownership for all operations.
+     * @description Grants access to activity documents based on ownership.
+     * @path /users/{userId}/journalEntries/{journalEntryId}/activities/{activityId}
+     * @allow (create) User with ID 'user_abc' can create an activity.
+     *   Request: auth.uid = 'user_abc'
+     * @allow (get, update, delete) User with ID 'user_abc' can read/write their own activity.
+     *   Request: auth.uid = 'user_abc'
+     * @deny (get, update, delete) User with ID 'user_xyz' cannot read/write the activity of user 'user_abc'.
+     *   Request: auth.uid = 'user_xyz'
+     * @principle Enforces document ownership for writes.
      */
-    match /users/{userId}/problems/{problemId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
+    match /users/{userId}/journalEntries/{journalEntryId}/activities/{activityId} {
       function isOwner(userId) {
-        return request.auth.uid == userId;
+        return request.auth != null && request.auth.uid == userId;
       }
 
       function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
       }
 
-      // Allow the user to create a problem if the userId matches their auth.uid.
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-
-      // Allow the user to get their own problem.
-      allow get: if isSignedIn() && isOwner(userId);
-
-      // Allow the user to update their own problem.
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-
-      // Allow the user to delete their own problem.
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
-
-      // Allow the owner to list their own documents.
-      allow list: if isSignedIn() && isOwner(userId);
     }
 
     /**
-     * @description Protects the /users/{userId}/todos/{todoId} collection.
-     * @path /users/{userId}/todos/{todoId}
-     * @allow (create) Authenticated user can create a todo in their own profile.
-     * @allow (get) Authenticated user can read a todo in their own profile.
-     * @allow (update) Authenticated user can update a todo in their own profile.
-     * @allow (delete) Authenticated user can delete a todo in their own profile.
-     * @allow (list) Authenticated user can list their own todos.
-     * @deny (create) User cannot create a todo in another user's profile.
-     * @deny (get) User cannot read another user's todo.
-     * @deny (update) User cannot update another user's todo.
-     * @deny (delete) User cannot delete another user's todo.
-     * @principle Enforces document ownership for all operations.
+     * @description Grants access to problem documents based on ownership.
+     * @path /users/{userId}/journalEntries/{journalEntryId}/problems/{problemId}
+     * @allow (create) User with ID 'user_abc' can create a problem.
+     *   Request: auth.uid = 'user_abc'
+     * @allow (get, update, delete) User with ID 'user_abc' can read/write their own problem.
+     *   Request: auth.uid = 'user_abc'
+     * @deny (get, update, delete) User with ID 'user_xyz' cannot read/write the problem of user 'user_abc'.
+     *   Request: auth.uid = 'user_xyz'
+     * @principle Enforces document ownership for writes.
      */
-    match /users/{userId}/todos/{todoId} {
-        function isOwner(userId) {
-            return request.auth.uid == userId;
-        }
+    match /users/{userId}/journalEntries/{journalEntryId}/problems/{problemId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
 
-        allow read, write: if isOwner(userId);
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
   }
 }
