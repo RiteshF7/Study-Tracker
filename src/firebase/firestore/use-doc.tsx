@@ -64,6 +64,7 @@ export function useDoc<T = any>(
       return;
     }
 
+    console.log('[useDoc] Subscribing to doc:', docRef.path);
     prevDocRef.current = docRef;
     setIsLoading(true);
     setError(null);
@@ -72,15 +73,19 @@ export function useDoc<T = any>(
       docRef,
       (snapshot: DocumentSnapshot<DocumentData>) => {
         if (snapshot.exists()) {
-          setData({ ...(snapshot.data() as T), id: snapshot.id });
+          const docData = { ...(snapshot.data() as T), id: snapshot.id };
+          console.log(`[useDoc] Data received for doc: ${docRef.path}`, docData);
+          setData(docData);
         } else {
           // Document does not exist
+          console.log(`[useDoc] Document does not exist: ${docRef.path}`);
           setData(null);
         }
         setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
         setIsLoading(false);
       },
       (error: FirestoreError) => {
+        console.error(`[useDoc] Error on doc: ${docRef.path}`, error);
         const contextualError = new FirestorePermissionError({
           operation: 'get',
           path: docRef.path,
@@ -95,7 +100,10 @@ export function useDoc<T = any>(
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      console.log('[useDoc] Unsubscribing from doc:', docRef.path);
+      unsubscribe();
+    }
   }, [docRef]); // Re-run if the docRef changes.
 
   return { data, isLoading, error };

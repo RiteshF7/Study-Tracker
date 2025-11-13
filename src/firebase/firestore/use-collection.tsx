@@ -80,6 +80,7 @@ export function useCollection<T = any>(
         return;
     }
 
+    console.log('[useCollection] Subscribing to query:', (targetRefOrQuery as any)._query.path.toString());
     prevQueryRef.current = targetRefOrQuery;
     setIsLoading(true);
     setError(null);
@@ -91,6 +92,7 @@ export function useCollection<T = any>(
           ...(doc.data() as T),
           id: doc.id,
         }));
+        console.log(`[useCollection] Data received for path: ${(targetRefOrQuery as any)._query.path.toString()}`, results);
         setData(results);
         setError(null);
         setIsLoading(false);
@@ -101,6 +103,7 @@ export function useCollection<T = any>(
             ? (targetRefOrQuery as CollectionReference).path
             : (targetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString();
 
+        console.error(`[useCollection] Error on path: ${path}`, error);
         const contextualError = new FirestorePermissionError({
           operation: 'list',
           path,
@@ -116,7 +119,10 @@ export function useCollection<T = any>(
     );
 
     // Cleanup subscription on component unmount or if the query changes.
-    return () => unsubscribe();
+    return () => {
+      console.log('[useCollection] Unsubscribing from query:', (targetRefOrQuery as any)._query.path.toString());
+      unsubscribe()
+    };
   }, [targetRefOrQuery]);
 
   return { data, isLoading, error };
