@@ -4,7 +4,7 @@
 import { useMemo, type FC } from 'react';
 import type { Activity } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
-import { Star, Trophy } from 'lucide-react';
+import { Star, Trophy, Flame } from 'lucide-react';
 import { Progress } from './ui/progress';
 import { cn } from '@/lib/utils';
 import { Crown } from './icons/crown';
@@ -31,9 +31,10 @@ const levels: Level[] = [
 
 interface GamificationCardProps {
   activities: Activity[];
+  currentStreak: number;
 }
 
-export function GamificationCard({ activities }: GamificationCardProps) {
+export function GamificationCard({ activities, currentStreak }: GamificationCardProps) {
   const totalMinutes = useMemo(() => {
     return activities.reduce((sum, a) => sum + a.duration, 0);
   }, [activities]);
@@ -74,14 +75,20 @@ export function GamificationCard({ activities }: GamificationCardProps) {
               <h3 className="text-xl font-bold">{currentLevel.name}</h3>
               <span className="text-xs font-semibold bg-muted text-muted-foreground px-2 py-0.5 rounded-full">Level {currentLevelIndex + 1}</span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              <span className="font-bold text-foreground">{totalHours.toFixed(0)} hrs</span>
-              {nextLevel && ` | Progress to ${nextLevel.name}: ${hoursToNextLevel.toFixed(0)} hrs left`}
-            </p>
+            <div className="text-sm text-muted-foreground flex items-center gap-4">
+              <span>
+                <span className="font-bold text-foreground">{totalHours.toFixed(0)} hrs</span> logged
+              </span>
+              <span className="flex items-center gap-1">
+                <Flame className="w-4 h-4 text-orange-400" />
+                <span className="font-bold text-foreground">{currentStreak} day streak</span>
+              </span>
+            </div>
             {nextLevel && (
                 <div className="mt-2 space-y-1">
-                    <div className='flex justify-end'>
-                        <span className="text-xs font-semibold text-primary">{progressPercentage.toFixed(1)}%</span>
+                    <div className='flex justify-between text-xs font-semibold'>
+                        <span className="text-muted-foreground">{nextLevel.name}: {hoursToNextLevel.toFixed(0)} hrs left</span>
+                        <span className="text-primary">{progressPercentage.toFixed(1)}%</span>
                     </div>
                     <Progress value={progressPercentage} className="h-2"/>
                 </div>

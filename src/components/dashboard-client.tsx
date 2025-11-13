@@ -104,7 +104,7 @@ export function DashboardClient() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 lg:row-span-2 h-full">
-            <GamificationCard activities={allActivities} />
+            <GamificationCard activities={allActivities} currentStreak={currentStreak}/>
         </div>
         <div className="lg:col-span-1">
             <StreakCard currentStreak={currentStreak} bestStreak={bestStreak} />
