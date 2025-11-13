@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "JournalEntry": {
@@ -140,6 +141,41 @@
         "email",
         "name"
       ]
+    },
+    "Todo": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Todo",
+      "type": "object",
+      "description": "Represents a to-do item.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the to-do item."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who owns this to-do."
+        },
+        "title": {
+          "type": "string",
+          "description": "The content of the to-do item."
+        },
+        "completed": {
+          "type": "boolean",
+          "description": "Whether the to-do item is completed."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the to-do was created."
+        },
+        "dueDate": {
+          "type": "string",
+          "format": "date",
+          "description": "The due date for the to-do item."
+        }
+      },
+      "required": ["id", "userId", "title", "completed", "createdAt"]
     }
   },
   "auth": {
@@ -229,6 +265,26 @@
             {
               "name": "problemId",
               "description": "The unique identifier of the problem."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/todos/{todoId}",
+        "definition": {
+          "entityName": "Todo",
+          "schema": {
+            "$ref": "#/backend/entities/Todo"
+          },
+          "description": "Stores to-do items for each user. The 'userId' parameter ensures only the user can access their own to-dos.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "todoId",
+              "description": "The unique identifier of the to-do item."
             }
           ]
         }
