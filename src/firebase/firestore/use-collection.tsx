@@ -60,27 +60,30 @@ export function useCollection<T = any>(
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
-  // Use a ref to store the previous query to compare against the new one.
   const prevQueryRef = useRef<Query<DocumentData> | CollectionReference<DocumentData> | null | undefined>(null);
   
   useEffect(() => {
-    // Check if the new query is actually different from the old one.
+    // Determine if the query has changed.
     const hasQueryChanged = 
         (prevQueryRef.current && !targetRefOrQuery) ||
         (!prevQueryRef.current && targetRefOrQuery) ||
         (targetRefOrQuery && prevQueryRef.current && !queryEqual(targetRefOrQuery, prevQueryRef.current));
     
     // If the query is null or hasn't changed, do nothing.
-    if (!targetRefOrQuery || !hasQueryChanged) {
-        if (!targetRefOrQuery) {
+    if (!targetRefOrQuery) {
+        if (data !== null || isLoading || error) {
             setData(null);
             setIsLoading(false);
             setError(null);
         }
+        prevQueryRef.current = null;
+        return;
+    }
+    
+    if (!hasQueryChanged) {
         return;
     }
 
-    console.log('[useCollection] Subscribing to query:', (targetRefOrQuery as any)._query.path.toString());
     prevQueryRef.current = targetRefOrQuery;
     setIsLoading(true);
     setError(null);
@@ -92,7 +95,6 @@ export function useCollection<T = any>(
           ...(doc.data() as T),
           id: doc.id,
         }));
-        console.log(`[useCollection] Data received for path: ${(targetRefOrQuery as any)._query.path.toString()}`, results);
         setData(results);
         setError(null);
         setIsLoading(false);
@@ -103,7 +105,6 @@ export function useCollection<T = any>(
             ? (targetRefOrQuery as CollectionReference).path
             : (targetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString();
 
-        console.error(`[useCollection] Error on path: ${path}`, error);
         const contextualError = new FirestorePermissionError({
           operation: 'list',
           path,
@@ -120,10 +121,9 @@ export function useCollection<T = any>(
 
     // Cleanup subscription on component unmount or if the query changes.
     return () => {
-      console.log('[useCollection] Unsubscribing from query:', (targetRefOrQuery as any)._query.path.toString());
       unsubscribe()
     };
-  }, [targetRefOrQuery]);
+  }, [targetRefOrQuery, data, isLoading, error]);
 
   return { data, isLoading, error };
 }
