@@ -32,11 +32,11 @@ const todoSchema = z.object({
 });
 
 export function TodoList() {
-  const { user } = useFirebase();
+  const { firestore, user } = useFirebase();
 
-  const todosQuery = useMemoFirebase((firestore) => {
+  const todosQuery = useMemoFirebase((fs) => {
     if (!user) return null;
-    const todosCollection = collection(firestore, 'users', user.uid, 'todos');
+    const todosCollection = collection(fs, 'users', user.uid, 'todos');
     return query(todosCollection, orderBy("createdAt", "desc"));
   }, [user]);
 
@@ -51,7 +51,6 @@ export function TodoList() {
   });
 
   const onSubmit = (values: z.infer<typeof todoSchema>) => {
-    const { firestore, user } = useFirebase();
     if (!firestore || !user) return;
     const todosCollection = collection(firestore, 'users', user.uid, 'todos');
 
@@ -68,14 +67,12 @@ export function TodoList() {
   };
 
   const toggleTodo = (todo: Todo) => {
-    const { firestore, user } = useFirebase();
     if (!user || !firestore || !todo.id) return;
     const docRef = doc(firestore, 'users', user.uid, 'todos', todo.id);
     setDocumentNonBlocking(docRef, { completed: !todo.completed }, { merge: true });
   };
   
   const deleteTodo = (id: string) => {
-    const { firestore, user } = useFirebase();
     if (!user || !firestore) return;
     const docRef = doc(firestore, 'users', user.uid, 'todos', id);
     deleteDocumentNonBlocking(docRef);

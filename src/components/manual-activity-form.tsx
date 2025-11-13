@@ -62,7 +62,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
   const [isManageTypesOpen, setIsManageTypesOpen] = useState(false);
   const [newActivityType, setNewActivityType] = useState("");
   
-  const { user } = useFirebase();
+  const { firestore, user } = useFirebase();
 
   const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
   const [activityTypes, setActivityTypes] = useLocalStorage<string[]>(
@@ -70,8 +70,8 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     ["Study", "Class", "Break", "Other"]
   );
 
-  const activitiesQuery = useMemoFirebase((firestore) =>
-    user ? collection(firestore, "users", user.uid, "activities") : null
+  const activitiesQuery = useMemoFirebase((fs) =>
+    user ? collection(fs, "users", user.uid, "activities") : null
   , [user]);
 
   const { data: activities } = useCollection<Activity>(activitiesQuery);
@@ -151,7 +151,6 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
 
 
   function onSubmit(values: z.infer<typeof manualActivitySchema>) {
-    const firestore = useFirebase().firestore;
     if (!firestore || !user) return;
 
     const activitiesCollection = collection(firestore, "users", user.uid, "activities");
