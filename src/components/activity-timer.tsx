@@ -32,7 +32,7 @@ interface ActivityTimerProps {
     onSessionEnd: () => void;
 }
 
-const CIRCLE_RADIUS = 175;
+const CIRCLE_RADIUS = 125;
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 export function ActivityTimer({
@@ -193,12 +193,12 @@ export function ActivityTimer({
 
   return (
     <div className="w-full max-w-lg mx-auto text-center pt-8">
-      <div className={cn("space-y-8 flex flex-col items-center", isFinished && "animate-blink")}>
-        <p className="text-2xl text-muted-foreground">{isFinished ? "Session Finished!" : `Timing session for:`}</p>
-        <h1 className="text-6xl font-bold font-headline">{initialActivityName}</h1>
+      <div className={cn("space-y-4 flex flex-col items-center", isFinished && "animate-blink")}>
+        <p className="text-xl text-muted-foreground">{isFinished ? "Session Finished!" : `Timing session for:`}</p>
+        <h1 className="text-5xl font-bold font-headline">{initialActivityName}</h1>
         
-        <div className={cn("relative w-[400px] h-[400px]", mode === 'stopwatch' && isTiming && 'animate-pulse')}>
-            <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 400 400">
+        <div className={cn("relative w-[300px] h-[300px]", mode === 'stopwatch' && isTiming && 'animate-pulse')}>
+            <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 300 300">
                 <defs>
                     <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="hsl(var(--primary))" />
@@ -208,21 +208,21 @@ export function ActivityTimer({
                 <circle
                     className="text-border"
                     stroke="currentColor"
-                    strokeWidth="20"
+                    strokeWidth="15"
                     fill="transparent"
                     r={CIRCLE_RADIUS}
-                    cx="200"
-                    cy="200"
+                    cx="150"
+                    cy="150"
                 />
                 <circle
                     className="transition-all duration-1000 ease-linear"
                     stroke={isFinished ? "hsl(var(--destructive))" : "url(#progressGradient)"}
-                    strokeWidth="20"
+                    strokeWidth="15"
                     strokeLinecap="round"
                     fill="transparent"
                     r={CIRCLE_RADIUS}
-                    cx="200"
-                    cy="200"
+                    cx="150"
+                    cy="150"
                     style={{
                         strokeDasharray: CIRCLE_CIRCUMFERENCE,
                         strokeDashoffset: strokeDashoffset,
@@ -230,19 +230,19 @@ export function ActivityTimer({
                 />
             </svg>
              <div className="absolute inset-0 flex items-center justify-center">
-                <p className="font-mono text-7xl font-bold tabular-nums tracking-wider drop-shadow-lg">
+                <p className="font-mono text-6xl font-bold tabular-nums tracking-wider drop-shadow-lg">
                     {formatTime(displayTime)}
                 </p>
             </div>
         </div>
 
         {isFinished ? (
-             <Button size="lg" variant="default" onClick={() => handleStop(true)} className="w-full py-8 text-2xl">
-                <Square className="mr-4 h-8 w-8" /> Save Session
+             <Button size="lg" variant="default" onClick={() => handleStop(true)} className="w-full py-6 text-xl">
+                <Square className="mr-4 h-6 w-6" /> Save Session
             </Button>
         ) : (
-             <Button size="lg" variant="destructive" onClick={() => handleStop(true)} className="w-full py-8 text-2xl">
-                <Square className="mr-4 h-8 w-8" /> Stop & Save
+             <Button size="lg" variant="destructive" onClick={() => handleStop(true)} className="w-full py-6 text-xl">
+                <Square className="mr-4 h-6 w-6" /> Stop & Save
             </Button>
         )}
          <Button variant="ghost" onClick={() => handleStop(false)}>
