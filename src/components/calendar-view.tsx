@@ -36,18 +36,15 @@ export function CalendarView() {
   const firstDayCurrentMonth = startOfMonth(currentMonth);
   const lastDayCurrentMonth = endOfMonth(currentMonth);
 
-  const activitiesCollection = useMemoFirebase(() =>
-    user ? collection(firestore, 'users', user.uid, 'activities') : null
-  , [firestore, user]);
-
   const activitiesQuery = useMemoFirebase(() => {
-    if (!activitiesCollection) return null;
+    if (!user || !firestore) return null;
+    const activitiesCollection = collection(firestore, 'users', user.uid, 'activities');
     return query(
       activitiesCollection,
       where('createdAt', '>=', Timestamp.fromDate(startOfWeek(firstDayCurrentMonth))),
       where('createdAt', '<=', Timestamp.fromDate(endOfWeek(lastDayCurrentMonth)))
     );
-  }, [activitiesCollection, firstDayCurrentMonth, lastDayCurrentMonth]);
+  }, [firestore, user, firstDayCurrentMonth, lastDayCurrentMonth]);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 

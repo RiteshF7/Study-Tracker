@@ -70,11 +70,11 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     ["Study", "Class", "Break", "Other"]
   );
 
-  const activitiesCollection = useMemoFirebase(() =>
+  const activitiesQuery = useMemoFirebase(() =>
     user ? collection(firestore, "users", user.uid, "activities") : null
   , [firestore, user]);
 
-  const { data: activities } = useCollection<Activity>(activitiesCollection);
+  const { data: activities } = useCollection<Activity>(activitiesQuery);
 
   useEffect(() => {
     if (activities) {
@@ -151,7 +151,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
 
 
   function onSubmit(values: z.infer<typeof manualActivitySchema>) {
-    if (!activitiesCollection || !user) return;
+    if (!activitiesQuery || !user) return;
     
     const newActivity: Omit<Activity, 'id' | 'createdAt' | 'category'> & { createdAt: any } = {
       name: values.name,
@@ -162,7 +162,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
       userId: user.uid,
       createdAt: serverTimestamp(),
     };
-    addDocumentNonBlocking(activitiesCollection, newActivity);
+    addDocumentNonBlocking(activitiesQuery.converter ? activitiesQuery.withConverter(null) : activitiesQuery, newActivity);
     
     if (onFormSubmit) onFormSubmit();
   }

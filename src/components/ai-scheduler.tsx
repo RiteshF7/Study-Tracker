@@ -70,16 +70,16 @@ export function AiScheduler() {
   const editFormRef = useRef<HTMLFormElement>(null);
   const addToTodoFormRef = useRef<HTMLFormElement>(null);
 
-  const activitiesCollection = useMemoFirebase(() => 
+  const activitiesQuery = useMemoFirebase(() => 
     user ? collection(firestore, "users", user.uid, "activities") : null
   , [firestore, user]);
 
-  const problemsCollection = useMemoFirebase(() =>
+  const problemsQuery = useMemoFirebase(() =>
     user ? collection(firestore, "users", user.uid, "problems") : null
   , [firestore, user]);
 
-  const { data: activities } = useCollection<Activity>(activitiesCollection);
-  const { data: problems } = useCollection<Problem>(problemsCollection);
+  const { data: activities } = useCollection<Activity>(activitiesQuery);
+  const { data: problems } = useCollection<Problem>(problemsQuery);
 
   const [generateState, generateFormAction] = useActionState(getScheduleRecommendation, initialSchedulerState);
   const [editState, editFormAction] = useActionState(refineScheduleAction, initialSchedulerState);

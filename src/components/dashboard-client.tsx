@@ -42,7 +42,8 @@ export function DashboardClient() {
   const allActivities = useMemo(() => {
     if (isLoadingActivities) return [];
     if (!activities || activities.length === 0) {
-        return generateMockActivities(365);
+        // Return an empty array if you don't want mock data in production
+        return [];
     }
     return activities;
   }, [activities, isLoadingActivities]);
