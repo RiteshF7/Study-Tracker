@@ -67,7 +67,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
   const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
   const [activityTypes, setActivityTypes] = useLocalStorage<string[]>(
     "custom-activity-types",
-    ["Study", "Class", "Break", "Other"]
+    ["Study", "Class", "Break", "Reading", "Writing", "Project Work", "Research", "Other"]
   );
 
   const activitiesQuery = useMemoFirebase((fs) =>
@@ -177,7 +177,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Subject</FormLabel>
+                <FormLabel>Subject </FormLabel>
                 <Select
                   onValueChange={(value) => {
                     if (value === "add_new") {
@@ -382,3 +382,5 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     </>
   );
 }
+
+    
