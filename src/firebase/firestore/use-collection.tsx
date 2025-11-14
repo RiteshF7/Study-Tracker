@@ -12,6 +12,8 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import isEqual from 'lodash.isequal';
+
 
 /** Utility type to add an 'id' field to a given type T. */
 export type WithId<T> = T & { id: string };
@@ -77,7 +79,14 @@ export function useCollection<T = any>(
           ...(doc.data() as T),
           id: doc.id,
         }));
-        setData(results);
+        
+        setData(currentData => {
+          if (isEqual(currentData, results)) {
+            return currentData;
+          }
+          return results;
+        });
+
         setError(null);
         setIsLoading(false);
       },

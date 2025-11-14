@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import isEqual from 'lodash.isequal';
 
 /** Utility type to add an 'id' field to a given type T. */
 type WithId<T> = T & { id: string };
@@ -63,7 +64,12 @@ export function useDoc<T = any>(
       (snapshot: DocumentSnapshot<DocumentData>) => {
         if (snapshot.exists()) {
           const docData = { ...(snapshot.data() as T), id: snapshot.id };
-          setData(docData);
+          setData(currentData => {
+            if (isEqual(currentData, docData)) {
+                return currentData;
+            }
+            return docData;
+          });
         } else {
           // Document does not exist
           setData(null);
