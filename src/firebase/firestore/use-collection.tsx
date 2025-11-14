@@ -59,8 +59,6 @@ export function useCollection<T = any>(
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
-
-  const prevQueryRef = useRef<Query<DocumentData> | CollectionReference<DocumentData> | null | undefined>(null);
   
   useEffect(() => {
     if (!targetRefOrQuery) {
@@ -70,13 +68,7 @@ export function useCollection<T = any>(
         return;
     }
 
-    if (prevQueryRef.current && queryEqual(prevQueryRef.current, targetRefOrQuery)) {
-      return;
-    }
-
-    prevQueryRef.current = targetRefOrQuery;
     setIsLoading(true);
-    setError(null);
 
     const unsubscribe = onSnapshot(
       targetRefOrQuery,

@@ -1,6 +1,6 @@
 'use client';
     
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DocumentReference,
   onSnapshot,
@@ -47,25 +47,16 @@ export function useDoc<T = any>(
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
-  const prevDocRefPath = useRef<string | null>(null);
-
   useEffect(() => {
     
     if (!docRef) {
         setData(null);
         setIsLoading(false);
         setError(null);
-        prevDocRefPath.current = null;
-        return;
-    }
-
-    if (prevDocRefPath.current === docRef.path) {
         return;
     }
     
-    prevDocRefPath.current = docRef.path;
     setIsLoading(true);
-    setError(null);
     
     const unsubscribe = onSnapshot(
       docRef,
