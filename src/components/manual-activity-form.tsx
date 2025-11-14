@@ -88,7 +88,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     resolver: zodResolver(manualActivitySchema),
     defaultValues: {
       name: "",
-      type: "RED",
+      type: "",
       duration: 30,
       startTime: "09:00",
     },
@@ -100,7 +100,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     if (open) {
       form.reset({
         name: "",
-        type: "RED",
+        type: "",
         duration: 30,
         startTime: "09:00",
       });
@@ -382,7 +382,3 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     </>
   );
 }
-
-    
-
-    
