@@ -154,22 +154,23 @@ export const useFirebaseApp = (): FirebaseApp => {
   return firebaseApp;
 };
 
-type MemoFirebase <T> = T & {__memo?: boolean};
+/**
+ * Memoizes a Firestore query or document reference.
+ *
+ * @param factory A function that returns a Firestore query or reference.
+ * @param deps A dependency array for the useMemo hook.
+ * @returns The memoized query or reference.
+ */
+export function useMemoFirebase<T>(factory: (firestore: Firestore) => T, deps: DependencyList): T | null {
+    const { firestore } = useContext(FirebaseContext);
 
-export function useMemoFirebase<T>(factory: (firestore: Firestore) => T, deps: DependencyList): T | (MemoFirebase<T | null>) | null {
-  const { firestore } = useContext(FirebaseContext);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const memoized = useMemo(() => {
+        if (!firestore) return null;
+        return factory(firestore);
+    }, [firestore, ...deps]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const memoized = useMemo(() => {
-    if (!firestore) return null;
-    return factory(firestore);
-  }, [firestore, ...deps]);
-
-  if (!memoized) return null;
-  if(typeof memoized !== 'object' || memoized === null) return memoized;
-
-  (memoized as MemoFirebase<T>).__memo = true;
-  return memoized;
+    return memoized;
 }
 
 /**
