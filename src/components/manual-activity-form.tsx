@@ -37,7 +37,7 @@ import { collection, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import type { Activity } from "@/lib/types";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { defaultProblemCategories } from "@/lib/types";
+import { defaultProblemCategories, activityTypes as defaultActivityTypes } from "@/lib/types";
 
 const manualActivitySchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -67,7 +67,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
   const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
   const [activityTypes, setActivityTypes] = useLocalStorage<string[]>(
     "custom-activity-types",
-    ["RED", "YELLOW", "GREEN"]
+    defaultActivityTypes
   );
 
   const activitiesQuery = useMemoFirebase((fs) =>
@@ -364,8 +364,8 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
             <DialogTitle>Manage Activity Types</DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-2">
-            {activityTypes.filter(t => !['RED', 'YELLOW', 'GREEN'].includes(t)).length > 0 ? 
-             activityTypes.filter(t => !['RED', 'YELLOW', 'GREEN'].includes(t)).map(type => (
+            {activityTypes.filter(t => !defaultActivityTypes.includes(t)).length > 0 ? 
+             activityTypes.filter(t => !defaultActivityTypes.includes(t)).map(type => (
                 <div key={type} className="flex items-center justify-between p-2 rounded-md border">
                     <span>{type}</span>
                     <Button variant="ghost" size="icon" onClick={() => handleRemoveType(type)}>
