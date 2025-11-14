@@ -13,8 +13,8 @@ import {
   CalendarDays,
   Settings,
   Home,
-  TrafficCone
 } from "lucide-react";
+import { TrafficLight } from "@/components/icons/traffic-light";
 import {
   SidebarHeader,
   SidebarMenu,
@@ -56,7 +56,7 @@ const navItems = [
   },
   {
     href: "/sorting",
-    icon: TrafficCone,
+    icon: TrafficLight,
     label: "Sorting",
   },
 ];
