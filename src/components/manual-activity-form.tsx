@@ -67,7 +67,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
   const [pastActivityNames, setPastActivityNames] = useLocalStorage<string[]>('past-activity-names', []);
   const [activityTypes, setActivityTypes] = useLocalStorage<string[]>(
     "custom-activity-types",
-    ["Study", "Class", "Break", "Reading", "Writing", "Project Work", "Research", "Other"]
+    ["RED", "YELLOW", "GREEN"]
   );
 
   const activitiesQuery = useMemoFirebase((fs) =>
@@ -88,7 +88,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     resolver: zodResolver(manualActivitySchema),
     defaultValues: {
       name: "",
-      type: "Study",
+      type: "RED",
       duration: 30,
       startTime: "09:00",
     },
@@ -100,7 +100,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     if (open) {
       form.reset({
         name: "",
-        type: "Study",
+        type: "RED",
         duration: 30,
         startTime: "09:00",
       });
@@ -177,7 +177,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Subject </FormLabel>
+                <FormLabel>Subject</FormLabel>
                 <Select
                   onValueChange={(value) => {
                     if (value === "add_new") {
@@ -364,8 +364,8 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
             <DialogTitle>Manage Activity Types</DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-2">
-            {activityTypes.filter(t => !['Study', 'Class', 'Break', 'Other'].includes(t)).length > 0 ? 
-             activityTypes.filter(t => !['Study', 'Class', 'Break', 'Other'].includes(t)).map(type => (
+            {activityTypes.filter(t => !['RED', 'YELLOW', 'GREEN'].includes(t)).length > 0 ? 
+             activityTypes.filter(t => !['RED', 'YELLOW', 'GREEN'].includes(t)).map(type => (
                 <div key={type} className="flex items-center justify-between p-2 rounded-md border">
                     <span>{type}</span>
                     <Button variant="ghost" size="icon" onClick={() => handleRemoveType(type)}>
@@ -382,5 +382,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     </>
   );
 }
+
+    
 
     

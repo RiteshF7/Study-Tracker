@@ -4,7 +4,7 @@ import { Timestamp } from "firebase/firestore";
 export type Activity = {
   id?: string;
   name: string;
-  type: 'Study' | 'Class' | 'Break' | 'Other';
+  type: 'Study' | 'Class' | 'Break' | 'Other' | 'RED' | 'YELLOW' | 'GREEN';
   category?: string;
   duration: number; // in minutes
   date: string; // YYYY-MM-DD
@@ -48,4 +48,7 @@ export type Todo = {
 };
 
 
-export const activityTypes = ["Study", "Class", "Break", "Other"];
+export const activityTypes = ["Study", "Class", "Break", "Other", "RED", "YELLOW", "GREEN"];
+
+
+    
