@@ -12,7 +12,8 @@ import {
   LogOut,
   CalendarDays,
   Settings,
-  Home
+  Home,
+  TrafficCone
 } from "lucide-react";
 import {
   SidebarHeader,
@@ -52,6 +53,11 @@ const navItems = [
     href: "/planner",
     icon: CalendarDays,
     label: "Planner",
+  },
+  {
+    href: "/sorting",
+    icon: TrafficCone,
+    label: "Sorting",
   },
 ];
 
