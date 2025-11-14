@@ -21,11 +21,11 @@ import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { Badge } from "./ui/badge";
 
 export function ActivityLog() {
-  const { user } = useFirebase();
+  const { user, firestore } = useFirebase();
   
-  const activitiesQuery = useMemoFirebase((firestore) => {
+  const activitiesQuery = useMemoFirebase((fs) => {
     if (!user) return null;
-    const activitiesCollection = collection(firestore, "users", user.uid, "activities");
+    const activitiesCollection = collection(fs, "users", user.uid, "activities");
     return query(activitiesCollection, orderBy("createdAt", "desc"));
   }, [user]);
 
@@ -33,7 +33,7 @@ export function ActivityLog() {
 
   function deleteActivity(id: string) {
     if (!user) return;
-    const docRef = doc(useFirebase().firestore, "users", user.uid, "activities", id);
+    const docRef = doc(firestore, "users", user.uid, "activities", id);
     deleteDocumentNonBlocking(docRef);
   }
 
