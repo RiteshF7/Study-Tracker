@@ -145,7 +145,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
   const handleRemoveType = (typeToRemove: string) => {
     setActivityTypes(activityTypes.filter(type => type !== typeToRemove));
     if (form.getValues('type') === typeToRemove) {
-      form.setValue('type', 'Other');
+      form.setValue('type', '');
     }
   };
 
@@ -382,3 +382,5 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     </>
   );
 }
+
+    
