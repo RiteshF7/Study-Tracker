@@ -177,7 +177,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Category</FormLabel>
+                <FormLabel>Subject</FormLabel>
                 <Select
                   onValueChange={(value) => {
                     if (value === "add_new") {
@@ -192,7 +192,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select an activity name" />
+                      <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -203,7 +203,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
                     ))}
                       {(pastActivityNames.length > 0) && <SelectSeparator />}
                     <SelectItem value="add_new">Add New...</SelectItem>
-                    <SelectItem value="manage" className="text-muted-foreground">Manage Names...</SelectItem>
+                    <SelectItem value="manage" className="text-muted-foreground">Manage Subjects...</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -292,7 +292,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
       <Dialog open={isAddNameOpen} onOpenChange={setIsAddNameOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Activity Name</DialogTitle>
+            <DialogTitle>Add New Subject</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <Input
@@ -341,7 +341,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
       <Dialog open={isManageNamesOpen} onOpenChange={setIsManageNamesOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Manage Activity Names</DialogTitle>
+            <DialogTitle>Manage Subjects</DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-2">
             {pastActivityNames.length > 0 ? pastActivityNames.map(name => (
@@ -351,7 +351,7 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
                         <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                 </div>
-            )) : <p className="text-sm text-muted-foreground text-center">No custom names to manage.</p>}
+            )) : <p className="text-sm text-muted-foreground text-center">No custom subjects to manage.</p>}
           </div>
           <DialogFooter>
             <Button onClick={() => setIsManageNamesOpen(false)}>Done</Button>
