@@ -50,6 +50,7 @@ const columnTitleColors = {
 
 
 export default function SortingPage() {
+  const [isClient, setIsClient] = useState(false);
   const { user } = useFirebase();
   const activitiesQuery = useMemoFirebase(
     (fs) => (user ? query(collection(fs, 'users', user.uid, 'activities')) : null),
@@ -69,6 +70,10 @@ export default function SortingPage() {
     YELLOW: { id: 'YELLOW', title: 'YELLOW', items: [] },
     GREEN: { id: 'GREEN', title: 'GREEN', items: [] },
   });
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (allSubjects.length > 0) {
@@ -144,6 +149,7 @@ export default function SortingPage() {
       <p className="text-muted-foreground mb-6">
         Drag and drop your subjects to categorize them by confidence level.
       </p>
+      {isClient ? (
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
           {Object.entries(columns).map(([columnId, column]) => (
@@ -201,6 +207,9 @@ export default function SortingPage() {
           ))}
         </div>
       </DragDropContext>
+      ) : (
+         <div className="text-center py-10 text-muted-foreground">Loading sorting board...</div>
+      )}
     </div>
   );
 }
