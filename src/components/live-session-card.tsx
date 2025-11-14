@@ -61,8 +61,8 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
      if (activityType === 'Study' && !category) {
       toast({
         variant: "destructive",
-        title: "No Category",
-        description: "Please select a category for your study session.",
+        title: "No Subject",
+        description: "Please select a subject for your study session.",
       });
       return;
     }
@@ -114,7 +114,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                     </Tabs>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="grid gap-2 sm:col-span-2">
-                        <Label htmlFor="category-select">Category</Label>
+                        <Label htmlFor="category-select">Subject</Label>
                         <Select
                             onValueChange={(value) => {
                                 if (value === "add_new") setIsAddCategoryOpen(true);
@@ -124,7 +124,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                             value={category}
                         >
                             <SelectTrigger id="category-select">
-                                <SelectValue placeholder="Select or create category..." />
+                                <SelectValue placeholder="Select or create subject..." />
                             </SelectTrigger>
                             <SelectContent>
                                 {problemCategories.map((cat) => (
@@ -132,7 +132,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                                 ))}
                                 {problemCategories.length > 0 && <SelectSeparator />}
                                 <SelectItem value="add_new">Add New...</SelectItem>
-                                <SelectItem value="manage" className="text-muted-foreground">Manage Categories...</SelectItem>
+                                <SelectItem value="manage" className="text-muted-foreground">Manage Subjects...</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -193,7 +193,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
     
      <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
         <DialogContent>
-            <DialogHeader><DialogTitle>Add New Category</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Add New Subject</DialogTitle></DialogHeader>
             <div className="py-4">
                 <Input
                     placeholder="e.g., Organic Chemistry"
@@ -216,7 +216,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
 
     <Dialog open={isManageCategoriesOpen} onOpenChange={setIsManageCategoriesOpen}>
         <DialogContent>
-            <DialogHeader><DialogTitle>Manage Categories</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Manage Subjects</DialogTitle></DialogHeader>
             <div className="py-4 space-y-2 max-h-60 overflow-y-auto">
                 {problemCategories.length > 0 ?
                     problemCategories.map(cat => (
@@ -227,7 +227,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                             </Button>
                         </div>
                     ))
-                    : <p className="text-sm text-muted-foreground text-center">No custom categories added yet.</p>
+                    : <p className="text-sm text-muted-foreground text-center">No custom subjects added yet.</p>
                 }
             </div>
             <DialogFooter>
