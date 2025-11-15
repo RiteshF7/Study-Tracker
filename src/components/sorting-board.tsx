@@ -1,4 +1,3 @@
-
 'use client';
 
 import { DragDropContext, Droppable, Draggable, type OnDragEndResponder } from 'react-beautiful-dnd';
@@ -55,7 +54,7 @@ export function SortingBoard({ columns, onDragEnd, isLoading }: SortingBoardProp
 
   return (
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        <div className="grid grid-cols-3 gap-6 items-start">
           {Object.entries(columns).map(([columnId, column]) => (
             <Droppable droppableId={columnId} key={columnId}>
               {(provided, snapshot) => (
