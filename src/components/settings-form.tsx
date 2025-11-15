@@ -29,6 +29,14 @@ import { doc } from "firebase/firestore";
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useEffect } from "react";
 import { Textarea } from "./ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 const profileSchema = z.object({
   name: z.string().min(2, {
@@ -47,6 +55,8 @@ type UserProfile = {
 export function SettingsForm() {
   const { user } = useUser();
   const { toast } = useToast();
+  const [course, setCourse] = useLocalStorage('selected-course', 'JEE');
+
 
   const userDocRef = useMemoFirebase((firestore) => 
     user ? doc(firestore, "users", user.uid) : null
@@ -109,6 +119,23 @@ export function SettingsForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
+             <FormItem>
+                <FormLabel>Course Focus</FormLabel>
+                <Select onValueChange={setCourse} value={course}>
+                    <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select your course focus" />
+                        </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        <SelectItem value="JEE">JEE</SelectItem>
+                        <SelectItem value="NEET">NEET</SelectItem>
+                    </SelectContent>
+                </Select>
+                <FormDescription>
+                    This will tailor parts of the app to your curriculum.
+                </FormDescription>
+              </FormItem>
             <FormField
               control={form.control}
               name="name"

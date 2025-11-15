@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 
 export default function SortingPage() {
   const [isClient, setIsClient] = useState(false);
+  const [course] = useLocalStorage('selected-course', 'JEE');
   const [activeSet, setActiveSet] = useState('1');
   const { user } = useFirebase();
   const activitiesQuery = useMemoFirebase(
@@ -110,7 +111,9 @@ export default function SortingPage() {
           <div className="flex items-center gap-2">
             <Button variant={activeSet === '1' ? 'default' : 'outline'} onClick={() => setActiveSet('1')}>Physics</Button>
             <Button variant={activeSet === '2' ? 'default' : 'outline'} onClick={() => setActiveSet('2')}>Chemistry</Button>
-            <Button variant={activeSet === '3' ? 'default' : 'outline'} onClick={() => setActiveSet('3')}>Subject Set 3</Button>
+            <Button variant={activeSet === '3' ? 'default' : 'outline'} onClick={() => setActiveSet('3')}>
+              {course === 'JEE' ? 'Maths' : 'Biology'}
+            </Button>
           </div>
       </div>
       {isClient ? (
