@@ -114,7 +114,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                             <TabsTrigger value="stopwatch"><Clock className="mr-2 h-4 w-4" />Stopwatch</TabsTrigger>
                         </TabsList>
                     </Tabs>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="category-select">Subject</Label>
                             <Select
