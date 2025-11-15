@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import type { OnDragEndResponder } from 'react-beautiful-dnd';
+import type { DragEndEvent } from '@dnd-kit/core';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
@@ -25,7 +25,7 @@ export default function SortingPage() {
     return uniqueSubjects.map((subject) => ({ id: subject, content: subject }));
   }, [activities]);
 
-  const [columns, setColumns] = useLocalStorage<Columns>('sorting-columns-state-v2', {
+  const [columns, setColumns] = useLocalStorage<Columns>('sorting-columns-state-v3', {
     RED: { id: 'RED', title: 'RED', items: [] },
     YELLOW: { id: 'YELLOW', title: 'YELLOW', items: [] },
     GREEN: { id: 'GREEN', title: 'GREEN', items: [] },
@@ -63,24 +63,33 @@ export default function SortingPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allSubjects]);
 
-  const onDragEnd: OnDragEndResponder = (result) => {
-    if (!result.destination) return;
-    const { source, destination } = result;
-    const sourceDroppableId = source.droppableId as keyof Columns;
-    const destinationDroppableId = destination.droppableId as keyof Columns;
+  const onDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const sourceColumnId = active.data.current?.sortable.containerId as keyof Columns;
+    const destColumnId = over.id as keyof Columns;
+    const draggedItemId = active.id as string;
 
     setColumns((prev) => {
         const newColumns = { ...prev };
-        const sourceColumn = newColumns[sourceDroppableId];
-        const destColumn = newColumns[destinationDroppableId];
+        const sourceColumn = newColumns[sourceColumnId];
+        const destColumn = newColumns[destColumnId];
+
         const sourceItems = [...sourceColumn.items];
-        const destItems = sourceDroppableId === destinationDroppableId ? sourceItems : [...destColumn.items];
+        const destItems = sourceColumnId === destColumnId ? sourceItems : [...destColumn.items];
 
-        const [removed] = sourceItems.splice(source.index, 1);
-        destItems.splice(destination.index, 0, removed);
+        const draggedItemIndex = sourceItems.findIndex(item => item.id === draggedItemId);
+        const [removed] = sourceItems.splice(draggedItemIndex, 1);
+        
+        // Find the index to insert in the destination column
+        const overItem = destColumn.items.find(item => item.id === over.id);
+        const destIndex = overItem ? destItems.findIndex(item => item.id === over.id) : destItems.length;
+        
+        destItems.splice(destIndex, 0, removed);
 
-        newColumns[sourceDroppableId] = { ...sourceColumn, items: sourceItems };
-        newColumns[destinationDroppableId] = { ...destColumn, items: destItems };
+        newColumns[sourceColumnId] = { ...sourceColumn, items: sourceItems };
+        newColumns[destColumnId] = { ...destColumn, items: destItems };
         
         return newColumns;
     });
