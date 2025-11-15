@@ -1,10 +1,11 @@
 
 'use client';
 
-import { DragDropContext, Droppable, Draggable, type OnDragEndResponder } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, type OnDragEndResponder, resetServerContext } from 'react-beautiful-dnd';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { GripVertical } from 'lucide-react';
+import { useEffect } from 'react';
 
 type Item = {
     id: string;
@@ -45,6 +46,13 @@ interface SortingBoardProps {
 }
 
 export function SortingBoard({ columns, onDragEnd, isLoading }: SortingBoardProps) {
+  
+  // This is a workaround for a known issue with react-beautiful-dnd in React 18 Strict Mode.
+  // It ensures the server-side context is reset on the client, preventing the invariant error.
+  useEffect(() => {
+    resetServerContext();
+  }, []);
+
   return (
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
