@@ -7,6 +7,7 @@ import { useLocalStorage } from '@/hooks/use-local-storage';
 import { SortingBoard, type Columns } from '@/components/sorting-board';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { arrayMove } from '@dnd-kit/sortable';
 
 // TODO: Move to a separate file, maybe a JSON in /lib
 const subjectTopics = {
@@ -100,33 +101,54 @@ export default function SortingPage() {
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
-  
-    const activeContainer = active.data.current?.sortable.containerId;
-    const overContainer = over.data.current?.sortable.containerId || over.id;
-  
-    if (!activeContainer || !overContainer || activeContainer === overContainer) {
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    if (activeId === overId) {
       return;
     }
-  
+
+    const activeContainer = active.data.current?.sortable.containerId;
+    const overContainer = over.data.current?.sortable.containerId || over.id;
+
+    if (!activeContainer || !overContainer) {
+      return;
+    }
+
     setColumns((prev) => {
-      const activeItems = prev[activeContainer as keyof Columns].items;
-      const overItems = prev[overContainer as keyof Columns].items;
-  
-      const activeIndex = activeItems.findIndex((item) => item.id === active.id);
-      const overIndex = overItems.findIndex((item) => item.id === over.id);
-  
       const newColumns = { ...prev };
-  
-      const [removed] = newColumns[activeContainer as keyof Columns].items.splice(activeIndex, 1);
-  
-      if (over.id in newColumns) {
-        // Dropping in a new column
-         newColumns[over.id as keyof Columns].items.push(removed);
-      } else {
-        // Dropping on an item in a new column
-         newColumns[overContainer as keyof Columns].items.splice(overIndex, 0, removed);
-      }
+      const activeColumn = newColumns[activeContainer as keyof Columns];
+      const overColumn = newColumns[overContainer as keyof Columns];
       
+      if (!activeColumn || !overColumn) {
+        return prev;
+      }
+
+      const activeIndex = activeColumn.items.findIndex(item => item.id === activeId);
+      let overIndex = overColumn.items.findIndex(item => item.id === overId);
+
+      if (activeContainer === overContainer) {
+        // Reordering within the same column
+        if (activeIndex !== -1 && overIndex !== -1) {
+            activeColumn.items = arrayMove(activeColumn.items, activeIndex, overIndex);
+        }
+      } else {
+        // Moving to a different column
+        const [movedItem] = activeColumn.items.splice(activeIndex, 1);
+
+        if (over.id in newColumns) {
+            // Dropping on the column itself
+            overColumn.items.push(movedItem);
+        } else {
+            // Dropping on an item within the column
+            if (overIndex === -1) {
+                // If overIndex is not found (e.g., dropping on padding), add to end
+                overIndex = overColumn.items.length;
+            }
+            overColumn.items.splice(overIndex, 0, movedItem);
+        }
+      }
       return newColumns;
     });
   };
