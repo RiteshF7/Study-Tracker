@@ -8,12 +8,12 @@ import { collection, query } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { SortingBoard, type Columns } from '@/components/sorting-board';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-
 
 export default function SortingPage() {
   const [isClient, setIsClient] = useState(false);
+  const [activeSet, setActiveSet] = useState('1');
   const { user } = useFirebase();
   const activitiesQuery = useMemoFirebase(
     (fs) => (user ? query(collection(fs, 'users', user.uid, 'activities')) : null),
@@ -27,7 +27,7 @@ export default function SortingPage() {
     return uniqueSubjects.map((subject) => ({ id: subject, content: subject }));
   }, [activities]);
 
-  const [columns, setColumns] = useLocalStorage<Columns>('sorting-columns-state-v3', {
+  const [columns, setColumns] = useLocalStorage<Columns>(`sorting-columns-set-${activeSet}`, {
     RED: { id: 'RED', title: 'RED', items: [] },
     YELLOW: { id: 'YELLOW', title: 'YELLOW', items: [] },
     GREEN: { id: 'GREEN', title: 'GREEN', items: [] },
@@ -38,7 +38,7 @@ export default function SortingPage() {
   }, []);
 
   useEffect(() => {
-    if (allSubjects.length > 0) {
+    if (allSubjects.length > 0 && isClient) {
       setColumns((prevColumns) => {
         const newColumns = { ...prevColumns };
         const allItemsInColumns = [
@@ -63,7 +63,7 @@ export default function SortingPage() {
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allSubjects]);
+  }, [allSubjects, isClient, activeSet]);
 
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -105,18 +105,13 @@ export default function SortingPage() {
       <p className="text-muted-foreground mb-6">
         Drag and drop your subjects to categorize them by confidence level.
       </p>
-      <div className="mb-6 max-w-xs">
-          <Label htmlFor="subject-set">Subject Set</Label>
-          <Select defaultValue="1">
-              <SelectTrigger id="subject-set">
-                  <SelectValue placeholder="Select a set" />
-              </SelectTrigger>
-              <SelectContent>
-                  <SelectItem value="1">Subject Set 1</SelectItem>
-                  <SelectItem value="2">Subject Set 2</SelectItem>
-                  <SelectItem value="3">Subject Set 3</SelectItem>
-              </SelectContent>
-          </Select>
+      <div className="mb-6">
+          <Label htmlFor="subject-set" className="mb-2 block">Subject Set</Label>
+          <div className="flex items-center gap-2">
+            <Button variant={activeSet === '1' ? 'default' : 'outline'} onClick={() => setActiveSet('1')}>Subject Set 1</Button>
+            <Button variant={activeSet === '2' ? 'default' : 'outline'} onClick={() => setActiveSet('2')}>Subject Set 2</Button>
+            <Button variant={activeSet === '3' ? 'default' : 'outline'} onClick={() => setActiveSet('3')}>Subject Set 3</Button>
+          </div>
       </div>
       {isClient ? (
         <SortingBoard columns={columns} onDragEnd={onDragEnd} isLoading={isLoading} />
