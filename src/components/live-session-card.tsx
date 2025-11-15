@@ -60,7 +60,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   const { toast } = useToast();
 
   const handleStart = () => {
-     if (activityType === 'Study' && !category) {
+     if (!category) {
       toast({
         variant: "destructive",
         title: "No Subject",
