@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Play, Timer, Clock, Trash2, Plus, Minus } from "lucide-react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useToast } from "@/hooks/use-toast";
+import { defaultProblemCategories } from "@/lib/types";
 
 
 interface LiveSessionCardProps {
@@ -48,7 +49,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   
    const [problemCategories, setProblemCategories] = useLocalStorage<string[]>(
     "custom-problem-categories",
-    []
+    defaultProblemCategories.map(c => c.name)
   );
 
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
