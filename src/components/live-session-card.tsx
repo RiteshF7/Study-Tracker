@@ -26,8 +26,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Play, Timer, Clock, Trash2, Plus, Minus } from "lucide-react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useToast } from "@/hooks/use-toast";
-import { defaultProblemCategories } from "@/lib/types";
-
 
 interface LiveSessionCardProps {
     onStartTimer: (config: {
@@ -45,22 +43,22 @@ const sortingOptions = ['RED', 'YELLOW', 'GREEN'];
 export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   const [mode, setMode] = useState<'timer' | 'stopwatch'>('timer');
   const [activityType, setActivityType] = useState<Activity['type']>('Study');
-  const [category, setCategory] = useState('');
+  const [subject, setSubject] = useState('');
   const [duration, setDuration] = useState(25);
   
-   const [problemCategories, setProblemCategories] = useLocalStorage<string[]>(
-    "custom-problem-categories",
-    defaultProblemCategories.map(c => c.name)
+  const [customSubjects, setCustomSubjects] = useLocalStorage<string[]>(
+    "live-session-subjects",
+    ['Physics', 'Chemistry', 'Maths']
   );
 
-  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
-  const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
-  const [newCategory, setNewCategory] = useState("");
+  const [isAddSubjectOpen, setIsAddSubjectOpen] = useState(false);
+  const [isManageSubjectsOpen, setIsManageSubjectsOpen] = useState(false);
+  const [newSubject, setNewSubject] = useState("");
 
   const { toast } = useToast();
 
   const handleStart = () => {
-     if (!category) {
+     if (!subject) {
       toast({
         variant: "destructive",
         title: "No Subject",
@@ -76,23 +74,23 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
       });
       return;
     }
-    onStartTimer({ mode, activityName: category, activityType, duration, category });
+    onStartTimer({ mode, activityName: subject, activityType, duration, category: subject });
   };
   
-  const handleAddNewCategory = () => {
-    if (newCategory.trim() && !problemCategories.includes(newCategory.trim())) {
-      const cat = newCategory.trim();
-      setProblemCategories([...problemCategories, cat]);
-      setCategory(cat);
-      setIsAddCategoryOpen(false);
-      setNewCategory("");
+  const handleAddNewSubject = () => {
+    if (newSubject.trim() && !customSubjects.includes(newSubject.trim())) {
+      const sub = newSubject.trim();
+      setCustomSubjects([...customSubjects, sub]);
+      setSubject(sub);
+      setIsAddSubjectOpen(false);
+      setNewSubject("");
     }
   };
 
-  const handleRemoveCategory = (categoryToRemove: string) => {
-    setProblemCategories(problemCategories.filter(cat => cat !== categoryToRemove));
-    if (category === categoryToRemove) {
-      setCategory('');
+  const handleRemoveSubject = (subjectToRemove: string) => {
+    setCustomSubjects(customSubjects.filter(sub => sub !== subjectToRemove));
+    if (subject === subjectToRemove) {
+      setSubject('');
     }
   };
 
@@ -116,23 +114,23 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                     </Tabs>
                     <div className="grid grid-cols-1 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="category-select">Subject</Label>
+                            <Label htmlFor="subject-select">Subject</Label>
                             <Select
                                 onValueChange={(value) => {
-                                    if (value === "add_new") setIsAddCategoryOpen(true);
-                                    else if (value === "manage") setIsManageCategoriesOpen(true);
-                                    else setCategory(value);
+                                    if (value === "add_new") setIsAddSubjectOpen(true);
+                                    else if (value === "manage") setIsManageSubjectsOpen(true);
+                                    else setSubject(value);
                                 }}
-                                value={category}
+                                value={subject}
                             >
-                                <SelectTrigger id="category-select">
+                                <SelectTrigger id="subject-select">
                                     <SelectValue placeholder="Select or create subject..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {problemCategories.map((cat) => (
-                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                    {customSubjects.map((sub) => (
+                                    <SelectItem key={sub} value={sub}>{sub}</SelectItem>
                                     ))}
-                                    {problemCategories.length > 0 && <SelectSeparator />}
+                                    {customSubjects.length > 0 && <SelectSeparator />}
                                     <SelectItem value="add_new">Add New...</SelectItem>
                                     <SelectItem value="manage" className="text-muted-foreground">Manage Subjects...</SelectItem>
                                 </SelectContent>
@@ -209,38 +207,38 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
         </CardContent>
     </Card>
     
-     <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
+     <Dialog open={isAddSubjectOpen} onOpenChange={setIsAddSubjectOpen}>
         <DialogContent>
             <DialogHeader><DialogTitle>Add New Subject</DialogTitle></DialogHeader>
             <div className="py-4">
                 <Input
                     placeholder="e.g., Organic Chemistry"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
+                    value={newSubject}
+                    onChange={(e) => setNewSubject(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
-                        handleAddNewCategory();
+                        handleAddNewSubject();
                       }
                     }}
                 />
             </div>
             <DialogFooter>
-                <Button variant="outline" onClick={() => setIsAddCategoryOpen(false)}>Cancel</Button>
-                <Button onClick={handleAddNewCategory}>Add</Button>
+                <Button variant="outline" onClick={() => setIsAddSubjectOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddNewSubject}>Add</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
 
-    <Dialog open={isManageCategoriesOpen} onOpenChange={setIsManageCategoriesOpen}>
+    <Dialog open={isManageSubjectsOpen} onOpenChange={setIsManageSubjectsOpen}>
         <DialogContent>
             <DialogHeader><DialogTitle>Manage Subjects</DialogTitle></DialogHeader>
             <div className="py-4 space-y-2 max-h-60 overflow-y-auto">
-                {problemCategories.length > 0 ?
-                    problemCategories.map(cat => (
-                        <div key={cat} className="flex items-center justify-between p-2 rounded-md border">
-                            <span>{cat}</span>
-                            <Button variant="ghost" size="icon" onClick={() => handleRemoveCategory(cat)}>
+                {customSubjects.length > 0 ?
+                    customSubjects.map(sub => (
+                        <div key={sub} className="flex items-center justify-between p-2 rounded-md border">
+                            <span>{sub}</span>
+                            <Button variant="ghost" size="icon" onClick={() => handleRemoveSubject(sub)}>
                                 <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                         </div>
@@ -249,7 +247,7 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                 }
             </div>
             <DialogFooter>
-                <Button onClick={() => setIsManageCategoriesOpen(false)}>Done</Button>
+                <Button onClick={() => setIsManageSubjectsOpen(false)}>Done</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>

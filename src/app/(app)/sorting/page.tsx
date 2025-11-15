@@ -3,32 +3,50 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import type { DragEndEvent } from '@dnd-kit/core';
-import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
-import { collection, query } from 'firebase/firestore';
-import type { Activity } from '@/lib/types';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { SortingBoard, type Columns } from '@/components/sorting-board';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
+// TODO: Move to a separate file, maybe a JSON in /lib
+const subjectTopics = {
+  '1': [
+    'Units and Measurements', 'Motion in a Straight Line', 'Motion in a Plane', 'Laws of Motion', 'Work, Energy and Power', 'System of Particles', 'Gravitation', 'Mechanical Properties of Solids', 'Mechanical Properties of Fluids', 'Thermal Properties of Matter', 'Thermodynamics', 'Kinetic Theory', 'Oscillations', 'Waves', 
+    'Electric Charges and Fields', 'Electrostatic Potential', 'Current Electricity', 'Moving Charges and Magnetism', 'Magnetism and Matter', 'Electromagnetic Induction', 'Alternating Current', 'Electromagnetic Waves', 'Ray Optics', 'Wave Optics', 'Dual Nature of Radiation', 'Atoms', 'Nuclei', 'Semiconductor Electronics'
+  ],
+  '2': [
+    'Some Basic Concepts of Chemistry', 'Structure of Atom', 'Classification of Elements', 'Chemical Bonding', 'States of Matter', 'Thermodynamics', 'Equilibrium', 'Redox Reactions', 'Hydrogen', 's-Block Elements', 'p-Block Elements (Group 13 & 14)', 'Organic Chemistry - Some Basic Principles', 'Hydrocarbons', 'Environmental Chemistry',
+    'The Solid State', 'Solutions', 'Electrochemistry', 'Chemical Kinetics', 'Surface Chemistry', 'General Principles and Processes of Isolation of Elements', 'p-Block Elements (Group 15-18)', 'd and f Block Elements', 'Coordination Compounds', 'Haloalkanes and Haloarenes', 'Alcohols, Phenols and Ethers', 'Aldehydes, Ketones and Carboxylic Acids', 'Amines', 'Biomolecules', 'Polymers', 'Chemistry in Everyday Life'
+  ],
+  '3-JEE': [
+    'Sets, Relations and Functions', 'Complex Numbers', 'Quadratic Equations', 'Matrices and Determinants', 'Permutations and Combinations', 'Binomial Theorem', 'Sequence and Series', 'Limits, Continuity and Differentiability', 'Integral Calculus', 'Differential Equations', 'Coordinate Geometry', 'Three Dimensional Geometry', 'Vector Algebra', 'Statistics and Probability', 'Trigonometry', 'Mathematical Reasoning'
+  ],
+  '3-NEET': [
+    'Diversity in Living World', 'Structural Organisation in Animals and Plants', 'Cell Structure and Function', 'Plant Physiology', 'Human Physiology',
+    'Reproduction', 'Genetics and Evolution', 'Biology and Human Welfare', 'Biotechnology and Its Applications', 'Ecology and Environment'
+  ]
+};
+
+
 export default function SortingPage() {
   const [isClient, setIsClient] = useState(false);
   const [course] = useLocalStorage('selected-course', 'JEE');
   const [activeSet, setActiveSet] = useState('1');
-  const { user } = useFirebase();
-  const activitiesQuery = useMemoFirebase(
-    (fs) => (user ? query(collection(fs, 'users', user.uid, 'activities')) : null),
-    [user]
-  );
-  const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
-
+  
   const allSubjects = useMemo(() => {
-    if (!activities) return [];
-    const uniqueSubjects = [...new Set(activities.map((a) => a.name))];
-    return uniqueSubjects.map((subject) => ({ id: subject, content: subject }));
-  }, [activities]);
+    let topics: string[] = [];
+    if (activeSet === '1') {
+      topics = subjectTopics['1'];
+    } else if (activeSet === '2') {
+      topics = subjectTopics['2'];
+    } else if (activeSet === '3') {
+      topics = course === 'JEE' ? subjectTopics['3-JEE'] : subjectTopics['3-NEET'];
+    }
+    return topics.map(topic => ({ id: topic, content: topic }));
+  }, [activeSet, course]);
 
-  const [columns, setColumns] = useLocalStorage<Columns>(`sorting-columns-set-${activeSet}`, {
+
+  const [columns, setColumns] = useLocalStorage<Columns>(`sorting-columns-set-${activeSet}-${course}`, {
     RED: { id: 'RED', title: 'RED', items: [] },
     YELLOW: { id: 'YELLOW', title: 'YELLOW', items: [] },
     GREEN: { id: 'GREEN', title: 'GREEN', items: [] },
@@ -41,30 +59,43 @@ export default function SortingPage() {
   useEffect(() => {
     if (allSubjects.length > 0 && isClient) {
       setColumns((prevColumns) => {
-        const newColumns = { ...prevColumns };
-        const allItemsInColumns = [
-          ...newColumns.RED.items,
-          ...newColumns.YELLOW.items,
-          ...newColumns.GREEN.items,
+        // Create a fresh default state
+        const defaultState = {
+            RED: { id: 'RED', title: 'RED', items: [] },
+            YELLOW: { id: 'YELLOW', title: 'YELLOW', items: [] },
+            GREEN: { id: 'GREEN', title: 'GREEN', items: allSubjects },
+        };
+        
+        // Check if there's existing data for this set. If not, use the default.
+        const allItemsInPrevColumns = [
+            ...(prevColumns.RED?.items || []),
+            ...(prevColumns.YELLOW?.items || []),
+            ...(prevColumns.GREEN?.items || []),
         ];
 
-        const newSubjects = allSubjects.filter(
-          (subject) => !allItemsInColumns.find((item) => item.id === subject.id)
-        );
+        if (allItemsInPrevColumns.length === 0) {
+            return defaultState;
+        }
 
-        // Add new subjects to the GREEN column by default
-        newColumns.GREEN.items = [...newColumns.GREEN.items, ...newSubjects];
+        // If there IS existing data, reconcile it with the current subject list.
+        const newColumns = { ...prevColumns };
+        const allCurrentItems = new Set(allSubjects.map(s => s.id));
+        const allItemsInStorage = new Set(allItemsInPrevColumns.map(i => i.id));
         
-        // Remove subjects that no longer exist in the source
+        // Add new subjects (that are not in storage yet) to GREEN column
+        const newSubjectsToAdd = allSubjects.filter(s => !allItemsInStorage.has(s.id));
+        newColumns.GREEN.items = [...newColumns.GREEN.items, ...newSubjectsToAdd];
+
+        // Remove subjects from columns if they no longer exist in the master list
         Object.keys(newColumns).forEach(columnId => {
-            (newColumns[columnId as keyof Columns]).items = (newColumns[columnId as keyof Columns]).items.filter(item => allSubjects.some(s => s.id === item.id));
+            (newColumns[columnId as keyof Columns]).items = (newColumns[columnId as keyof Columns]).items.filter(item => allCurrentItems.has(item.id));
         });
 
         return newColumns;
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allSubjects, isClient, activeSet]);
+  }, [allSubjects, isClient, activeSet, course]);
 
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -117,7 +148,7 @@ export default function SortingPage() {
           </div>
       </div>
       {isClient ? (
-        <SortingBoard columns={columns} onDragEnd={onDragEnd} isLoading={isLoading} />
+        <SortingBoard columns={columns} onDragEnd={onDragEnd} isLoading={false} />
       ) : (
          <div className="text-center py-10 text-muted-foreground">Loading sorting board...</div>
       )}
