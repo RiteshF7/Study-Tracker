@@ -49,59 +49,57 @@ export function SortingBoard({ columns, onDragEnd, isLoading }: SortingBoardProp
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
           {Object.entries(columns).map(([columnId, column]) => (
-            <div key={columnId}>
-              <Droppable droppableId={columnId}>
-                {(provided, snapshot) => (
-                  <Card
-                    className={cn(
-                      'transition-colors',
-                      columnColors[columnId as keyof typeof columnColors],
-                      snapshot.isDraggingOver && 'bg-primary/10'
-                    )}
+            <Droppable droppableId={columnId} key={columnId}>
+              {(provided, snapshot) => (
+                <Card
+                  className={cn(
+                    'transition-colors',
+                    columnColors[columnId as keyof typeof columnColors],
+                    snapshot.isDraggingOver && 'bg-primary/10'
+                  )}
+                >
+                  <CardHeader>
+                    <CardTitle className={cn("text-lg font-semibold flex items-center justify-between", columnTitleColors[columnId as keyof typeof columnTitleColors])}>
+                      {column.title}
+                      <span className="text-sm font-normal bg-card text-muted-foreground rounded-full px-2 py-0.5">{column.items.length}</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className="min-h-[200px] space-y-2 p-4 pt-0"
                   >
-                    <CardHeader>
-                      <CardTitle className={cn("text-lg font-semibold flex items-center justify-between", columnTitleColors[columnId as keyof typeof columnTitleColors])}>
-                        {column.title}
-                        <span className="text-sm font-normal bg-card text-muted-foreground rounded-full px-2 py-0.5">{column.items.length}</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className="min-h-[200px] space-y-2 p-4 pt-0"
-                    >
-                      {isLoading && columnId === 'subjects' ? (
-                         <p className="text-sm text-center text-muted-foreground py-8">Loading subjects...</p>
-                      ) : column.items.length === 0 ? (
-                         <div className="flex items-center justify-center h-full min-h-[150px]">
-                             <p className="text-sm text-muted-foreground/70">Drop subjects here</p>
-                         </div>
-                      ) : (
-                        column.items.map((item, index) => (
-                          <Draggable key={item.id} draggableId={item.id} index={index}>
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={cn(
-                                  'p-3 rounded-lg bg-card shadow-sm border select-none flex items-center gap-2',
-                                  snapshot.isDragging && 'shadow-lg ring-2 ring-primary'
-                                )}
-                              >
-                                <GripVertical className="h-5 w-5 text-muted-foreground/50" />
-                                <span className="font-medium text-sm">{item.content}</span>
-                              </div>
-                            )}
-                          </Draggable>
-                        ))
-                      )}
-                      {provided.placeholder}
-                    </CardContent>
-                  </Card>
-                )}
-              </Droppable>
-            </div>
+                    {isLoading && columnId === 'subjects' ? (
+                       <p className="text-sm text-center text-muted-foreground py-8">Loading subjects...</p>
+                    ) : column.items.length === 0 ? (
+                       <div className="flex items-center justify-center h-full min-h-[150px]">
+                           <p className="text-sm text-muted-foreground/70">Drop subjects here</p>
+                       </div>
+                    ) : (
+                      column.items.map((item, index) => (
+                        <Draggable key={item.id} draggableId={item.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={cn(
+                                'p-3 rounded-lg bg-card shadow-sm border select-none flex items-center gap-2',
+                                snapshot.isDragging && 'shadow-lg ring-2 ring-primary'
+                              )}
+                            >
+                              <GripVertical className="h-5 w-5 text-muted-foreground/50" />
+                              <span className="font-medium text-sm">{item.content}</span>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))
+                    )}
+                    {provided.placeholder}
+                  </CardContent>
+                </Card>
+              )}
+            </Droppable>
           ))}
         </div>
       </DragDropContext>
