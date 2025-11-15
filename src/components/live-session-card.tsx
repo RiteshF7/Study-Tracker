@@ -40,10 +40,11 @@ interface LiveSessionCardProps {
 }
 
 const durationPresets = [15, 25, 45, 60];
+const sortingOptions = ['RED', 'YELLOW', 'GREEN'];
 
 export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
   const [mode, setMode] = useState<'timer' | 'stopwatch'>('timer');
-  const activityType: Activity['type'] = 'Study';
+  const [activityType, setActivityType] = useState<Activity['type']>('Study');
   const [category, setCategory] = useState('');
   const [duration, setDuration] = useState(25);
   
@@ -114,29 +115,45 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
                         </TabsList>
                     </Tabs>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="grid gap-2 sm:col-span-2">
-                        <Label htmlFor="category-select">Subject</Label>
-                        <Select
-                            onValueChange={(value) => {
-                                if (value === "add_new") setIsAddCategoryOpen(true);
-                                else if (value === "manage") setIsManageCategoriesOpen(true);
-                                else setCategory(value);
-                            }}
-                            value={category}
-                        >
-                            <SelectTrigger id="category-select">
-                                <SelectValue placeholder="Select or create subject..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {problemCategories.map((cat) => (
-                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                ))}
-                                {problemCategories.length > 0 && <SelectSeparator />}
-                                <SelectItem value="add_new">Add New...</SelectItem>
-                                <SelectItem value="manage" className="text-muted-foreground">Manage Subjects...</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="category-select">Subject</Label>
+                            <Select
+                                onValueChange={(value) => {
+                                    if (value === "add_new") setIsAddCategoryOpen(true);
+                                    else if (value === "manage") setIsManageCategoriesOpen(true);
+                                    else setCategory(value);
+                                }}
+                                value={category}
+                            >
+                                <SelectTrigger id="category-select">
+                                    <SelectValue placeholder="Select or create subject..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {problemCategories.map((cat) => (
+                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                    ))}
+                                    {problemCategories.length > 0 && <SelectSeparator />}
+                                    <SelectItem value="add_new">Add New...</SelectItem>
+                                    <SelectItem value="manage" className="text-muted-foreground">Manage Subjects...</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="sorting-select">Sorting</Label>
+                            <Select
+                                onValueChange={(value) => setActivityType(value as Activity['type'])}
+                                value={activityType}
+                            >
+                                <SelectTrigger id="sorting-select">
+                                    <SelectValue placeholder="Select priority..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {sortingOptions.map((opt) => (
+                                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                     <div className="grid gap-2 mt-8">
                         <Label htmlFor="duration-input">Duration (minutes)</Label>
