@@ -108,8 +108,8 @@ export default function SortingPage() {
       <div className="mb-6">
           <Label htmlFor="subject-set" className="mb-2 block">Subject Set</Label>
           <div className="flex items-center gap-2">
-            <Button variant={activeSet === '1' ? 'default' : 'outline'} onClick={() => setActiveSet('1')}>Subject Set 1</Button>
-            <Button variant={activeSet === '2' ? 'default' : 'outline'} onClick={() => setActiveSet('2')}>Subject Set 2</Button>
+            <Button variant={activeSet === '1' ? 'default' : 'outline'} onClick={() => setActiveSet('1')}>Physics</Button>
+            <Button variant={activeSet === '2' ? 'default' : 'outline'} onClick={() => setActiveSet('2')}>Chemistry</Button>
             <Button variant={activeSet === '3' ? 'default' : 'outline'} onClick={() => setActiveSet('3')}>Subject Set 3</Button>
           </div>
       </div>
