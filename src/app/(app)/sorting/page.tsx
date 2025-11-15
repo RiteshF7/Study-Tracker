@@ -8,6 +8,8 @@ import { collection, query } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { SortingBoard, type Columns } from '@/components/sorting-board';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 
 export default function SortingPage() {
@@ -65,33 +67,35 @@ export default function SortingPage() {
 
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const sourceColumnId = active.data.current?.sortable.containerId as keyof Columns;
-    const destColumnId = over.id as keyof Columns;
-    const draggedItemId = active.id as string;
-
+    if (!over) return;
+  
+    const activeContainer = active.data.current?.sortable.containerId;
+    const overContainer = over.data.current?.sortable.containerId || over.id;
+  
+    if (!activeContainer || !overContainer || activeContainer === overContainer) {
+      return;
+    }
+  
     setColumns((prev) => {
-        const newColumns = { ...prev };
-        const sourceColumn = newColumns[sourceColumnId];
-        const destColumn = newColumns[destColumnId];
-
-        const sourceItems = [...sourceColumn.items];
-        const destItems = sourceColumnId === destColumnId ? sourceItems : [...destColumn.items];
-
-        const draggedItemIndex = sourceItems.findIndex(item => item.id === draggedItemId);
-        const [removed] = sourceItems.splice(draggedItemIndex, 1);
-        
-        // Find the index to insert in the destination column
-        const overItem = destColumn.items.find(item => item.id === over.id);
-        const destIndex = overItem ? destItems.findIndex(item => item.id === over.id) : destItems.length;
-        
-        destItems.splice(destIndex, 0, removed);
-
-        newColumns[sourceColumnId] = { ...sourceColumn, items: sourceItems };
-        newColumns[destColumnId] = { ...destColumn, items: destItems };
-        
-        return newColumns;
+      const activeItems = prev[activeContainer as keyof Columns].items;
+      const overItems = prev[overContainer as keyof Columns].items;
+  
+      const activeIndex = activeItems.findIndex((item) => item.id === active.id);
+      const overIndex = overItems.findIndex((item) => item.id === over.id);
+  
+      const newColumns = { ...prev };
+  
+      const [removed] = newColumns[activeContainer as keyof Columns].items.splice(activeIndex, 1);
+  
+      if (over.id in newColumns) {
+        // Dropping in a new column
+         newColumns[over.id as keyof Columns].items.push(removed);
+      } else {
+        // Dropping on an item in a new column
+         newColumns[overContainer as keyof Columns].items.splice(overIndex, 0, removed);
+      }
+      
+      return newColumns;
     });
   };
 
@@ -101,6 +105,19 @@ export default function SortingPage() {
       <p className="text-muted-foreground mb-6">
         Drag and drop your subjects to categorize them by confidence level.
       </p>
+      <div className="mb-6 max-w-xs">
+          <Label htmlFor="subject-set">Subject Set</Label>
+          <Select defaultValue="1">
+              <SelectTrigger id="subject-set">
+                  <SelectValue placeholder="Select a set" />
+              </SelectTrigger>
+              <SelectContent>
+                  <SelectItem value="1">Subject Set 1</SelectItem>
+                  <SelectItem value="2">Subject Set 2</SelectItem>
+                  <SelectItem value="3">Subject Set 3</SelectItem>
+              </SelectContent>
+          </Select>
+      </div>
       {isClient ? (
         <SortingBoard columns={columns} onDragEnd={onDragEnd} isLoading={isLoading} />
       ) : (
