@@ -2,46 +2,12 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { DragDropContext, Droppable, Draggable, OnDragEndResponder } from 'react-beautiful-dnd';
+import type { OnDragEndResponder } from 'react-beautiful-dnd';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { GripVertical } from 'lucide-react';
-
-type Item = {
-    id: string;
-    content: string;
-};
-
-type Column = {
-    id: string;
-    title: string;
-    items: Item[];
-}
-
-type Columns = {
-  subjects: Column;
-  RED: Column;
-  YELLOW: Column;
-  GREEN: Column;
-};
-
-const columnColors = {
-  RED: 'bg-red-500/10 border-red-500/50',
-  YELLOW: 'bg-yellow-500/10 border-yellow-500/50',
-  GREEN: 'bg-green-500/10 border-green-500/50',
-  subjects: 'bg-muted/50 border-border',
-};
-
-const columnTitleColors = {
-    RED: 'text-red-500',
-    YELLOW: 'text-yellow-500',
-    GREEN: 'text-green-500',
-    subjects: 'text-muted-foreground',
-}
+import { SortingBoard, type Columns } from '@/components/sorting-board';
 
 
 export default function SortingPage() {
@@ -87,9 +53,8 @@ export default function SortingPage() {
 
         newColumns.subjects.items = [...newColumns.subjects.items, ...newSubjects];
         
-        // Remove subjects that no longer exist in activities
         Object.keys(newColumns).forEach(columnId => {
-            (newColumns[columnId as keyof Columns] as Column).items = (newColumns[columnId as keyof Columns] as Column).items.filter(item => allSubjects.some(s => s.id === item.id));
+            (newColumns[columnId as keyof Columns]).items = (newColumns[columnId as keyof Columns]).items.filter(item => allSubjects.some(s => s.id === item.id));
         });
 
         return newColumns;
@@ -104,40 +69,21 @@ export default function SortingPage() {
     const sourceDroppableId = source.droppableId as keyof Columns;
     const destinationDroppableId = destination.droppableId as keyof Columns;
 
-    if (sourceDroppableId === destinationDroppableId) {
-      // Reordering within the same column
-      const column = columns[sourceDroppableId];
-      const copiedItems = [...column.items];
-      const [removed] = copiedItems.splice(source.index, 1);
-      copiedItems.splice(destination.index, 0, removed);
-      setColumns({
-        ...columns,
-        [sourceDroppableId]: {
-          ...column,
-          items: copiedItems,
-        },
-      });
-    } else {
-      // Moving between columns
-      const sourceColumn = columns[sourceDroppableId];
-      const destColumn = columns[destinationDroppableId];
-      const sourceItems = [...sourceColumn.items];
-      const destItems = [...destColumn.items];
-      const [removed] = sourceItems.splice(source.index, 1);
-      destItems.splice(destination.index, 0, removed);
+    setColumns((prev) => {
+        const newColumns = { ...prev };
+        const sourceColumn = newColumns[sourceDroppableId];
+        const destColumn = newColumns[destinationDroppableId];
+        const sourceItems = [...sourceColumn.items];
+        const destItems = sourceDroppableId === destinationDroppableId ? sourceItems : [...destColumn.items];
 
-      setColumns({
-        ...columns,
-        [sourceDroppableId]: {
-          ...sourceColumn,
-          items: sourceItems,
-        },
-        [destinationDroppableId]: {
-          ...destColumn,
-          items: destItems,
-        },
-      });
-    }
+        const [removed] = sourceItems.splice(source.index, 1);
+        destItems.splice(destination.index, 0, removed);
+
+        newColumns[sourceDroppableId] = { ...sourceColumn, items: sourceItems };
+        newColumns[destinationDroppableId] = { ...destColumn, items: destItems };
+        
+        return newColumns;
+    });
   };
 
   return (
@@ -147,65 +93,7 @@ export default function SortingPage() {
         Drag and drop your subjects to categorize them by confidence level.
       </p>
       {isClient ? (
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
-          {Object.entries(columns).map(([columnId, column]) => (
-            <div key={columnId}>
-              <Droppable droppableId={columnId} key={columnId}>
-                {(provided, snapshot) => (
-                  <Card
-                    className={cn(
-                      'transition-colors',
-                      columnColors[columnId as keyof typeof columnColors],
-                      snapshot.isDraggingOver && 'bg-primary/10'
-                    )}
-                  >
-                    <CardHeader>
-                      <CardTitle className={cn("text-lg font-semibold flex items-center justify-between", columnTitleColors[columnId as keyof typeof columnTitleColors])}>
-                        {column.title}
-                        <span className="text-sm font-normal bg-card text-muted-foreground rounded-full px-2 py-0.5">{column.items.length}</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className="min-h-[200px] space-y-2 p-4 pt-0"
-                    >
-                      {isLoading && columnId === 'subjects' ? (
-                         <p className="text-sm text-center text-muted-foreground py-8">Loading subjects...</p>
-                      ) : column.items.length === 0 ? (
-                         <div className="flex items-center justify-center h-full min-h-[150px]">
-                             <p className="text-sm text-muted-foreground/70">Drop subjects here</p>
-                         </div>
-                      ) : (
-                        column.items.map((item, index) => (
-                          <Draggable key={item.id} draggableId={item.id} index={index}>
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={cn(
-                                  'p-3 rounded-lg bg-card shadow-sm border select-none flex items-center gap-2',
-                                  snapshot.isDragging && 'shadow-lg ring-2 ring-primary'
-                                )}
-                              >
-                                <GripVertical className="h-5 w-5 text-muted-foreground/50" />
-                                <span className="font-medium text-sm">{item.content}</span>
-                              </div>
-                            )}
-                          </Draggable>
-                        ))
-                      )}
-                      {provided.placeholder}
-                    </CardContent>
-                  </Card>
-                )}
-              </Droppable>
-            </div>
-          ))}
-        </div>
-      </DragDropContext>
+        <SortingBoard columns={columns} onDragEnd={onDragEnd} isLoading={isLoading} />
       ) : (
          <div className="text-center py-10 text-muted-foreground">Loading sorting board...</div>
       )}
