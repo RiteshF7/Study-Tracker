@@ -25,8 +25,7 @@ export default function SortingPage() {
     return uniqueSubjects.map((subject) => ({ id: subject, content: subject }));
   }, [activities]);
 
-  const [columns, setColumns] = useLocalStorage<Columns>('sorting-columns-state', {
-    subjects: { id: 'subjects', title: 'All Subjects', items: [] },
+  const [columns, setColumns] = useLocalStorage<Columns>('sorting-columns-state-v2', {
     RED: { id: 'RED', title: 'RED', items: [] },
     YELLOW: { id: 'YELLOW', title: 'YELLOW', items: [] },
     GREEN: { id: 'GREEN', title: 'GREEN', items: [] },
@@ -41,7 +40,6 @@ export default function SortingPage() {
       setColumns((prevColumns) => {
         const newColumns = { ...prevColumns };
         const allItemsInColumns = [
-          ...newColumns.subjects.items,
           ...newColumns.RED.items,
           ...newColumns.YELLOW.items,
           ...newColumns.GREEN.items,
@@ -51,8 +49,10 @@ export default function SortingPage() {
           (subject) => !allItemsInColumns.find((item) => item.id === subject.id)
         );
 
-        newColumns.subjects.items = [...newColumns.subjects.items, ...newSubjects];
+        // Add new subjects to the GREEN column by default
+        newColumns.GREEN.items = [...newColumns.GREEN.items, ...newSubjects];
         
+        // Remove subjects that no longer exist in the source
         Object.keys(newColumns).forEach(columnId => {
             (newColumns[columnId as keyof Columns]).items = (newColumns[columnId as keyof Columns]).items.filter(item => allSubjects.some(s => s.id === item.id));
         });

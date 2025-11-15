@@ -1,7 +1,7 @@
 
 'use client';
 
-import { DragDropContext, Droppable, Draggable, type OnDragEndResponder, resetServerContext } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, type OnDragEndResponder } from 'react-beautiful-dnd';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { GripVertical } from 'lucide-react';
@@ -19,7 +19,6 @@ type Column = {
 }
 
 export type Columns = {
-  subjects: Column;
   RED: Column;
   YELLOW: Column;
   GREEN: Column;
@@ -29,14 +28,12 @@ const columnColors = {
   RED: 'bg-red-500/10 border-red-500/50',
   YELLOW: 'bg-yellow-500/10 border-yellow-500/50',
   GREEN: 'bg-green-500/10 border-green-500/50',
-  subjects: 'bg-muted/50 border-border',
 };
 
 const columnTitleColors = {
     RED: 'text-red-500',
     YELLOW: 'text-yellow-500',
     GREEN: 'text-green-500',
-    subjects: 'text-muted-foreground',
 }
 
 interface SortingBoardProps {
@@ -50,12 +47,15 @@ export function SortingBoard({ columns, onDragEnd, isLoading }: SortingBoardProp
   // This is a workaround for a known issue with react-beautiful-dnd in React 18 Strict Mode.
   // It ensures the server-side context is reset on the client, preventing the invariant error.
   useEffect(() => {
-    resetServerContext();
+    if (typeof window !== 'undefined') {
+        const { resetServerContext } = require('react-beautiful-dnd');
+        resetServerContext();
+    }
   }, []);
 
   return (
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           {Object.entries(columns).map(([columnId, column]) => (
             <Droppable droppableId={columnId} key={columnId}>
               {(provided, snapshot) => (
@@ -77,7 +77,7 @@ export function SortingBoard({ columns, onDragEnd, isLoading }: SortingBoardProp
                     {...provided.droppableProps}
                     className="min-h-[200px] space-y-2 p-4 pt-0"
                   >
-                    {isLoading && columnId === 'subjects' ? (
+                    {isLoading ? (
                        <p className="text-sm text-center text-muted-foreground py-8">Loading subjects...</p>
                     ) : column.items.length === 0 ? (
                        <div className="flex items-center justify-center h-full min-h-[150px]">
