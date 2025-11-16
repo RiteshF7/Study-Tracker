@@ -49,7 +49,7 @@ const navItems = [
   {
     href: "/scheduler",
     icon: BrainCircuit,
-    label: "AI Scheduler",
+    label: "AI Planner",
   },
   {
     href: "/sorting",
