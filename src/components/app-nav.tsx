@@ -26,7 +26,9 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-import { useAuth } from "@/firebase";
+import { useAuth, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { doc } from "firebase/firestore";
 
 const navItems = [
   {
@@ -64,6 +66,13 @@ const navItems = [
 export function AppNav() {
   const pathname = usePathname();
   const auth = useAuth();
+  const { user } = useFirebase();
+
+  // Load user profile doc for fallback name if displayName is missing
+  const userDocRef = useMemoFirebase((fs) =>
+    user ? doc(fs, "users", user.uid) : null,
+  [user]);
+  const { data: userProfile } = useDoc<{ name?: string; photoURL?: string }>(userDocRef);
 
   const handleLogout = () => {
     if (auth) {
@@ -104,6 +113,21 @@ export function AppNav() {
       </SidebarContent>
       <SidebarFooter className="p-2">
         <SidebarSeparator />
+        {/* Signed-in user info */}
+        {user && (
+          <div className="flex items-center gap-3 px-3 py-2">
+            <Avatar>
+              <AvatarImage src={(user.photoURL ?? userProfile?.photoURL) || undefined} alt={user.displayName ?? "User"} />
+              <AvatarFallback>
+                {(user.displayName || userProfile?.name || user.email || "U").slice(0, 1).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-sm font-medium truncate">{user.displayName || userProfile?.name || (user.email?.split('@')[0] ?? "User")}</span>
+              <span className="text-xs text-muted-foreground truncate">{user.email || ""}</span>
+            </div>
+          </div>
+        )}
         <SidebarMenu>
            <SidebarMenuItem>
              <Link href="/settings" passHref>

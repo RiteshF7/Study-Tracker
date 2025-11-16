@@ -2,9 +2,10 @@
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged } from 'firebase/auth';
+import { Firestore, doc, serverTimestamp } from 'firebase/firestore';
+import { Auth, User, onAuthStateChanged, reload } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates'
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -88,6 +89,35 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     );
     return () => unsubscribe(); // Cleanup
   }, [auth]); // Depends on the auth instance
+
+  // When a user signs in, upsert their profile document with basic info.
+  useEffect(() => {
+    if (!firestore) return;
+    const currentUser = userAuthState.user;
+    if (!currentUser) return;
+
+    const doUpsert = (u: User) => {
+      const { uid, displayName, email, photoURL } = u;
+      const userDocRef = doc(firestore, 'users', uid);
+      // Non-blocking write; merges to preserve existing fields. Avoid overriding createdAt repeatedly.
+      setDocumentNonBlocking(
+        userDocRef,
+        {
+          id: uid,
+          name: displayName ?? '',
+          email: email ?? '',
+          photoURL: photoURL ?? '',
+          lastLoginAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+    };
+
+    // Reload user to ensure the latest provider profile (e.g., updated Google photo).
+    reload(currentUser)
+      .then(() => doUpsert(currentUser))
+      .catch(() => doUpsert(currentUser));
+  }, [firestore, userAuthState.user]);
 
   // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {
