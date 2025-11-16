@@ -5,11 +5,13 @@ import { initiateGoogleSignIn } from '@/firebase/non-blocking-login';
 import { useAuth, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { BookOpenCheck, BrainCircuit, ListTodo } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { BookOpenCheck, BarChart3, BrainCircuit, CalendarClock, ListTodo } from 'lucide-react';
 import { TrafficLight } from '@/components/icons/traffic-light';
 import { FcGoogle } from 'react-icons/fc';
+import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
+import { FeatureCarousel } from '@/components/feature-carousel';
 
 const features = [
     {
@@ -26,6 +28,16 @@ const features = [
         icon: <TrafficLight className="w-8 h-8 text-primary" />,
         title: "Subject Sorting",
         description: "Categorize subjects by confidence level to focus your efforts where they're needed most.",
+    },
+    {
+        icon: <BarChart3 className="w-8 h-8 text-primary" />,
+        title: 'Progress Analytics',
+        description: 'Visualize your study data with insightful charts and graphs to track your progress over time.',
+    },
+    {
+        icon: <CalendarClock className="w-8 h-8 text-primary" />,
+        title: 'Deadline Tracking',
+        description: 'Never miss a deadline again with our integrated calendar and to-do list functionality.',
     }
 ];
 
@@ -33,12 +45,21 @@ export default function LandingPage() {
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const [isCarouselOpen, setIsCarouselOpen] = useState(false);
 
   useEffect(() => {
     if (!isUserLoading && user) {
       router.push('/home');
     }
   }, [user, isUserLoading, router]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsCarouselOpen(true);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleGoogleSignIn = () => {
     if (auth) {
@@ -48,11 +69,17 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
+        <FeatureCarousel open={isCarouselOpen} onOpenChange={setIsCarouselOpen} />
         <header className="px-4 lg:px-6 h-16 flex items-center shadow-sm">
             <Link href="/" className="flex items-center justify-center gap-2" prefetch={false}>
                 <BookOpenCheck className="h-7 w-7 text-primary" />
                 <span className="font-bold text-2xl font-headline">StudyTrack</span>
             </Link>
+            <nav className="ml-auto flex gap-4 sm:gap-6">
+                <Button variant="ghost" onClick={() => setIsCarouselOpen(true)}>Features</Button>
+                <Button variant="ghost">Pricing</Button>
+                <Button variant="ghost">Contact</Button>
+            </nav>
         </header>
         <main className="flex-1">
             <section className="w-full py-20 md:py-32 lg:py-40 bg-gradient-to-br from-background to-muted/30">
@@ -79,7 +106,7 @@ export default function LandingPage() {
                         </div>
                          <div className="hidden lg:flex items-center justify-center">
                             <img
-                                src="https://picsum.photos/seed/new-hero-image/600/500"
+                                src="https://picsum.photos/seed/hero-image-main/600/500"
                                 width="600"
                                 height="500"
                                 alt="Student studying with charts"
@@ -102,17 +129,17 @@ export default function LandingPage() {
                     </div>
                     <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3">
                         {features.map((feature) => (
-                            <div key={feature.title} className="grid gap-4 text-center">
-                                <div className="flex justify-center items-center">
-                                  <div className="bg-primary/10 p-4 rounded-full">
-                                    {feature.icon}
-                                  </div>
-                                </div>
-                                <div className="grid gap-1">
-                                    <h3 className="text-xl font-bold">{feature.title}</h3>
+                            <Card key={feature.title} className="hover:shadow-lg transition-shadow">
+                                <CardContent className="p-6 text-center">
+                                    <div className="flex justify-center items-center mb-4">
+                                      <div className="bg-primary/10 p-4 rounded-full">
+                                        {feature.icon}
+                                      </div>
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
                                     <p className="text-sm text-muted-foreground">{feature.description}</p>
-                                </div>
-                            </div>
+                                </CardContent>
+                            </Card>
                         ))}
                     </div>
                 </div>
@@ -125,6 +152,12 @@ export default function LandingPage() {
                   <Link href="#features" className="text-xs hover:underline underline-offset-4" prefetch={false}>
                       Features
                   </Link>
+                  <Button variant='link' className='text-xs'>
+                    Pricing
+                  </Button>
+                  <Button variant='link' className='text-xs'>
+                    Contact
+                  </Button>
               </nav>
           </div>
         </footer>
