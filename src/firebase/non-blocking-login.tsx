@@ -34,5 +34,11 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
 export function initiateGoogleSignIn(authInstance: Auth): void {
   const provider = new GoogleAuthProvider();
   // Non-blocking: do not await
-  signInWithPopup(authInstance, provider);
+  signInWithPopup(authInstance, provider).catch(error => {
+    // This error occurs when the user closes the popup.
+    // It's safe to ignore, as it's a user action, not a bug.
+    if (error.code !== 'auth/popup-closed-by-user') {
+      console.error("Google Sign-In Error:", error);
+    }
+  });
 }
