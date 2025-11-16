@@ -1,6 +1,6 @@
 'use client';
 
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LandingCarousel } from './landing-carousel';
 
 interface FeatureCarouselProps {
@@ -15,6 +15,9 @@ export function FeatureCarousel({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[70vh] flex flex-col items-center justify-center p-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>App Features</DialogTitle>
+        </DialogHeader>
         <LandingCarousel />
       </DialogContent>
     </Dialog>
