@@ -7,7 +7,6 @@ import { useLocalStorage } from '@/hooks/use-local-storage';
 import { SortingBoard, type Columns } from '@/components/sorting-board';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { arrayMove } from '@dnd-kit/sortable';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const subjectDifficulties = {
@@ -73,7 +72,7 @@ export default function SortingPage() {
     }
     setIsLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSet, course, setColumns]);
+  }, [activeSet, course]);
 
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -157,4 +156,5 @@ export default function SortingPage() {
     </div>
   );
 }
+
 
