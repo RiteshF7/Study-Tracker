@@ -9,22 +9,27 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { arrayMove } from '@dnd-kit/sortable';
 
-const subjectTopics = {
-  '1': [
-    'Physical world and Measurement', 'Kinematics', 'Laws of Motion', 'Work, Energy and Power', 'Motion of System of Particles and Rigid Body (Rotational Motion)', 'Gravitation', 'Properties of Solids and Liquids', 'Thermodynamics', 'Behaviour of Perfect Gas and Kinetic Theory', 'Oscillations and Waves', 
-    'Electrostatics', 'Current Electricity', 'Magnetic Effects of Current and Magnetism', 'Electromagnetic Induction and Alternating Currents', 'Electromagnetic Waves', 'Optics', 'Dual Nature of Matter and Radiation', 'Atoms and Nuclei', 'Electronic Devices', 'Experimental Skills'
-  ],
-  '2': [
-    'Some Basic Concepts of Chemistry', 'Structure of Atom', 'Chemical Bonding and Molecular Structure', 'Chemical Thermodynamics', 'Equilibrium', 'Redox Reactions and Electrochemistry', 'The Redox Concept (Electrochemistry basics)', 'Classification of Elements and Periodicity in Properties', 'The p-Block Element (Group 13–18 overview)', 'The d-Block Element', 
-    'The f-Block Element', 'Coordination Compounds', 'Purification and Characterisation of Organic Compounds', 'Some Basic Principles of Organic Chemistry', 'Hydrocarbons', 'Organic Compounds containing Halogens', 'Organic Compounds containing Oxygen', 'Organic Compounds containing Nitrogen', 'Biomolecules', 'Principles related to Practical Chemistry'
-  ],
-  '3-JEE': [
-    'Sets, Relations and Functions', 'Complex Numbers', 'Quadratic Equations', 'Matrices and Determinants', 'Permutations and Combinations', 'Binomial Theorem', 'Sequence and Series', 'Limits, Continuity and Differentiability', 'Integral Calculus', 'Differential Equations', 'Coordinate Geometry', 'Three Dimensional Geometry', 'Vector Algebra', 'Statistics and Probability', 'Trigonometry', 'Mathematical Reasoning'
-  ],
-  '3-NEET': [
-    'Diversity of Living World', 'Structural Organisation in Animals and Plants', 'Cell Structure and Function', 'Plant Physiology', 'Human Physiology', 
-    'Reproduction', 'Genetics and Evolution', 'Biology and Human Welfare', 'Biotechnology and Its Applications', 'Ecology and Environment'
-  ]
+const subjectDifficulties = {
+  '1': { // Physics
+    RED: ['Motion of System of Particles and Rigid Body (Rotational Motion)', 'Thermodynamics', 'Magnetic Effects of Current and Magnetism', 'Electromagnetic Induction and Alternating Currents', 'Optics'],
+    YELLOW: ['Laws of Motion', 'Work, Energy and Power', 'Gravitation', 'Properties of Solids and Liquids', 'Oscillations and Waves', 'Electrostatics', 'Current Electricity', 'Dual Nature of Matter and Radiation', 'Atoms and Nuclei'],
+    GREEN: ['Physical world and Measurement', 'Kinematics', 'Behaviour of Perfect Gas and Kinetic Theory', 'Electromagnetic Waves', 'Electronic Devices', 'Experimental Skills']
+  },
+  '2': { // Chemistry
+    RED: ['Chemical Thermodynamics', 'Equilibrium', 'The p-Block Element (Group 13–18 overview)', 'Organic Compounds containing Oxygen', 'Coordination Compounds'],
+    YELLOW: ['Structure of Atom', 'Chemical Bonding and Molecular Structure', 'Redox Reactions and Electrochemistry', 'The d-Block Element', 'The f-Block Element', 'Some Basic Principles of Organic Chemistry', 'Hydrocarbons', 'Organic Compounds containing Halogens', 'Organic Compounds containing Nitrogen'],
+    GREEN: ['Some Basic Concepts of Chemistry', 'The Redox Concept (Electrochemistry basics)', 'Classification of Elements and Periodicity in Properties', 'Purification and Characterisation of Organic Compounds', 'Biomolecules', 'Principles related to Practical Chemistry']
+  },
+  '3-JEE': { // Maths JEE
+    RED: ['Integral Calculus', 'Three Dimensional Geometry', 'Permutations and Combinations', 'Probability'],
+    YELLOW: ['Complex Numbers', 'Matrices and Determinants', 'Binomial Theorem', 'Sequence and Series', 'Limits, Continuity and Differentiability', 'Differential Equations', 'Vector Algebra', 'Trigonometry'],
+    GREEN: ['Sets, Relations and Functions', 'Quadratic Equations', 'Coordinate Geometry', 'Statistics and Probability', 'Mathematical Reasoning']
+  },
+  '3-NEET': { // Biology NEET
+    RED: ['Genetics and Evolution', 'Human Physiology', 'Plant Physiology'],
+    YELLOW: ['Structural Organisation in Animals and Plants', 'Cell Structure and Function', 'Reproduction', 'Biotechnology and Its Applications'],
+    GREEN: ['Diversity of Living World', 'Biology and Human Welfare', 'Ecology and Environment']
+  }
 };
 
 
@@ -34,16 +39,15 @@ export default function SortingPage() {
   const [course] = useLocalStorage('selected-course', 'JEE');
   const [activeSet, setActiveSet] = useState('1');
   
-  const allSubjects = useMemo(() => {
-    let topics: string[] = [];
+  const allSubjectsConfig = useMemo(() => {
     if (activeSet === '1') {
-      topics = subjectTopics['1'];
+      return subjectDifficulties['1'];
     } else if (activeSet === '2') {
-      topics = subjectTopics['2'];
+      return subjectDifficulties['2'];
     } else if (activeSet === '3') {
-      topics = course === 'JEE' ? subjectTopics['3-JEE'] : subjectTopics['3-NEET'];
+      return course === 'JEE' ? subjectDifficulties['3-JEE'] : subjectDifficulties['3-NEET'];
     }
-    return topics.map(topic => ({ id: topic, content: topic }));
+    return { RED: [], YELLOW: [], GREEN: [] };
   }, [activeSet, course]);
 
 
@@ -57,7 +61,7 @@ export default function SortingPage() {
     setIsClient(true);
     setIsLoading(true);
 
-    if (allSubjects.length > 0) {
+    if (allSubjectsConfig) {
       setColumns((prevColumns) => {
         
         const allItemsInPrevColumns = [
@@ -66,40 +70,29 @@ export default function SortingPage() {
             ...(prevColumns.GREEN?.items || []),
         ];
 
-        if (allItemsInPrevColumns.length === 0) {
-            // Randomly distribute subjects into R, Y, G
-            const redItems: typeof allSubjects = [];
-            const yellowItems: typeof allSubjects = [];
-            const greenItems: typeof allSubjects = [];
-            const shuffledSubjects = [...allSubjects].sort(() => Math.random() - 0.5);
+        const allNewSubjects = [
+            ...allSubjectsConfig.RED,
+            ...allSubjectsConfig.YELLOW,
+            ...allSubjectsConfig.GREEN
+        ];
 
-            shuffledSubjects.forEach((subject, index) => {
-                const mod = index % 3;
-                if (mod === 0) {
-                    redItems.push(subject);
-                } else if (mod === 1) {
-                    yellowItems.push(subject);
-                } else {
-                    greenItems.push(subject);
-                }
-            });
-
+        if (allItemsInPrevColumns.length === 0 || allItemsInPrevColumns.every(item => !allNewSubjects.includes(item.id))) {
             return {
-                RED: { id: 'RED', title: 'RED', items: redItems },
-                YELLOW: { id: 'YELLOW', title: 'YELLOW', items: yellowItems },
-                GREEN: { id: 'GREEN', title: 'GREEN', items: greenItems },
+                RED: { id: 'RED', title: 'RED', items: allSubjectsConfig.RED.map(s => ({id: s, content: s})) },
+                YELLOW: { id: 'YELLOW', title: 'YELLOW', items: allSubjectsConfig.YELLOW.map(s => ({id: s, content: s})) },
+                GREEN: { id: 'GREEN', title: 'GREEN', items: allSubjectsConfig.GREEN.map(s => ({id: s, content: s})) },
             };
         }
 
         const newColumns = { ...prevColumns };
-        const allCurrentItems = new Set(allSubjects.map(s => s.id));
+        const allCurrentItems = new Set(allNewSubjects);
         const allItemsInStorage = new Set(allItemsInPrevColumns.map(i => i.id));
         
-        const newSubjectsToAdd = allSubjects.filter(s => !allItemsInStorage.has(s.id));
+        const newSubjectsToAdd = allNewSubjects.filter(s => !allItemsInStorage.has(s.id));
         if (!newColumns.GREEN) {
           newColumns.GREEN = { id: 'GREEN', title: 'GREEN', items: [] };
         }
-        newColumns.GREEN.items = [...newColumns.GREEN.items, ...newSubjectsToAdd];
+        newColumns.GREEN.items = [...newColumns.GREEN.items, ...newSubjectsToAdd.map(s => ({id: s, content: s}))];
 
         Object.keys(newColumns).forEach(columnId => {
             (newColumns[columnId as keyof Columns]).items = (newColumns[columnId as keyof Columns]).items.filter(item => allCurrentItems.has(item.id));
@@ -110,7 +103,7 @@ export default function SortingPage() {
     }
     setIsLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allSubjects, activeSet, course]);
+  }, [allSubjectsConfig, activeSet, course]);
 
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
