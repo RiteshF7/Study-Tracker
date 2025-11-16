@@ -9,21 +9,20 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { arrayMove } from '@dnd-kit/sortable';
 
-// TODO: Move to a separate file, maybe a JSON in /lib
 const subjectTopics = {
   '1': [
-    'Units and Measurements', 'Motion in a Straight Line', 'Motion in a Plane', 'Laws of Motion', 'Work, Energy and Power', 'System of Particles', 'Gravitation', 'Mechanical Properties of Solids', 'Mechanical Properties of Fluids', 'Thermal Properties of Matter', 'Thermodynamics', 'Kinetic Theory', 'Oscillations', 'Waves', 
-    'Electric Charges and Fields', 'Electrostatic Potential', 'Current Electricity', 'Moving Charges and Magnetism', 'Magnetism and Matter', 'Electromagnetic Induction', 'Alternating Current', 'Electromagnetic Waves', 'Ray Optics', 'Wave Optics', 'Dual Nature of Radiation', 'Atoms', 'Nuclei', 'Semiconductor Electronics'
+    'Physical world and Measurement', 'Kinematics', 'Laws of Motion', 'Work, Energy and Power', 'Motion of System of Particles and Rigid Body (Rotational Motion)', 'Gravitation', 'Properties of Solids and Liquids', 'Thermodynamics', 'Behaviour of Perfect Gas and Kinetic Theory', 'Oscillations and Waves', 
+    'Electrostatics', 'Current Electricity', 'Magnetic Effects of Current and Magnetism', 'Electromagnetic Induction and Alternating Currents', 'Electromagnetic Waves', 'Optics', 'Dual Nature of Matter and Radiation', 'Atoms and Nuclei', 'Electronic Devices', 'Experimental Skills'
   ],
   '2': [
-    'Some Basic Concepts of Chemistry', 'Structure of Atom', 'Classification of Elements', 'Chemical Bonding', 'States of Matter', 'Thermodynamics', 'Equilibrium', 'Redox Reactions', 'Hydrogen', 's-Block Elements', 'p-Block Elements (Group 13 & 14)', 'Organic Chemistry - Some Basic Principles', 'Hydrocarbons', 'Environmental Chemistry',
-    'The Solid State', 'Solutions', 'Electrochemistry', 'Chemical Kinetics', 'Surface Chemistry', 'General Principles and Processes of Isolation of Elements', 'p-Block Elements (Group 15-18)', 'd and f Block Elements', 'Coordination Compounds', 'Haloalkanes and Haloarenes', 'Alcohols, Phenols and Ethers', 'Aldehydes, Ketones and Carboxylic Acids', 'Amines', 'Biomolecules', 'Polymers', 'Chemistry in Everyday Life'
+    'Some Basic Concepts of Chemistry', 'Structure of Atom', 'Chemical Bonding and Molecular Structure', 'Chemical Thermodynamics', 'Equilibrium', 'Redox Reactions and Electrochemistry', 'The Redox Concept (Electrochemistry basics)', 'Classification of Elements and Periodicity in Properties', 'The p-Block Element (Group 13–18 overview)', 'The d-Block Element', 
+    'The f-Block Element', 'Coordination Compounds', 'Purification and Characterisation of Organic Compounds', 'Some Basic Principles of Organic Chemistry', 'Hydrocarbons', 'Organic Compounds containing Halogens', 'Organic Compounds containing Oxygen', 'Organic Compounds containing Nitrogen', 'Biomolecules', 'Principles related to Practical Chemistry'
   ],
   '3-JEE': [
     'Sets, Relations and Functions', 'Complex Numbers', 'Quadratic Equations', 'Matrices and Determinants', 'Permutations and Combinations', 'Binomial Theorem', 'Sequence and Series', 'Limits, Continuity and Differentiability', 'Integral Calculus', 'Differential Equations', 'Coordinate Geometry', 'Three Dimensional Geometry', 'Vector Algebra', 'Statistics and Probability', 'Trigonometry', 'Mathematical Reasoning'
   ],
   '3-NEET': [
-    'Diversity in Living World', 'Structural Organisation in Animals and Plants', 'Cell Structure and Function', 'Plant Physiology', 'Human Physiology',
+    'Diversity of Living World', 'Structural Organisation in Animals and Plants', 'Cell Structure and Function', 'Plant Physiology', 'Human Physiology', 
     'Reproduction', 'Genetics and Evolution', 'Biology and Human Welfare', 'Biotechnology and Its Applications', 'Ecology and Environment'
   ]
 };
@@ -85,6 +84,9 @@ export default function SortingPage() {
         
         // Add new subjects (that are not in storage yet) to GREEN column
         const newSubjectsToAdd = allSubjects.filter(s => !allItemsInStorage.has(s.id));
+        if (!newColumns.GREEN) {
+          newColumns.GREEN = { id: 'GREEN', title: 'GREEN', items: [] };
+        }
         newColumns.GREEN.items = [...newColumns.GREEN.items, ...newSubjectsToAdd];
 
         // Remove subjects from columns if they no longer exist in the master list
