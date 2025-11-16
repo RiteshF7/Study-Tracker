@@ -8,6 +8,7 @@ import { SortingBoard, type Columns } from '@/components/sorting-board';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { arrayMove } from '@dnd-kit/sortable';
 
 const subjectDifficulties = {
   '1': { // Physics
@@ -62,12 +63,10 @@ export default function SortingPage() {
     setIsLoading(true);
 
     if (allSubjectsConfig) {
-      setColumns(() => {
-        return {
-            RED: { id: 'RED', title: 'RED', items: allSubjectsConfig.RED.map(s => ({id: s, content: s})) },
-            YELLOW: { id: 'YELLOW', title: 'YELLOW', items: allSubjectsConfig.YELLOW.map(s => ({id: s, content: s})) },
-            GREEN: { id: 'GREEN', title: 'GREEN', items: allSubjectsConfig.GREEN.map(s => ({id: s, content: s})) },
-        };
+      setColumns({
+          RED: { id: 'RED', title: 'RED', items: allSubjectsConfig.RED.map(s => ({id: s, content: s})) },
+          YELLOW: { id: 'YELLOW', title: 'YELLOW', items: allSubjectsConfig.YELLOW.map(s => ({id: s, content: s})) },
+          GREEN: { id: 'GREEN', title: 'GREEN', items: allSubjectsConfig.GREEN.map(s => ({id: s, content: s})) },
       });
     }
     setIsLoading(false);
@@ -77,44 +76,65 @@ export default function SortingPage() {
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
-
+  
     const activeId = active.id;
     const overId = over.id;
-
-    if (activeId === overId) {
-      return;
-    }
-
-    const activeContainer = active.data.current?.sortable.containerId;
-    const overContainer = over.data.current?.sortable.containerId || over.id;
-
-    if (!activeContainer || !overContainer || activeContainer === overContainer) {
-      return;
-    }
-
-    setColumns((prev) => {
-      const activeColumn = prev[activeContainer as keyof Columns];
-      const overColumn = prev[overContainer as keyof Columns];
-
-      if (!activeColumn || !overColumn) {
-        return prev;
+  
+    setColumns((prevColumns) => {
+      const activeContainer = active.data.current?.sortable.containerId as keyof Columns;
+      const overContainer = over.data.current?.sortable.containerId as keyof Columns || overId as keyof Columns;
+  
+      if (!activeContainer || !overContainer || !prevColumns[activeContainer] || !prevColumns[overContainer]) {
+        return prevColumns;
       }
+  
+      if (activeContainer === overContainer) {
+        // Handle reordering within the same column
+        const activeColumn = prevColumns[activeContainer];
+        const oldIndex = activeColumn.items.findIndex(item => item.id === activeId);
+        const newIndex = activeColumn.items.findIndex(item => item.id === overId);
+  
+        if (oldIndex !== newIndex) {
+          const newItems = arrayMove(activeColumn.items, oldIndex, newIndex);
+          return {
+            ...prevColumns,
+            [activeContainer]: {
+              ...activeColumn,
+              items: newItems,
+            },
+          };
+        }
+      } else {
+        // Handle moving between different columns
+        const activeColumn = prevColumns[activeContainer];
+        const overColumn = prevColumns[overContainer];
+  
+        const activeIndex = activeColumn.items.findIndex(item => item.id === activeId);
+        let overIndex = overColumn.items.findIndex(item => item.id === overId);
+        if (overIndex < 0) {
+          // If dragging onto the container itself, append to the end
+          overIndex = overColumn.items.length;
+        }
 
-      const activeIndex = activeColumn.items.findIndex((item) => item.id === activeId);
-      let overIndex = overColumn.items.findIndex((item) => item.id === overId);
+        const newActiveItems = [...activeColumn.items];
+        const [movedItem] = newActiveItems.splice(activeIndex, 1);
+  
+        const newOverItems = [...overColumn.items];
+        newOverItems.splice(overIndex, 0, movedItem);
 
-      // If overId is a container, not an item, overIndex will be -1
-      // In this case, we want to append the item to the end of the new column.
-      if (overIndex < 0) {
-        overIndex = overColumn.items.length;
+        return {
+          ...prevColumns,
+          [activeContainer]: {
+            ...activeColumn,
+            items: newActiveItems,
+          },
+          [overContainer]: {
+            ...overColumn,
+            items: newOverItems,
+          },
+        };
       }
-
-      const newColumns = { ...prev };
-
-      const [movedItem] = activeColumn.items.splice(activeIndex, 1);
-      overColumn.items.splice(overIndex, 0, movedItem);
-
-      return newColumns;
+      return prevColumns;
     });
   };
 
@@ -156,5 +176,6 @@ export default function SortingPage() {
     </div>
   );
 }
+
 
 
