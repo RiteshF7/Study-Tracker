@@ -81,19 +81,16 @@ export default function SortingPage() {
     const overId = String(over.id);
 
     setColumns((prevColumns) => {
-      const newColumns = { ...prevColumns };
+      const newColumns = JSON.parse(JSON.stringify(prevColumns));
       const activeContainerKey = active.data.current?.sortable.containerId as keyof Columns | undefined;
       
       let overContainerKey = over.data.current?.sortable.containerId as keyof Columns | undefined;
       if (!overContainerKey) {
-        // If dropping on an item, its container is the over container.
-        // If dropping on an empty container, the container id is the overId itself.
         if (Object.keys(newColumns).includes(overId)) {
           overContainerKey = overId as keyof Columns;
         } else {
-            // Find which column the `overId` item is in
              for (const key of Object.keys(newColumns) as (keyof Columns)[]) {
-                if (newColumns[key].items.some(item => item.id === overId)) {
+                if (newColumns[key].items.some((item: { id: string; }) => item.id === overId)) {
                     overContainerKey = key;
                     break;
                 }
@@ -110,8 +107,8 @@ export default function SortingPage() {
       
       if (activeContainerKey === overContainerKey) {
         // Reordering within the same column
-        const oldIndex = activeContainer.items.findIndex((item) => item.id === activeId);
-        const newIndex = overContainer.items.findIndex((item) => item.id === overId);
+        const oldIndex = activeContainer.items.findIndex((item: { id: string; }) => item.id === activeId);
+        const newIndex = overContainer.items.findIndex((item: { id: string; }) => item.id === overId);
         
         if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
             newColumns[activeContainerKey] = {
@@ -121,23 +118,18 @@ export default function SortingPage() {
         }
       } else {
         // Moving to a different column
-        const activeIndex = activeContainer.items.findIndex((item) => item.id === activeId);
+        const activeIndex = activeContainer.items.findIndex((item: { id: string; }) => item.id === activeId);
         if (activeIndex === -1) return prevColumns;
 
         const [movedItem] = activeContainer.items.splice(activeIndex, 1);
         
-        // Check if dropping on another item or on the container itself
-        let overIndex = overContainer.items.findIndex((item) => item.id === overId);
+        let overIndex = overContainer.items.findIndex((item: { id: string; }) => item.id === overId);
 
-        // If not dropping on an item (e.g., empty list), append to the end
         if (overIndex === -1) {
             overIndex = overContainer.items.length;
         }
 
         overContainer.items.splice(overIndex, 0, movedItem);
-
-        newColumns[activeContainerKey] = { ...activeContainer };
-        newColumns[overContainerKey] = { ...overContainer };
       }
       
       return newColumns;
