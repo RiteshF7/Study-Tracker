@@ -73,44 +73,42 @@ export default function SortingPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSet, course]);
 
+  const findContainer = (id: string, cols: Columns): keyof Columns | undefined => {
+    if (id in cols) {
+        return id as keyof Columns;
+    }
+
+    return (Object.keys(cols) as (keyof Columns)[]).find((key) =>
+        cols[key].items.some((item) => item.id === id)
+    );
+  };
+
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
-
+  
     const activeId = String(active.id);
     const overId = String(over.id);
-
+  
     setColumns((prevColumns) => {
-      const newColumns = JSON.parse(JSON.stringify(prevColumns));
-      const activeContainerKey = active.data.current?.sortable.containerId as keyof Columns | undefined;
-      
-      let overContainerKey = over.data.current?.sortable.containerId as keyof Columns | undefined;
-      if (!overContainerKey) {
-        if (Object.keys(newColumns).includes(overId)) {
-          overContainerKey = overId as keyof Columns;
-        } else {
-             for (const key of Object.keys(newColumns) as (keyof Columns)[]) {
-                if (newColumns[key].items.some((item: { id: string; }) => item.id === overId)) {
-                    overContainerKey = key;
-                    break;
-                }
-            }
-        }
-      }
-
-      if (!activeContainerKey || !overContainerKey || !newColumns[activeContainerKey] || !newColumns[overContainerKey]) {
+      const activeContainerKey = findContainer(activeId, prevColumns);
+      const overContainerKey = findContainer(overId, prevColumns);
+  
+      if (!activeContainerKey || !overContainerKey) {
         return prevColumns;
       }
       
-      const activeContainer = newColumns[activeContainerKey];
-      const overContainer = newColumns[overContainerKey];
+      const activeContainer = prevColumns[activeContainerKey];
+      const overContainer = prevColumns[overContainerKey];
       
+      const newColumns = { ...prevColumns };
+  
       if (activeContainerKey === overContainerKey) {
         // Reordering within the same column
-        const oldIndex = activeContainer.items.findIndex((item: { id: string; }) => item.id === activeId);
-        const newIndex = overContainer.items.findIndex((item: { id: string; }) => item.id === overId);
-        
-        if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+        const oldIndex = activeContainer.items.findIndex((item) => item.id === activeId);
+        const newIndex = overContainer.items.findIndex((item) => item.id === overId);
+  
+        if (oldIndex !== -1 && newIndex !== -1) {
             newColumns[activeContainerKey] = {
                 ...activeContainer,
                 items: arrayMove(activeContainer.items, oldIndex, newIndex),
@@ -118,18 +116,25 @@ export default function SortingPage() {
         }
       } else {
         // Moving to a different column
-        const activeIndex = activeContainer.items.findIndex((item: { id: string; }) => item.id === activeId);
+        const activeIndex = activeContainer.items.findIndex((item) => item.id === activeId);
         if (activeIndex === -1) return prevColumns;
-
+  
         const [movedItem] = activeContainer.items.splice(activeIndex, 1);
         
-        let overIndex = overContainer.items.findIndex((item: { id: string; }) => item.id === overId);
+        // Find the index to insert at in the new column
+        let overIndex = overContainer.items.findIndex((item) => item.id === overId);
 
-        if (overIndex === -1) {
-            overIndex = overContainer.items.length;
+        // If dropping on a container but not on a specific item, append to the end.
+        if (over.data.current?.sortable.containerId === overId && overIndex === -1) {
+          overIndex = overContainer.items.length;
         }
 
-        overContainer.items.splice(overIndex, 0, movedItem);
+        if (overIndex !== -1) {
+          overContainer.items.splice(overIndex, 0, movedItem);
+        } else {
+            // Default to appending if index is still not found (e.g., empty container)
+            newColumns[overContainerKey].items.push(movedItem);
+        }
       }
       
       return newColumns;
