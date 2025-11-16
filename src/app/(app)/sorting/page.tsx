@@ -7,8 +7,8 @@ import { useLocalStorage } from '@/hooks/use-local-storage';
 import { SortingBoard, type Columns } from '@/components/sorting-board';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { arrayMove } from '@dnd-kit/sortable';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const subjectDifficulties = {
   '1': { // Physics
@@ -76,65 +76,71 @@ export default function SortingPage() {
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
-  
-    const activeId = active.id;
-    const overId = over.id;
-  
+
+    const activeId = String(active.id);
+    const overId = String(over.id);
+
     setColumns((prevColumns) => {
-      const activeContainer = active.data.current?.sortable.containerId as keyof Columns;
-      const overContainer = over.data.current?.sortable.containerId as keyof Columns || overId as keyof Columns;
-  
-      if (!activeContainer || !overContainer || !prevColumns[activeContainer] || !prevColumns[overContainer]) {
+      const newColumns = { ...prevColumns };
+      const activeContainerKey = active.data.current?.sortable.containerId as keyof Columns | undefined;
+      
+      let overContainerKey = over.data.current?.sortable.containerId as keyof Columns | undefined;
+      if (!overContainerKey) {
+        // If dropping on an item, its container is the over container.
+        // If dropping on an empty container, the container id is the overId itself.
+        if (Object.keys(newColumns).includes(overId)) {
+          overContainerKey = overId as keyof Columns;
+        } else {
+            // Find which column the `overId` item is in
+             for (const key of Object.keys(newColumns) as (keyof Columns)[]) {
+                if (newColumns[key].items.some(item => item.id === overId)) {
+                    overContainerKey = key;
+                    break;
+                }
+            }
+        }
+      }
+
+      if (!activeContainerKey || !overContainerKey || !newColumns[activeContainerKey] || !newColumns[overContainerKey]) {
         return prevColumns;
       }
-  
-      if (activeContainer === overContainer) {
-        // Handle reordering within the same column
-        const activeColumn = prevColumns[activeContainer];
-        const oldIndex = activeColumn.items.findIndex(item => item.id === activeId);
-        const newIndex = activeColumn.items.findIndex(item => item.id === overId);
-  
-        if (oldIndex !== newIndex) {
-          const newItems = arrayMove(activeColumn.items, oldIndex, newIndex);
-          return {
-            ...prevColumns,
-            [activeContainer]: {
-              ...activeColumn,
-              items: newItems,
-            },
-          };
+      
+      const activeContainer = newColumns[activeContainerKey];
+      const overContainer = newColumns[overContainerKey];
+      
+      if (activeContainerKey === overContainerKey) {
+        // Reordering within the same column
+        const oldIndex = activeContainer.items.findIndex((item) => item.id === activeId);
+        const newIndex = overContainer.items.findIndex((item) => item.id === overId);
+        
+        if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+            newColumns[activeContainerKey] = {
+                ...activeContainer,
+                items: arrayMove(activeContainer.items, oldIndex, newIndex),
+            };
         }
       } else {
-        // Handle moving between different columns
-        const activeColumn = prevColumns[activeContainer];
-        const overColumn = prevColumns[overContainer];
-  
-        const activeIndex = activeColumn.items.findIndex(item => item.id === activeId);
-        let overIndex = overColumn.items.findIndex(item => item.id === overId);
-        if (overIndex < 0) {
-          // If dragging onto the container itself, append to the end
-          overIndex = overColumn.items.length;
+        // Moving to a different column
+        const activeIndex = activeContainer.items.findIndex((item) => item.id === activeId);
+        if (activeIndex === -1) return prevColumns;
+
+        const [movedItem] = activeContainer.items.splice(activeIndex, 1);
+        
+        // Check if dropping on another item or on the container itself
+        let overIndex = overContainer.items.findIndex((item) => item.id === overId);
+
+        // If not dropping on an item (e.g., empty list), append to the end
+        if (overIndex === -1) {
+            overIndex = overContainer.items.length;
         }
 
-        const newActiveItems = [...activeColumn.items];
-        const [movedItem] = newActiveItems.splice(activeIndex, 1);
-  
-        const newOverItems = [...overColumn.items];
-        newOverItems.splice(overIndex, 0, movedItem);
+        overContainer.items.splice(overIndex, 0, movedItem);
 
-        return {
-          ...prevColumns,
-          [activeContainer]: {
-            ...activeColumn,
-            items: newActiveItems,
-          },
-          [overContainer]: {
-            ...overColumn,
-            items: newOverItems,
-          },
-        };
+        newColumns[activeContainerKey] = { ...activeContainer };
+        newColumns[overContainerKey] = { ...overContainer };
       }
-      return prevColumns;
+      
+      return newColumns;
     });
   };
 
@@ -155,6 +161,18 @@ export default function SortingPage() {
               </Button>
             </div>
         </div>
+        <div className="grid gap-2">
+          <Label htmlFor="course-select">Course Focus</Label>
+          <Select onValueChange={setCourse} value={course}>
+              <SelectTrigger id="course-select" className="w-[180px]">
+                  <SelectValue placeholder="Select course..." />
+              </SelectTrigger>
+              <SelectContent>
+                  <SelectItem value="JEE">JEE</SelectItem>
+                  <SelectItem value="NEET">NEET</SelectItem>
+              </SelectContent>
+          </Select>
+        </div>
       </div>
       {isClient ? (
         <SortingBoard columns={columns} onDragEnd={onDragEnd} isLoading={isLoading} />
@@ -164,7 +182,3 @@ export default function SortingPage() {
     </div>
   );
 }
-
-
-
-
