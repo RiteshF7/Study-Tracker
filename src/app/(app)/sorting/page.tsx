@@ -155,18 +155,6 @@ export default function SortingPage() {
               </Button>
             </div>
         </div>
-        <div className="grid gap-2">
-            <Label htmlFor="course-select">Course Focus</Label>
-            <Select onValueChange={setCourse} value={course}>
-                <SelectTrigger id="course-select" className="w-[180px]">
-                    <SelectValue placeholder="Select course" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="JEE">JEE</SelectItem>
-                    <SelectItem value="NEET">NEET</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
       </div>
       {isClient ? (
         <SortingBoard columns={columns} onDragEnd={onDragEnd} isLoading={isLoading} />
@@ -176,6 +164,7 @@ export default function SortingPage() {
     </div>
   );
 }
+
 
 
 
