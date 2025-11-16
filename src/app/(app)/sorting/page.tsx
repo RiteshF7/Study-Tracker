@@ -30,6 +30,7 @@ const subjectTopics = {
 
 export default function SortingPage() {
   const [isClient, setIsClient] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [course] = useLocalStorage('selected-course', 'JEE');
   const [activeSet, setActiveSet] = useState('1');
   
@@ -54,49 +55,53 @@ export default function SortingPage() {
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    setIsLoading(true);
+    // Simulate loading for reconciliation
+    const timer = setTimeout(() => {
+        if (allSubjects.length > 0 && isClient) {
+          setColumns((prevColumns) => {
+            // Create a fresh default state
+            const defaultState = {
+                RED: { id: 'RED', title: 'RED', items: [] },
+                YELLOW: { id: 'YELLOW', title: 'YELLOW', items: [] },
+                GREEN: { id: 'GREEN', title: 'GREEN', items: allSubjects },
+            };
+            
+            // Check if there's existing data for this set. If not, use the default.
+            const allItemsInPrevColumns = [
+                ...(prevColumns.RED?.items || []),
+                ...(prevColumns.YELLOW?.items || []),
+                ...(prevColumns.GREEN?.items || []),
+            ];
 
-  useEffect(() => {
-    if (allSubjects.length > 0 && isClient) {
-      setColumns((prevColumns) => {
-        // Create a fresh default state
-        const defaultState = {
-            RED: { id: 'RED', title: 'RED', items: [] },
-            YELLOW: { id: 'YELLOW', title: 'YELLOW', items: [] },
-            GREEN: { id: 'GREEN', title: 'GREEN', items: allSubjects },
-        };
-        
-        // Check if there's existing data for this set. If not, use the default.
-        const allItemsInPrevColumns = [
-            ...(prevColumns.RED?.items || []),
-            ...(prevColumns.YELLOW?.items || []),
-            ...(prevColumns.GREEN?.items || []),
-        ];
+            if (allItemsInPrevColumns.length === 0) {
+                return defaultState;
+            }
 
-        if (allItemsInPrevColumns.length === 0) {
-            return defaultState;
+            // If there IS existing data, reconcile it with the current subject list.
+            const newColumns = { ...prevColumns };
+            const allCurrentItems = new Set(allSubjects.map(s => s.id));
+            const allItemsInStorage = new Set(allItemsInPrevColumns.map(i => i.id));
+            
+            // Add new subjects (that are not in storage yet) to GREEN column
+            const newSubjectsToAdd = allSubjects.filter(s => !allItemsInStorage.has(s.id));
+            if (!newColumns.GREEN) {
+              newColumns.GREEN = { id: 'GREEN', title: 'GREEN', items: [] };
+            }
+            newColumns.GREEN.items = [...newColumns.GREEN.items, ...newSubjectsToAdd];
+
+            // Remove subjects from columns if they no longer exist in the master list
+            Object.keys(newColumns).forEach(columnId => {
+                (newColumns[columnId as keyof Columns]).items = (newColumns[columnId as keyof Columns]).items.filter(item => allCurrentItems.has(item.id));
+            });
+
+            return newColumns;
+          });
         }
+        setIsLoading(false);
+    }, 500); // A small delay to prevent flickering
 
-        // If there IS existing data, reconcile it with the current subject list.
-        const newColumns = { ...prevColumns };
-        const allCurrentItems = new Set(allSubjects.map(s => s.id));
-        const allItemsInStorage = new Set(allItemsInPrevColumns.map(i => i.id));
-        
-        // Add new subjects (that are not in storage yet) to GREEN column
-        const newSubjectsToAdd = allSubjects.filter(s => !allItemsInStorage.has(s.id));
-        if (!newColumns.GREEN) {
-          newColumns.GREEN = { id: 'GREEN', title: 'GREEN', items: [] };
-        }
-        newColumns.GREEN.items = [...newColumns.GREEN.items, ...newSubjectsToAdd];
-
-        // Remove subjects from columns if they no longer exist in the master list
-        Object.keys(newColumns).forEach(columnId => {
-            (newColumns[columnId as keyof Columns]).items = (newColumns[columnId as keyof Columns]).items.filter(item => allCurrentItems.has(item.id));
-        });
-
-        return newColumns;
-      });
-    }
+    return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allSubjects, isClient, activeSet, course]);
 
@@ -172,7 +177,7 @@ export default function SortingPage() {
           </div>
       </div>
       {isClient ? (
-        <SortingBoard columns={columns} onDragEnd={onDragEnd} isLoading={false} />
+        <SortingBoard columns={columns} onDragEnd={onDragEnd} isLoading={isLoading} />
       ) : (
          <div className="text-center py-10 text-muted-foreground">Loading sorting board...</div>
       )}
