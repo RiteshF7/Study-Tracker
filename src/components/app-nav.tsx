@@ -52,11 +52,6 @@ const navItems = [
     label: "AI Scheduler",
   },
   {
-    href: "/planner",
-    icon: CalendarDays,
-    label: "Planner",
-  },
-  {
     href: "/sorting",
     icon: TrafficLight,
     label: "Sorting",
