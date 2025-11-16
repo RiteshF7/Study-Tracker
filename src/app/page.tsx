@@ -79,7 +79,7 @@ export default function LandingPage() {
                         </div>
                          <div className="hidden lg:flex items-center justify-center">
                             <img
-                                src="https://picsum.photos/seed/landing-hero/600/500"
+                                src="https://picsum.photos/seed/new-hero-image/600/500"
                                 width="600"
                                 height="500"
                                 alt="Student studying with charts"
