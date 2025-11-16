@@ -56,54 +56,45 @@ export default function SortingPage() {
   useEffect(() => {
     setIsClient(true);
     setIsLoading(true);
-    // Simulate loading for reconciliation
-    const timer = setTimeout(() => {
-        if (allSubjects.length > 0 && isClient) {
-          setColumns((prevColumns) => {
-            // Create a fresh default state
-            const defaultState = {
-                RED: { id: 'RED', title: 'RED', items: [] },
-                YELLOW: { id: 'YELLOW', title: 'YELLOW', items: [] },
-                GREEN: { id: 'GREEN', title: 'GREEN', items: allSubjects },
-            };
-            
-            // Check if there's existing data for this set. If not, use the default.
-            const allItemsInPrevColumns = [
-                ...(prevColumns.RED?.items || []),
-                ...(prevColumns.YELLOW?.items || []),
-                ...(prevColumns.GREEN?.items || []),
-            ];
 
-            if (allItemsInPrevColumns.length === 0) {
-                return defaultState;
-            }
+    if (allSubjects.length > 0) {
+      setColumns((prevColumns) => {
+        const defaultState = {
+            RED: { id: 'RED', title: 'RED', items: [] },
+            YELLOW: { id: 'YELLOW', title: 'YELLOW', items: [] },
+            GREEN: { id: 'GREEN', title: 'GREEN', items: allSubjects },
+        };
+        
+        const allItemsInPrevColumns = [
+            ...(prevColumns.RED?.items || []),
+            ...(prevColumns.YELLOW?.items || []),
+            ...(prevColumns.GREEN?.items || []),
+        ];
 
-            // If there IS existing data, reconcile it with the current subject list.
-            const newColumns = { ...prevColumns };
-            const allCurrentItems = new Set(allSubjects.map(s => s.id));
-            const allItemsInStorage = new Set(allItemsInPrevColumns.map(i => i.id));
-            
-            // Add new subjects (that are not in storage yet) to GREEN column
-            const newSubjectsToAdd = allSubjects.filter(s => !allItemsInStorage.has(s.id));
-            if (!newColumns.GREEN) {
-              newColumns.GREEN = { id: 'GREEN', title: 'GREEN', items: [] };
-            }
-            newColumns.GREEN.items = [...newColumns.GREEN.items, ...newSubjectsToAdd];
-
-            // Remove subjects from columns if they no longer exist in the master list
-            Object.keys(newColumns).forEach(columnId => {
-                (newColumns[columnId as keyof Columns]).items = (newColumns[columnId as keyof Columns]).items.filter(item => allCurrentItems.has(item.id));
-            });
-
-            return newColumns;
-          });
+        if (allItemsInPrevColumns.length === 0) {
+            return defaultState;
         }
-        setIsLoading(false);
-    }, 500); // A small delay to prevent flickering
 
-    return () => clearTimeout(timer);
+        const newColumns = { ...prevColumns };
+        const allCurrentItems = new Set(allSubjects.map(s => s.id));
+        const allItemsInStorage = new Set(allItemsInPrevColumns.map(i => i.id));
+        
+        const newSubjectsToAdd = allSubjects.filter(s => !allItemsInStorage.has(s.id));
+        if (!newColumns.GREEN) {
+          newColumns.GREEN = { id: 'GREEN', title: 'GREEN', items: [] };
+        }
+        newColumns.GREEN.items = [...newColumns.GREEN.items, ...newSubjectsToAdd];
+
+        Object.keys(newColumns).forEach(columnId => {
+            (newColumns[columnId as keyof Columns]).items = (newColumns[columnId as keyof Columns]).items.filter(item => allCurrentItems.has(item.id));
+        });
+
+        return newColumns;
+      });
+    }
+    setIsLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allSubjects, isClient, activeSet, course]);
+  }, [allSubjects, activeSet, course]);
 
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -136,21 +127,16 @@ export default function SortingPage() {
       let overIndex = overColumn.items.findIndex(item => item.id === overId);
 
       if (activeContainer === overContainer) {
-        // Reordering within the same column
         if (activeIndex !== -1 && overIndex !== -1) {
             activeColumn.items = arrayMove(activeColumn.items, activeIndex, overIndex);
         }
       } else {
-        // Moving to a different column
         const [movedItem] = activeColumn.items.splice(activeIndex, 1);
 
         if (over.id in newColumns) {
-            // Dropping on the column itself
             overColumn.items.push(movedItem);
         } else {
-            // Dropping on an item within the column
             if (overIndex === -1) {
-                // If overIndex is not found (e.g., dropping on padding), add to end
                 overIndex = overColumn.items.length;
             }
             overColumn.items.splice(overIndex, 0, movedItem);
