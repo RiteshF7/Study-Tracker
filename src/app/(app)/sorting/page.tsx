@@ -73,7 +73,7 @@ export default function SortingPage() {
     }
     setIsLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allSubjectsConfig, activeSet, course]);
+  }, [activeSet, course, setColumns]);
 
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -89,38 +89,32 @@ export default function SortingPage() {
     const activeContainer = active.data.current?.sortable.containerId;
     const overContainer = over.data.current?.sortable.containerId || over.id;
 
-    if (!activeContainer || !overContainer) {
+    if (!activeContainer || !overContainer || activeContainer === overContainer) {
       return;
     }
 
     setColumns((prev) => {
-      const newColumns = { ...prev };
-      const activeColumn = newColumns[activeContainer as keyof Columns];
-      const overColumn = newColumns[overContainer as keyof Columns];
-      
+      const activeColumn = prev[activeContainer as keyof Columns];
+      const overColumn = prev[overContainer as keyof Columns];
+
       if (!activeColumn || !overColumn) {
         return prev;
       }
 
-      const activeIndex = activeColumn.items.findIndex(item => item.id === activeId);
-      let overIndex = overColumn.items.findIndex(item => item.id === overId);
+      const activeIndex = activeColumn.items.findIndex((item) => item.id === activeId);
+      let overIndex = overColumn.items.findIndex((item) => item.id === overId);
 
-      if (activeContainer === overContainer) {
-        if (activeIndex !== -1 && overIndex !== -1) {
-            activeColumn.items = arrayMove(activeColumn.items, activeIndex, overIndex);
-        }
-      } else {
-        const [movedItem] = activeColumn.items.splice(activeIndex, 1);
-
-        if (over.id in newColumns) {
-            overColumn.items.push(movedItem);
-        } else {
-            if (overIndex === -1) {
-                overIndex = overColumn.items.length;
-            }
-            overColumn.items.splice(overIndex, 0, movedItem);
-        }
+      // If overId is a container, not an item, overIndex will be -1
+      // In this case, we want to append the item to the end of the new column.
+      if (overIndex < 0) {
+        overIndex = overColumn.items.length;
       }
+
+      const newColumns = { ...prev };
+
+      const [movedItem] = activeColumn.items.splice(activeIndex, 1);
+      overColumn.items.splice(overIndex, 0, movedItem);
+
       return newColumns;
     });
   };
@@ -163,3 +157,4 @@ export default function SortingPage() {
     </div>
   );
 }
+
