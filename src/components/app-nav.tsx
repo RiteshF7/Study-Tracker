@@ -1,4 +1,3 @@
-
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -44,7 +43,7 @@ const navItems = [
   {
     href: "/activities",
     icon: ListTodo,
-    label: "Tracker",
+    label: "Track",
   },
   {
     href: "/scheduler",
