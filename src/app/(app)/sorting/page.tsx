@@ -8,6 +8,7 @@ import { SortingBoard, type Columns } from '@/components/sorting-board';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { arrayMove } from '@dnd-kit/sortable';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const subjectDifficulties = {
   '1': { // Physics
@@ -36,7 +37,7 @@ const subjectDifficulties = {
 export default function SortingPage() {
   const [isClient, setIsClient] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [course] = useLocalStorage('selected-course', 'JEE');
+  const [course, setCourse] = useLocalStorage('selected-course', 'JEE');
   const [activeSet, setActiveSet] = useState('1');
   
   const allSubjectsConfig = useMemo(() => {
@@ -62,43 +63,12 @@ export default function SortingPage() {
     setIsLoading(true);
 
     if (allSubjectsConfig) {
-      setColumns((prevColumns) => {
-        
-        const allItemsInPrevColumns = [
-            ...(prevColumns.RED?.items || []),
-            ...(prevColumns.YELLOW?.items || []),
-            ...(prevColumns.GREEN?.items || []),
-        ];
-
-        const allNewSubjects = [
-            ...allSubjectsConfig.RED,
-            ...allSubjectsConfig.YELLOW,
-            ...allSubjectsConfig.GREEN
-        ];
-
-        if (allItemsInPrevColumns.length === 0 || allItemsInPrevColumns.every(item => !allNewSubjects.includes(item.id))) {
-            return {
-                RED: { id: 'RED', title: 'RED', items: allSubjectsConfig.RED.map(s => ({id: s, content: s})) },
-                YELLOW: { id: 'YELLOW', title: 'YELLOW', items: allSubjectsConfig.YELLOW.map(s => ({id: s, content: s})) },
-                GREEN: { id: 'GREEN', title: 'GREEN', items: allSubjectsConfig.GREEN.map(s => ({id: s, content: s})) },
-            };
-        }
-
-        const newColumns = { ...prevColumns };
-        const allCurrentItems = new Set(allNewSubjects);
-        const allItemsInStorage = new Set(allItemsInPrevColumns.map(i => i.id));
-        
-        const newSubjectsToAdd = allNewSubjects.filter(s => !allItemsInStorage.has(s));
-        if (!newColumns.GREEN) {
-          newColumns.GREEN = { id: 'GREEN', title: 'GREEN', items: [] };
-        }
-        newColumns.GREEN.items = [...newColumns.GREEN.items, ...newSubjectsToAdd.map(s => ({id: s, content: s}))];
-
-        Object.keys(newColumns).forEach(columnId => {
-            (newColumns[columnId as keyof Columns]).items = (newColumns[columnId as keyof Columns]).items.filter(item => allCurrentItems.has(item.id));
-        });
-
-        return newColumns;
+      setColumns(() => {
+        return {
+            RED: { id: 'RED', title: 'RED', items: allSubjectsConfig.RED.map(s => ({id: s, content: s})) },
+            YELLOW: { id: 'YELLOW', title: 'YELLOW', items: allSubjectsConfig.YELLOW.map(s => ({id: s, content: s})) },
+            GREEN: { id: 'GREEN', title: 'GREEN', items: allSubjectsConfig.GREEN.map(s => ({id: s, content: s})) },
+        };
       });
     }
     setIsLoading(false);
@@ -161,15 +131,29 @@ export default function SortingPage() {
       <p className="text-muted-foreground mb-6">
         Drag and drop your subjects to categorize them by confidence level.
       </p>
-      <div className="mb-6">
-          <Label htmlFor="subject-set" className="mb-2 block">Subject Set</Label>
-          <div className="flex items-center gap-2">
-            <Button variant={activeSet === '1' ? 'default' : 'outline'} onClick={() => setActiveSet('1')}>Physics</Button>
-            <Button variant={activeSet === '2' ? 'default' : 'outline'} onClick={() => setActiveSet('2')}>Chemistry</Button>
-            <Button variant={activeSet === '3' ? 'default' : 'outline'} onClick={() => setActiveSet('3')}>
-              {course === 'JEE' ? 'Maths' : 'Biology'}
-            </Button>
-          </div>
+      <div className="flex items-end justify-between mb-6">
+        <div className="grid gap-2">
+            <Label htmlFor="subject-set" className="mb-2 block">Subject Set</Label>
+            <div className="flex items-center gap-2">
+              <Button variant={activeSet === '1' ? 'default' : 'outline'} onClick={() => setActiveSet('1')}>Physics</Button>
+              <Button variant={activeSet === '2' ? 'default' : 'outline'} onClick={() => setActiveSet('2')}>Chemistry</Button>
+              <Button variant={activeSet === '3' ? 'default' : 'outline'} onClick={() => setActiveSet('3')}>
+                {course === 'JEE' ? 'Maths' : 'Biology'}
+              </Button>
+            </div>
+        </div>
+        <div className="grid gap-2">
+            <Label htmlFor="course-select">Course Focus</Label>
+            <Select onValueChange={setCourse} value={course}>
+                <SelectTrigger id="course-select" className="w-[180px]">
+                    <SelectValue placeholder="Select course" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="JEE">JEE</SelectItem>
+                    <SelectItem value="NEET">NEET</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
       </div>
       {isClient ? (
         <SortingBoard columns={columns} onDragEnd={onDragEnd} isLoading={isLoading} />
