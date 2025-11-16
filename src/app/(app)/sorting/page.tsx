@@ -59,11 +59,6 @@ export default function SortingPage() {
 
     if (allSubjects.length > 0) {
       setColumns((prevColumns) => {
-        const defaultState = {
-            RED: { id: 'RED', title: 'RED', items: [] },
-            YELLOW: { id: 'YELLOW', title: 'YELLOW', items: [] },
-            GREEN: { id: 'GREEN', title: 'GREEN', items: allSubjects },
-        };
         
         const allItemsInPrevColumns = [
             ...(prevColumns.RED?.items || []),
@@ -72,7 +67,28 @@ export default function SortingPage() {
         ];
 
         if (allItemsInPrevColumns.length === 0) {
-            return defaultState;
+            // Randomly distribute subjects into R, Y, G
+            const redItems: typeof allSubjects = [];
+            const yellowItems: typeof allSubjects = [];
+            const greenItems: typeof allSubjects = [];
+            const shuffledSubjects = [...allSubjects].sort(() => Math.random() - 0.5);
+
+            shuffledSubjects.forEach((subject, index) => {
+                const mod = index % 3;
+                if (mod === 0) {
+                    redItems.push(subject);
+                } else if (mod === 1) {
+                    yellowItems.push(subject);
+                } else {
+                    greenItems.push(subject);
+                }
+            });
+
+            return {
+                RED: { id: 'RED', title: 'RED', items: redItems },
+                YELLOW: { id: 'YELLOW', title: 'YELLOW', items: yellowItems },
+                GREEN: { id: 'GREEN', title: 'GREEN', items: greenItems },
+            };
         }
 
         const newColumns = { ...prevColumns };
