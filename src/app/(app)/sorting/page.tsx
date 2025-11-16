@@ -18,12 +18,12 @@ const subjectDifficulties = {
   '2': { // Chemistry
     RED: ['Chemical Thermodynamics', 'Equilibrium', 'The p-Block Element (Group 13–18 overview)', 'Organic Compounds containing Oxygen', 'Coordination Compounds'],
     YELLOW: ['Structure of Atom', 'Chemical Bonding and Molecular Structure', 'Redox Reactions and Electrochemistry', 'The d-Block Element', 'The f-Block Element', 'Some Basic Principles of Organic Chemistry', 'Hydrocarbons', 'Organic Compounds containing Halogens', 'Organic Compounds containing Nitrogen'],
-    GREEN: ['Some Basic Concepts of Chemistry', 'The Redox Concept (Electrochemistry basics)', 'Classification of Elements and Periodicity in Properties', 'Purification and Characterisation of Organic Compounds', 'Biomolecules', 'Principles related to Practical Chemistry']
+    GREEN: ['Some Basic Concepts of Chemistry', 'Classification of Elements and Periodicity in Properties', 'Purification and Characterisation of Organic Compounds', 'Biomolecules', 'Principles related to Practical Chemistry']
   },
   '3-JEE': { // Maths JEE
     RED: ['Integral Calculus', 'Three Dimensional Geometry', 'Permutations and Combinations', 'Probability'],
     YELLOW: ['Complex Numbers', 'Matrices and Determinants', 'Binomial Theorem', 'Sequence and Series', 'Limits, Continuity and Differentiability', 'Differential Equations', 'Vector Algebra', 'Trigonometry'],
-    GREEN: ['Sets, Relations and Functions', 'Quadratic Equations', 'Coordinate Geometry', 'Statistics and Probability', 'Mathematical Reasoning']
+    GREEN: ['Sets, Relations and Functions', 'Quadratic Equations', 'Coordinate Geometry', 'Statistics', 'Mathematical Reasoning']
   },
   '3-NEET': { // Biology NEET
     RED: ['Genetics and Evolution', 'Human Physiology', 'Plant Physiology'],
@@ -88,7 +88,7 @@ export default function SortingPage() {
         const allCurrentItems = new Set(allNewSubjects);
         const allItemsInStorage = new Set(allItemsInPrevColumns.map(i => i.id));
         
-        const newSubjectsToAdd = allNewSubjects.filter(s => !allItemsInStorage.has(s.id));
+        const newSubjectsToAdd = allNewSubjects.filter(s => !allItemsInStorage.has(s));
         if (!newColumns.GREEN) {
           newColumns.GREEN = { id: 'GREEN', title: 'GREEN', items: [] };
         }
