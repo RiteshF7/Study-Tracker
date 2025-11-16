@@ -4,28 +4,10 @@ import {
   signInAnonymously,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signInWithPopup,
   GoogleAuthProvider,
+  signInWithPopup,
+  // Assume getAuth and app are initialized elsewhere
 } from 'firebase/auth';
-
-/** Initiate Google sign-in (non-blocking). */
-export function initiateGoogleSignIn(authInstance: Auth): void {
-  const provider = new GoogleAuthProvider();
-  // CRITICAL: Call signInWithPopup directly. Do NOT use 'await'.
-  signInWithPopup(authInstance, provider)
-    .catch((error) => {
-      // The 'auth/popup-closed-by-user' error occurs when the user closes the
-      // sign-in popup. This is a common and expected user action, so we catch
-      // it here to prevent it from bubbling up as an uncaught exception.
-      if (error.code !== 'auth/popup-closed-by-user') {
-        // For any other error, we log it to the console for debugging.
-        // This preserves the non-blocking nature while still allowing developers
-        // to see if something unexpected went wrong.
-        console.error('Google sign-in error:', error);
-      }
-    });
-}
-
 
 /** Initiate anonymous sign-in (non-blocking). */
 export function initiateAnonymousSignIn(authInstance: Auth): void {
@@ -46,4 +28,11 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
   // CRITICAL: Call signInWithEmailAndPassword directly. Do NOT use 'await signInWithEmailAndPassword(...)'.
   signInWithEmailAndPassword(authInstance, email, password);
   // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+}
+
+/** Initiate Google sign-in (non-blocking). */
+export function initiateGoogleSignIn(authInstance: Auth): void {
+  const provider = new GoogleAuthProvider();
+  // Non-blocking: do not await
+  signInWithPopup(authInstance, provider);
 }
