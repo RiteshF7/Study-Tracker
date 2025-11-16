@@ -71,7 +71,7 @@ export default function LandingPage() {
                                 </p>
                             </div>
                             <div className="w-full max-w-sm">
-                                <Button onClick={handleGoogleSignIn} size="lg" className="w-full text-lg py-6" disabled={isUserLoading}>
+                                <Button onClick={handleGoogleSignIn} size="lg" variant="outline" className="w-full text-lg py-6 border-2 border-border hover:bg-primary/10 hover:border-primary" disabled={isUserLoading}>
                                     <FcGoogle className="mr-3 h-6 w-6" /> Get Started with Google
                                 </Button>
                                  <p className="text-xs text-muted-foreground mt-2 text-center">Free to use, sign up in seconds.</p>
