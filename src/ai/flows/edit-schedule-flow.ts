@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -39,18 +40,23 @@ const prompt = ai.definePrompt({
   name: 'editSchedulePrompt',
   input: {schema: EditScheduleInputSchema},
   output: {schema: EditScheduleOutputSchema},
-  prompt: `You are an AI assistant that modifies a student's study schedule based on their instructions.
+  prompt: `You are an expert productivity coach. A student has provided you with their current daily schedule and an instruction to modify it.
 
-Analyze the current schedule and the user's instruction to provide an updated schedule.
+**Your Task:**
+1.  **Analyze** the user's instruction and the current schedule.
+2.  **Think step-by-step** about how to apply the change. For example, if they ask to swap two items, identify the items and their time slots first.
+3.  **Modify** the schedule according to the instruction.
+4.  **Return the complete, updated schedule.** It is crucial that you return the *entire* schedule, including all the original, unchanged time slots, not just the part you modified.
 
-Current Schedule:
+**Current Schedule:**
 {{#each currentSchedule}}
 - {{time}}: {{activity}}
 {{/each}}
 
-User's Instruction: "{{editInstruction}}"
+**User's Instruction:**
+"{{editInstruction}}"
 
-Return the complete, updated schedule in the exact same format as the original. Only modify what is requested.
+Now, provide the full, updated schedule in the required format.
 `,
 });
 
