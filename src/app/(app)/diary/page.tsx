@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { debounce } from 'lodash';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function DiaryPage() {
   const { user, firestore } = useFirebase();
@@ -62,6 +64,12 @@ export default function DiaryPage() {
         setJournalEntry('');
         setJournalDoc(null);
       }
+    }).catch(error => {
+        const permissionError = new FirestorePermissionError({
+            path: `users/${user.uid}/journalEntries`,
+            operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
     });
 
   }, [user, firestore, todayString]);
@@ -77,8 +85,9 @@ export default function DiaryPage() {
     if (journalDoc) {
       docRef = journalDoc.ref;
     } else {
-      docRef = doc(collectionRef);
-      setJournalDoc({ id: docRef.id, ref: docRef });
+      const newDoc = doc(collectionRef);
+      docRef = newDoc;
+      setJournalDoc({ id: newDoc.id, ref: newDoc });
     }
 
     const data: Partial<JournalEntry> = {
@@ -92,13 +101,19 @@ export default function DiaryPage() {
       data.createdAt = Timestamp.now();
     }
 
-    try {
-      await setDoc(docRef, data, { merge: true });
-    } catch (error) {
-      console.error("Could not save journal entry:", error);
-    } finally {
-      setIsSaving(false);
-    }
+    setDoc(docRef, data, { merge: true })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'write',
+          requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => {
+        setIsSaving(false);
+      });
+
   }, [user, firestore, journalDoc, todayString]);
 
   const debouncedSave = useMemo(
