@@ -24,6 +24,15 @@ export type Problem = {
   userId: string;
 };
 
+export type JournalEntry = {
+    id?: string;
+    userId: string;
+    date: string; // YYYY-MM-DD
+    summary: string;
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+};
+
 export type ProblemCategory = {
   id: string;
   name: string;
