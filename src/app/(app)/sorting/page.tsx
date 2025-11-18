@@ -12,24 +12,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const subjectDifficulties = {
   '1': { // Physics
-    RED: ['Motion of System of Particles and Rigid Body (Rotational Motion)', 'Thermodynamics', 'Magnetic Effects of Current and Magnetism', 'Electromagnetic Induction and Alternating Currents', 'Optics'],
-    YELLOW: ['Laws of Motion', 'Work, Energy and Power', 'Gravitation', 'Properties of Solids and Liquids', 'Oscillations and Waves', 'Electrostatics', 'Current Electricity', 'Dual Nature of Matter and Radiation', 'Atoms and Nuclei'],
-    GREEN: ['Physical world and Measurement', 'Kinematics', 'Behaviour of Perfect Gas and Kinetic Theory', 'Electromagnetic Waves', 'Electronic Devices', 'Experimental Skills']
+    RED: ['Rotational Motion', 'Thermodynamics', 'Electromagnetic Induction', 'Optics', 'Modern Physics'],
+    YELLOW: ['Kinematics', 'Laws of Motion', 'Work, Energy and Power', 'Gravitation', 'Properties of Bulk Matter', 'Oscillations and Waves', 'Electrostatics', 'Current Electricity', 'Magnetic Effects of Current and Magnetism', 'Alternating Current', 'Semiconductors'],
+    GREEN: ['Units and Measurements', 'Motion in a Straight Line', 'Motion in a Plane', 'Mechanical Properties of Solids', 'Mechanical Properties of Fluids', 'Thermal Properties of Matter', 'Kinetic Theory', 'Electromagnetic Waves', 'Dual Nature of Radiation and Matter', 'Atoms', 'Nuclei']
   },
   '2': { // Chemistry
-    RED: ['Chemical Thermodynamics', 'Equilibrium', 'The p-Block Element (Group 13–18 overview)', 'Organic Compounds containing Oxygen', 'Coordination Compounds'],
-    YELLOW: ['Structure of Atom', 'Chemical Bonding and Molecular Structure', 'Redox Reactions and Electrochemistry', 'The d-Block Element', 'The f-Block Element', 'Some Basic Principles of Organic Chemistry', 'Hydrocarbons', 'Organic Compounds containing Halogens', 'Organic Compounds containing Nitrogen'],
-    GREEN: ['Some Basic Concepts of Chemistry', 'Classification of Elements and Periodicity in Properties', 'Purification and Characterisation of Organic Compounds', 'Biomolecules', 'Principles related to Practical Chemistry']
+    RED: ['Equilibrium', 'Thermodynamics', 'p-Block Elements', 'd and f Block Elements', 'Coordination Compounds', 'Aldehydes, Ketones and Carboxylic Acids', 'Alcohols, Phenols and Ethers'],
+    YELLOW: ['Some Basic Concepts of Chemistry', 'Structure of Atom', 'Chemical Bonding and Molecular Structure', 'States of Matter', 'Redox Reactions', 'Hydrogen', 's-Block Elements', 'Organic Chemistry: Some Basic Principles and Techniques', 'Hydrocarbons', 'The Solid State', 'Solutions', 'Electrochemistry', 'Chemical Kinetics', 'Surface Chemistry', 'General Principles and Processes of Isolation of Elements', 'Haloalkanes and Haloarenes', 'Organic Compounds containing Nitrogen', 'Biomolecules', 'Polymers'],
+    GREEN: ['Classification of Elements and Periodicity in Properties', 'Environmental Chemistry', 'Chemistry in Everyday Life']
   },
   '3-JEE': { // Maths JEE
-    RED: ['Integral Calculus', 'Three Dimensional Geometry', 'Permutations and Combinations', 'Probability'],
-    YELLOW: ['Complex Numbers', 'Matrices and Determinants', 'Binomial Theorem', 'Sequence and Series', 'Limits, Continuity and Differentiability', 'Differential Equations', 'Vector Algebra', 'Trigonometry'],
-    GREEN: ['Sets, Relations and Functions', 'Quadratic Equations', 'Coordinate Geometry', 'Statistics', 'Mathematical Reasoning']
+    RED: ['Integral Calculus', 'Three Dimensional Geometry', 'Permutations and Combinations', 'Probability', 'Conic Sections'],
+    YELLOW: ['Complex Numbers and Quadratic Equations', 'Matrices and Determinants', 'Binomial Theorem and Its Simple Applications', 'Sequence and Series', 'Limits, Continuity and Differentiability', 'Differential Equations', 'Vector Algebra', 'Trigonometry', 'Straight Lines'],
+    GREEN: ['Sets, Relations and Functions', 'Mathematical Induction', 'Statistics', 'Mathematical Reasoning', 'Circles']
   },
   '3-NEET': { // Biology NEET
     RED: ['Genetics and Evolution', 'Human Physiology', 'Plant Physiology'],
-    YELLOW: ['Structural Organisation in Animals and Plants', 'Cell Structure and Function', 'Reproduction', 'Biotechnology and Its Applications'],
-    GREEN: ['Diversity of Living World', 'Biology and Human Welfare', 'Ecology and Environment']
+    YELLOW: ['Structural Organisation in Animals and Plants', 'Cell Structure and Function', 'Reproduction', 'Biotechnology and Its Applications', 'Ecology and Environment'],
+    GREEN: ['Diversity in Living World', 'Biology and Human Welfare']
   }
 };
 
