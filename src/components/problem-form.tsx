@@ -22,7 +22,7 @@ import type { Problem } from "@/lib/types";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectSeparator } from "./ui/select";
 import { useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Trash2 } from "lucide-react";
 import { defaultProblemCategories } from "@/lib/types";
 
@@ -180,7 +180,10 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
 
     <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
         <DialogContent>
-            <DialogHeader><DialogTitle>Add New Category</DialogTitle></DialogHeader>
+            <DialogHeader>
+                <DialogTitle>Add New Category</DialogTitle>
+                <DialogDescription>Enter a new category name to add to your list.</DialogDescription>
+            </DialogHeader>
             <div className="py-4">
                 <Input
                     placeholder="e.g., Organic Chemistry"
@@ -203,7 +206,10 @@ export function ProblemForm({ onFormSubmit }: ProblemFormProps) {
 
     <Dialog open={isManageCategoriesOpen} onOpenChange={setIsManageCategoriesOpen}>
         <DialogContent>
-            <DialogHeader><DialogTitle>Manage Categories</DialogTitle></DialogHeader>
+            <DialogHeader>
+                <DialogTitle>Manage Categories</DialogTitle>
+                <DialogDescription>Remove custom categories you no longer need.</DialogDescription>
+            </DialogHeader>
             <div className="py-4 space-y-2 max-h-60 overflow-y-auto">
                 {problemCategories.filter(cat => !defaultProblemCategories.map(c => c.name).includes(cat)).length > 0 ?
                     problemCategories.filter(cat => !defaultProblemCategories.map(c => c.name).includes(cat)).map(cat => (

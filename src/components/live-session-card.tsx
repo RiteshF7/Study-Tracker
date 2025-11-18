@@ -19,7 +19,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -209,7 +210,12 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
     
      <Dialog open={isAddSubjectOpen} onOpenChange={setIsAddSubjectOpen}>
         <DialogContent>
-            <DialogHeader><DialogTitle>Add New Subject</DialogTitle></DialogHeader>
+            <DialogHeader>
+                <DialogTitle>Add New Subject</DialogTitle>
+                <DialogDescription>
+                    Enter a new subject name to add to your list.
+                </DialogDescription>
+            </DialogHeader>
             <div className="py-4">
                 <Input
                     placeholder="e.g., Organic Chemistry"
@@ -232,7 +238,12 @@ export function LiveSessionCard({ onStartTimer }: LiveSessionCardProps) {
 
     <Dialog open={isManageSubjectsOpen} onOpenChange={setIsManageSubjectsOpen}>
         <DialogContent>
-            <DialogHeader><DialogTitle>Manage Subjects</DialogTitle></DialogHeader>
+            <DialogHeader>
+                <DialogTitle>Manage Subjects</DialogTitle>
+                <DialogDescription>
+                    Remove subjects you no longer need.
+                </DialogDescription>
+            </DialogHeader>
             <div className="py-4 space-y-2 max-h-60 overflow-y-auto">
                 {customSubjects.length > 0 ?
                     customSubjects.map(sub => (

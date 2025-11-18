@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogClose,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -293,6 +294,9 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add New Subject</DialogTitle>
+            <DialogDescription>
+                Enter a new subject name to add to your list.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Input
@@ -317,6 +321,9 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add New Activity Type</DialogTitle>
+             <DialogDescription>
+                Enter a new activity type to add to your list.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Input
@@ -342,6 +349,9 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Manage Subjects</DialogTitle>
+             <DialogDescription>
+                Remove subjects you no longer need.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-2">
             {pastActivityNames.length > 0 ? pastActivityNames.map(name => (
@@ -362,6 +372,9 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Manage Activity Types</DialogTitle>
+             <DialogDescription>
+                Remove custom activity types you no longer need.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-2">
             {activityTypes.filter(t => !defaultActivityTypes.includes(t)).length > 0 ? 
@@ -382,5 +395,3 @@ export function ManualActivityForm({ onFormSubmit }: ManualActivityFormProps) {
     </>
   );
 }
-
-    

@@ -6,7 +6,7 @@ import type { Activity } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Clock } from 'lucide-react';
 import { parseISO, isToday, subDays } from 'date-fns';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { FocusChart } from './focus-chart';
 
 interface TodaysFocusCardProps {
@@ -95,6 +95,9 @@ export function TodaysFocusCard({ activities }: TodaysFocusCardProps) {
       <DialogContent className="max-w-4xl h-[70vh]">
         <DialogHeader>
           <DialogTitle>Focus Analysis</DialogTitle>
+          <DialogDescription>
+            Visualize your study focus over time. Use the controls to adjust the time range.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex-1 flex flex-col min-h-0 py-4">
           <FocusChart activities={activities} />
