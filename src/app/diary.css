@@ -1,0 +1,19 @@
+.diary-page {
+    background-color: #fdf5e6; /* A parchment-like color */
+    background-image: linear-gradient(rgba(245, 222, 179, 0.2) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(245, 222, 179, 0.2) 1px, transparent 1px);
+    background-size: 20px 20px;
+    border: 1px solid #d2b48c;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+.dark .diary-page {
+    background-color: #2a231c; /* Darker parchment for dark mode */
+    background-image: linear-gradient(rgba(245, 222, 179, 0.05) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(245, 222, 179, 0.05) 1px, transparent 1px);
+    border-color: #4a3f30;
+}
+
+.diary-font {
+    font-family: 'Cedarville Cursive', cursive;
+}

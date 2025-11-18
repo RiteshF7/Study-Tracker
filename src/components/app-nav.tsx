@@ -12,6 +12,7 @@ import {
   CalendarDays,
   Settings,
   Home,
+  ScrollText,
 } from "lucide-react";
 import { TrafficLight } from "@/components/icons/traffic-light";
 import {
@@ -55,6 +56,11 @@ const navItems = [
     icon: TrafficLight,
     label: "Sorting",
   },
+  {
+    href: "/diary",
+    icon: ScrollText,
+    label: "Diary",
+  }
 ];
 
 export function AppNav() {
