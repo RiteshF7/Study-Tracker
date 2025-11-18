@@ -121,6 +121,13 @@ export default function DiaryPage() {
     debouncedSave(e.target.value);
   };
   
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(startOfDay(date));
+      // When a new date is selected, turn off bookmark mode
+      setIsBookmarkMode(false);
+    }
+  };
 
   return (
     <div className="container mx-auto py-6">
@@ -156,16 +163,14 @@ export default function DiaryPage() {
                   <Calendar
                     mode="single"
                     selected={selectedDate}
-                    onSelect={(date) => date && setSelectedDate(startOfDay(date))}
+                    onSelect={handleDateSelect}
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01")
                     }
                     initialFocus
                     className="diary-font"
                     modifiers={isBookmarkMode ? { bookmarked: datesWithEntries } : {}}
-                    modifiersClassNames={isBookmarkMode ? { bookmarked: 'day-bookmarked' } : {
-                      selected: 'rdp-day_selected',
-                    }}
+                    modifiersClassNames={{ bookmarked: 'day-bookmarked' }}
                   />
                 </PopoverContent>
               </Popover>
