@@ -2,10 +2,11 @@
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore, doc, serverTimestamp } from 'firebase/firestore';
+import { Firestore, doc, serverTimestamp, getDocs, collection, writeBatch } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged, reload } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates'
+import { generateMockActivities, generateMockProblems } from '@/lib/mock-data';
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -95,22 +96,51 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     if (!firestore) return;
     const currentUser = userAuthState.user;
     if (!currentUser) return;
+    
+    const populateGuestData = async (user: User) => {
+        const activitiesCollection = collection(firestore, 'users', user.uid, 'activities');
+        const snapshot = await getDocs(activitiesCollection);
+
+        // Only populate if the user has no activities (i.e., is a new guest)
+        if (snapshot.empty) {
+            const batch = writeBatch(firestore);
+            const mockActivities = generateMockActivities(5);
+            const mockProblems = generateMockProblems(5);
+
+            mockActivities.forEach(activity => {
+                const docRef = doc(collection(firestore, 'users', user.uid, 'activities'));
+                batch.set(docRef, {...activity, userId: user.uid});
+            });
+
+            mockProblems.forEach(problem => {
+                const docRef = doc(collection(firestore, 'users', user.uid, 'problems'));
+                batch.set(docRef, {...problem, userId: user.uid});
+            });
+            
+            await batch.commit();
+        }
+    };
 
     const doUpsert = (u: User) => {
-      const { uid, displayName, email, photoURL } = u;
+      const { uid, displayName, email, photoURL, isAnonymous } = u;
       const userDocRef = doc(firestore, 'users', uid);
       // Non-blocking write; merges to preserve existing fields. Avoid overriding createdAt repeatedly.
       setDocumentNonBlocking(
         userDocRef,
         {
           id: uid,
-          name: displayName ?? '',
-          email: email ?? '',
-          photoURL: photoURL ?? '',
+          name: displayName || (isAnonymous ? 'Guest User' : 'New User'),
+          email: email || '',
+          photoURL: photoURL || '',
           lastLoginAt: serverTimestamp(),
+          isAnonymous,
         },
         { merge: true }
       );
+      
+      if (isAnonymous) {
+          populateGuestData(u);
+      }
     };
 
     // Reload user to ensure the latest provider profile (e.g., updated Google photo).

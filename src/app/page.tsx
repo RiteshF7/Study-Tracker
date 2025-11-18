@@ -1,12 +1,12 @@
 
 'use client';
 
-import { initiateGoogleSignIn } from '@/firebase/non-blocking-login';
+import { initiateGoogleSignIn, initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { BookOpenCheck, BarChart3, BrainCircuit, CalendarClock, ListTodo } from 'lucide-react';
+import { BookOpenCheck, BarChart3, BrainCircuit, CalendarClock, ListTodo, User } from 'lucide-react';
 import { TrafficLight } from '@/components/icons/traffic-light';
 import { FcGoogle } from 'react-icons/fc';
 import { Card, CardContent } from '@/components/ui/card';
@@ -67,6 +67,12 @@ export default function LandingPage() {
     }
   };
 
+  const handleAnonymousSignIn = () => {
+      if (auth) {
+          initiateAnonymousSignIn(auth);
+      }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
         <FeatureCarousel open={isCarouselOpen} onOpenChange={setIsCarouselOpen} />
@@ -97,9 +103,12 @@ export default function LandingPage() {
                                     StudyTrack helps you monitor habits, optimize your schedule with AI, and organize your learning to hit your goals.
                                 </p>
                             </div>
-                            <div className="w-full max-w-sm">
+                            <div className="w-full max-w-sm space-y-2">
                                 <Button onClick={handleGoogleSignIn} size="lg" variant="outline" className="w-full text-lg py-6 border-2 border-border hover:bg-primary/10 hover:border-primary" disabled={isUserLoading}>
                                     <FcGoogle className="mr-3 h-6 w-6" /> Get Started with Google
+                                </Button>
+                                <Button onClick={handleAnonymousSignIn} size="lg" variant="secondary" className="w-full text-lg py-6" disabled={isUserLoading}>
+                                    <User className="mr-3 h-6 w-6" /> Try as Guest
                                 </Button>
                                  <p className="text-xs text-muted-foreground mt-2 text-center">Free to use, sign up in seconds.</p>
                             </div>
