@@ -163,7 +163,6 @@ export default function DiaryPage() {
 
           {!isLoading && !hasEntries && (
             <div className="text-center text-amber-800/60 diary-font text-2xl py-10">
-              The pages are blank for today. <br /> Go forth and be productive!
             </div>
           )}
 
