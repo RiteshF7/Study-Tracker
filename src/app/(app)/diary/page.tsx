@@ -2,16 +2,15 @@
 'use client';
 
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy, doc, setDoc, Timestamp, getDocs } from 'firebase/firestore';
+import { collection, query, where, doc, setDoc, Timestamp, getDocs } from 'firebase/firestore';
 import type { Activity, Problem, JournalEntry } from '@/lib/types';
-import { format, startOfDay, isSameDay, parseISO } from 'date-fns';
-import { BookCopy, Brain, Feather, ListChecks, Calendar as CalendarIcon } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { format, startOfDay, parseISO } from 'date-fns';
+import { BookCopy, Feather, Calendar as CalendarIcon } from 'lucide-react';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { debounce } from 'lodash';
-import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -29,29 +28,15 @@ export default function DiaryPage() {
 
   const selectedDateString = useMemo(() => format(selectedDate, 'yyyy-MM-dd'), [selectedDate]);
 
-  // --- Data Fetching ---
-  const activitiesQuery = useMemoFirebase(
-    (fs) => {
-      if (!user) return null;
-      return query(
-        collection(fs, 'users', user.uid, 'activities'),
-        orderBy('createdAt', 'desc')
-      );
-    },
+  // --- Data Fetching for Bookmarks ---
+   const activitiesQuery = useMemoFirebase(
+    (fs) => (user ? collection(fs, 'users', user.uid, 'activities') : null),
     [user]
   );
-
   const problemsQuery = useMemoFirebase(
-    (fs) => {
-      if (!user) return null;
-      return query(
-        collection(fs, 'users', user.uid, 'problems'),
-        orderBy('createdAt', 'desc')
-      );
-    },
+    (fs) => (user ? collection(fs, 'users', user.uid, 'problems') : null),
     [user]
   );
-  
   const allJournalEntriesQuery = useMemoFirebase(
     (fs) => (user ? collection(fs, 'users', user.uid, 'journalEntries') : null),
     [user]
@@ -60,6 +45,7 @@ export default function DiaryPage() {
   const { data: allActivities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
   const { data: allProblems, isLoading: isLoadingProblems } = useCollection<Problem>(problemsQuery);
   const { data: allJournalEntries } = useCollection<JournalEntry>(allJournalEntriesQuery);
+
 
   // --- Journal Entry Logic ---
   useEffect(() => {
@@ -90,8 +76,8 @@ export default function DiaryPage() {
   // --- Bookmark Logic ---
   useEffect(() => {
     const dates = new Set<string>();
-    allActivities?.forEach(a => dates.add(format(a.createdAt.toDate(), 'yyyy-MM-dd')));
-    allProblems?.forEach(p => dates.add(format(p.createdAt.toDate(), 'yyyy-MM-dd')));
+    allActivities?.forEach(a => a.date && dates.add(a.date));
+    allProblems?.forEach(p => p.date && dates.add(p.date));
     allJournalEntries?.forEach(j => j.summary && dates.add(j.date));
     setDatesWithEntries(Array.from(dates).map(d => parseISO(d)));
   }, [allActivities, allProblems, allJournalEntries]);
@@ -149,19 +135,8 @@ export default function DiaryPage() {
     debouncedSave(e.target.value);
   };
   
-  // --- Derived Data ---
-  const todaysActivities = useMemo(() => {
-    if (!allActivities) return [];
-    return allActivities.filter(activity => activity.createdAt && isSameDay(activity.createdAt.toDate(), selectedDate));
-  }, [allActivities, selectedDate]);
-
-  const todaysProblems = useMemo(() => {
-    if (!allProblems) return [];
-    return allProblems.filter(problem => problem.createdAt && isSameDay(problem.createdAt.toDate(), selectedDate));
-  }, [allProblems, selectedDate]);
-
   const isLoading = isLoadingActivities || isLoadingProblems;
-  const hasEntries = (todaysActivities && todaysActivities.length > 0) || (todaysProblems && todaysProblems.length > 0) || journalEntry;
+  const hasEntries = journalEntry;
 
   return (
     <div className="container mx-auto py-6">
@@ -187,7 +162,7 @@ export default function DiaryPage() {
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
-                    className="w-auto pl-3 text-left font-normal bg-amber-50/50 hover:bg-amber-50 border-amber-700/20"
+                    className="w-auto pl-3 text-left font-normal bg-amber-50/50 hover:bg-amber-50 border-amber-700/20 diary-font"
                   >
                     <span>Pick a date</span>
                     <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
@@ -219,7 +194,7 @@ export default function DiaryPage() {
             </div>
           )}
 
-          {!isLoading && !hasEntries && (
+          {!isLoading && !hasEntries && !journalEntry && (
             <div className="text-center text-amber-800/60 diary-font text-2xl py-10">
             </div>
           )}
@@ -237,46 +212,9 @@ export default function DiaryPage() {
                 value={journalEntry}
                 onChange={handleJournalChange}
                 placeholder="Start writing your thoughts for the day..."
-                className="diary-font text-xl text-stone-700/90 leading-relaxed bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-40 resize-none"
-                readOnly={!isSameDay(selectedDate, startOfDay(new Date()))}
+                className="diary-font text-xl text-stone-700/90 leading-relaxed bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-96 resize-none"
               />
             </section>
-          
-            {todaysActivities && todaysActivities.length > 0 && (
-              <section>
-                <h2 className="diary-font text-3xl text-amber-900/70 mb-4 flex items-center gap-3">
-                  <ListChecks className="w-6 h-6 text-amber-900/50" />
-                  Activities Logged
-                </h2>
-                <ul className="space-y-4">
-                  {todaysActivities.map(activity => (
-                    <li key={activity.id} className="diary-font text-xl text-stone-700/90 leading-relaxed">
-                        - Logged <span className="font-bold text-amber-900">{activity.duration} minutes</span> on{' '}
-                        <span className="font-bold text-amber-900">{activity.name}</span>, a session of type <Badge variant="secondary" className="diary-font text-base">{activity.type}</Badge>
-                        , starting at {activity.startTime}.
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {todaysProblems && todaysProblems.length > 0 && (
-              <section>
-                <h2 className="diary-font text-3xl text-amber-900/70 mb-4 flex items-center gap-3">
-                    <Brain className="w-6 h-6 text-amber-900/50" />
-                  Problems Solved
-                </h2>
-                <ul className="space-y-4">
-                  {todaysProblems.map(problem => (
-                    <li key={problem.id} className="diary-font text-xl text-stone-700/90 leading-relaxed">
-                        - Solved <span className="font-bold text-amber-900">{problem.count} problems</span> in{' '}
-                          <span className="font-bold text-amber-900">{problem.category}</span> on the topic of "{problem.name}".
-                        {problem.notes && <p className="text-lg text-stone-600/80 pl-4 mt-1">Notes: "{problem.notes}"</p>}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
           </div>
         </div>
       </div>

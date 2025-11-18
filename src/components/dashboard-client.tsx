@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { Activity } from "@/lib/types";
+import type { Activity, Problem } from "@/lib/types";
 import { useMemo } from "react";
 import { parseISO, startOfDay, differenceInDays } from "date-fns";
 import { useCollection, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
@@ -13,6 +13,9 @@ import { ActivityHistory } from "./activity-history";
 import { TodaysFocusCard } from "./todays-focus-card";
 import { StreakCard } from "./streak-card";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { ActivityLog } from "./activity-log";
+import { ProblemLog } from "./problem-log";
 
 type UserProfile = {
   name?: string;
@@ -115,6 +118,20 @@ export function DashboardClient() {
       </div>
       <div>
         <ActivityHistory activities={allActivities} />
+      </div>
+      <div className="mt-8">
+        <Tabs defaultValue="activities">
+          <TabsList>
+            <TabsTrigger value="activities">Activity Log</TabsTrigger>
+            <TabsTrigger value="problems">Problem Log</TabsTrigger>
+          </TabsList>
+          <TabsContent value="activities" className="mt-4">
+            <ActivityLog />
+          </TabsContent>
+          <TabsContent value="problems" className="mt-4">
+            <ProblemLog />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
