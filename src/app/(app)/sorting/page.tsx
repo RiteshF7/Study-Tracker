@@ -98,15 +98,13 @@ export default function SortingPage() {
         return prevColumns;
       }
       
-      const activeContainer = prevColumns[activeContainerKey];
-      const overContainer = prevColumns[overContainerKey];
-      
       const newColumns = { ...prevColumns };
   
       if (activeContainerKey === overContainerKey) {
         // Reordering within the same column
+        const activeContainer = newColumns[activeContainerKey];
         const oldIndex = activeContainer.items.findIndex((item) => item.id === activeId);
-        const newIndex = overContainer.items.findIndex((item) => item.id === overId);
+        const newIndex = activeContainer.items.findIndex((item) => item.id === overId);
   
         if (oldIndex !== -1 && newIndex !== -1) {
             newColumns[activeContainerKey] = {
@@ -116,6 +114,8 @@ export default function SortingPage() {
         }
       } else {
         // Moving to a different column
+        const activeContainer = newColumns[activeContainerKey];
+        const overContainer = newColumns[overContainerKey];
         const activeIndex = activeContainer.items.findIndex((item) => item.id === activeId);
         if (activeIndex === -1) return prevColumns;
   
