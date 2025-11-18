@@ -196,7 +196,7 @@ export default function DiaryPage() {
                 value={journalEntry}
                 onChange={handleJournalChange}
                 placeholder="Start writing your thoughts for the day..."
-                className="diary-font text-xl text-stone-700/90 leading-relaxed bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-96 resize-none"
+                className="diary-font text-3xl text-stone-700/90 leading-relaxed bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-96 resize-none"
               />
             </section>
           </div>
