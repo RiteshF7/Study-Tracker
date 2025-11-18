@@ -4,7 +4,7 @@
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, doc, setDoc, Timestamp, getDocs } from 'firebase/firestore';
 import type { Activity, Problem, JournalEntry } from '@/lib/types';
-import { format, startOfDay, isSameDay } from 'date-fns';
+import { format, startOfDay, isSameDay, parseISO } from 'date-fns';
 import { BookCopy, Brain, Feather, ListChecks, Calendar as CalendarIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useMemo, useState, useEffect, useCallback } from 'react';
@@ -15,6 +15,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
 export default function DiaryPage() {
   const { user, firestore } = useFirebase();
@@ -22,6 +23,9 @@ export default function DiaryPage() {
   const [journalDoc, setJournalDoc] = useState<{id: string, ref: any} | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
+  const [isBookmarkMode, setIsBookmarkMode] = useState(false);
+  const [datesWithEntries, setDatesWithEntries] = useState<Date[]>([]);
+
 
   const selectedDateString = useMemo(() => format(selectedDate, 'yyyy-MM-dd'), [selectedDate]);
 
@@ -47,9 +51,15 @@ export default function DiaryPage() {
     },
     [user]
   );
+  
+  const allJournalEntriesQuery = useMemoFirebase(
+    (fs) => (user ? collection(fs, 'users', user.uid, 'journalEntries') : null),
+    [user]
+  );
 
   const { data: allActivities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
   const { data: allProblems, isLoading: isLoadingProblems } = useCollection<Problem>(problemsQuery);
+  const { data: allJournalEntries } = useCollection<JournalEntry>(allJournalEntriesQuery);
 
   // --- Journal Entry Logic ---
   useEffect(() => {
@@ -76,6 +86,15 @@ export default function DiaryPage() {
     });
 
   }, [user, firestore, selectedDateString]);
+
+  // --- Bookmark Logic ---
+  useEffect(() => {
+    const dates = new Set<string>();
+    allActivities?.forEach(a => dates.add(format(a.createdAt.toDate(), 'yyyy-MM-dd')));
+    allProblems?.forEach(p => dates.add(format(p.createdAt.toDate(), 'yyyy-MM-dd')));
+    allJournalEntries?.forEach(j => j.summary && dates.add(j.date));
+    setDatesWithEntries(Array.from(dates).map(d => parseISO(d)));
+  }, [allActivities, allProblems, allJournalEntries]);
 
 
   const saveJournalEntry = useCallback(async (entryText: string) => {
@@ -108,7 +127,7 @@ export default function DiaryPage() {
       .catch((serverError) => {
         const permissionError = new FirestorePermissionError({
           path: docRef.path,
-          operation: 'write',
+          operation: journalDoc ? 'update' : 'create',
           requestResourceData: data,
         });
         errorEmitter.emit('permission-error', permissionError);
@@ -148,7 +167,14 @@ export default function DiaryPage() {
     <div className="container mx-auto py-6">
       <div className="max-w-3xl mx-auto">
         <div className="diary-page p-8 rounded-lg relative">
-          <div className="absolute top-4 right-4 text-amber-800/50">
+          <div
+            className={cn(
+              "absolute top-4 right-4 transition-colors duration-300 cursor-pointer",
+              isBookmarkMode ? 'text-yellow-500' : 'text-amber-800/50'
+            )}
+            onClick={() => setIsBookmarkMode(!isBookmarkMode)}
+            title="Toggle Bookmark Mode"
+          >
             <Feather className="w-10 h-10" />
           </div>
           <header className="mb-8 border-b-2 border-amber-700/20 pb-4">
@@ -177,6 +203,8 @@ export default function DiaryPage() {
                     }
                     initialFocus
                     className="diary-font"
+                    modifiers={isBookmarkMode ? { bookmarked: datesWithEntries } : {}}
+                    modifiersClassNames={isBookmarkMode ? { bookmarked: 'day-bookmarked' } : {}}
                   />
                 </PopoverContent>
               </Popover>

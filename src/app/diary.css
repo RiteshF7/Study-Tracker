@@ -17,3 +17,25 @@
 .diary-font {
     font-family: 'MedievalSharp', cursive;
 }
+
+.day-bookmarked {
+    position: relative;
+    overflow: visible !important;
+}
+
+.day-bookmarked::after {
+    content: '';
+    position: absolute;
+    top: -3px; /* Adjust to sit on top of the day cell */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #daa520; /* Goldenrod color for the bookmark */
+}
+
+.dark .day-bookmarked::after {
+     border-top-color: #f59e0b; /* A brighter gold for dark mode */
+}
