@@ -5,22 +5,25 @@ import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, doc, setDoc, Timestamp, getDocs } from 'firebase/firestore';
 import type { Activity, Problem, JournalEntry } from '@/lib/types';
 import { format, startOfDay, isSameDay } from 'date-fns';
-import { BookCopy, Brain, Feather, ListChecks } from 'lucide-react';
+import { BookCopy, Brain, Feather, ListChecks, Calendar as CalendarIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { debounce } from 'lodash';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 
 export default function DiaryPage() {
   const { user, firestore } = useFirebase();
   const [journalEntry, setJournalEntry] = useState('');
   const [journalDoc, setJournalDoc] = useState<{id: string, ref: any} | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
 
-  const today = useMemo(() => startOfDay(new Date()), []);
-  const todayString = useMemo(() => format(today, 'yyyy-MM-dd'), [today]);
+  const selectedDateString = useMemo(() => format(selectedDate, 'yyyy-MM-dd'), [selectedDate]);
 
   // --- Data Fetching ---
   const activitiesQuery = useMemoFirebase(
@@ -53,7 +56,7 @@ export default function DiaryPage() {
     if (!user || !firestore) return;
 
     const journalEntriesCollection = collection(firestore, 'users', user.uid, 'journalEntries');
-    const q = query(journalEntriesCollection, where("date", "==", todayString));
+    const q = query(journalEntriesCollection, where("date", "==", selectedDateString));
 
     getDocs(q).then(snapshot => {
       if (!snapshot.empty) {
@@ -72,7 +75,7 @@ export default function DiaryPage() {
         errorEmitter.emit('permission-error', permissionError);
     });
 
-  }, [user, firestore, todayString]);
+  }, [user, firestore, selectedDateString]);
 
 
   const saveJournalEntry = useCallback(async (entryText: string) => {
@@ -92,7 +95,7 @@ export default function DiaryPage() {
 
     const data: Partial<JournalEntry> = {
       summary: entryText,
-      date: todayString,
+      date: selectedDateString,
       userId: user.uid,
       updatedAt: Timestamp.now(),
     };
@@ -114,7 +117,7 @@ export default function DiaryPage() {
         setIsSaving(false);
       });
 
-  }, [user, firestore, journalDoc, todayString]);
+  }, [user, firestore, journalDoc, selectedDateString]);
 
   const debouncedSave = useMemo(
     () => debounce(saveJournalEntry, 1500),
@@ -130,13 +133,13 @@ export default function DiaryPage() {
   // --- Derived Data ---
   const todaysActivities = useMemo(() => {
     if (!allActivities) return [];
-    return allActivities.filter(activity => activity.createdAt && isSameDay(activity.createdAt.toDate(), today));
-  }, [allActivities, today]);
+    return allActivities.filter(activity => activity.createdAt && isSameDay(activity.createdAt.toDate(), selectedDate));
+  }, [allActivities, selectedDate]);
 
   const todaysProblems = useMemo(() => {
     if (!allProblems) return [];
-    return allProblems.filter(problem => problem.createdAt && isSameDay(problem.createdAt.toDate(), today));
-  }, [allProblems, today]);
+    return allProblems.filter(problem => problem.createdAt && isSameDay(problem.createdAt.toDate(), selectedDate));
+  }, [allProblems, selectedDate]);
 
   const isLoading = isLoadingActivities || isLoadingProblems;
   const hasEntries = (todaysActivities && todaysActivities.length > 0) || (todaysProblems && todaysProblems.length > 0) || journalEntry;
@@ -150,9 +153,33 @@ export default function DiaryPage() {
           </div>
           <header className="mb-8 border-b-2 border-amber-700/20 pb-4">
             <h1 className="diary-font text-5xl text-amber-900/80">The Daily Log</h1>
-            <p className="text-lg text-amber-800/70 diary-font mt-1">
-              {format(today, "EEEE, MMMM do, yyyy")}
-            </p>
+            <div className="flex items-center gap-4 mt-2">
+              <p className="text-lg text-amber-800/70 diary-font mt-1">
+                {format(selectedDate, "EEEE, MMMM do, yyyy")}
+              </p>
+               <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className="w-auto pl-3 text-left font-normal bg-amber-50/50 hover:bg-amber-50 border-amber-700/20"
+                  >
+                    <span>Pick a date</span>
+                    <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(startOfDay(date))}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </header>
 
           {isLoading && (
@@ -180,6 +207,7 @@ export default function DiaryPage() {
                 onChange={handleJournalChange}
                 placeholder="Start writing your thoughts for the day..."
                 className="diary-font text-xl text-stone-700/90 leading-relaxed bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-40 resize-none"
+                readOnly={!isSameDay(selectedDate, startOfDay(new Date()))}
               />
             </section>
           
