@@ -136,7 +136,6 @@ export default function DiaryPage() {
   };
   
   const isLoading = isLoadingActivities || isLoadingProblems;
-  const hasEntries = journalEntry;
 
   return (
     <div className="container mx-auto py-6">
@@ -191,11 +190,6 @@ export default function DiaryPage() {
           {isLoading && (
             <div className="text-center text-amber-800/60 diary-font text-2xl">
               Flipping to the right page...
-            </div>
-          )}
-
-          {!isLoading && !hasEntries && !journalEntry && (
-            <div className="text-center text-amber-800/60 diary-font text-2xl py-10">
             </div>
           )}
 
