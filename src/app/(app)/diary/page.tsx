@@ -3,7 +3,7 @@
 
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, setDoc, Timestamp, getDocs } from 'firebase/firestore';
-import type { Activity, Problem, JournalEntry } from '@/lib/types';
+import type { JournalEntry } from '@/lib/types';
 import { format, startOfDay, parseISO } from 'date-fns';
 import { BookCopy, Feather, Calendar as CalendarIcon } from 'lucide-react';
 import { useMemo, useState, useEffect, useCallback } from 'react';
@@ -28,59 +28,45 @@ export default function DiaryPage() {
 
   const selectedDateString = useMemo(() => format(selectedDate, 'yyyy-MM-dd'), [selectedDate]);
 
-  // --- Data Fetching for Bookmarks ---
-   const activitiesQuery = useMemoFirebase(
-    (fs) => (user ? collection(fs, 'users', user.uid, 'activities') : null),
-    [user]
-  );
-  const problemsQuery = useMemoFirebase(
-    (fs) => (user ? collection(fs, 'users', user.uid, 'problems') : null),
-    [user]
-  );
+  // --- Data Fetching for Bookmarks and Journal ---
   const allJournalEntriesQuery = useMemoFirebase(
     (fs) => (user ? collection(fs, 'users', user.uid, 'journalEntries') : null),
     [user]
   );
 
-  const { data: allActivities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
-  const { data: allProblems, isLoading: isLoadingProblems } = useCollection<Problem>(problemsQuery);
-  const { data: allJournalEntries } = useCollection<JournalEntry>(allJournalEntriesQuery);
+  const { data: allJournalEntries, isLoading } = useCollection<JournalEntry>(allJournalEntriesQuery);
 
 
   // --- Journal Entry Logic ---
   useEffect(() => {
     if (!user || !firestore) return;
 
-    const journalEntriesCollection = collection(firestore, 'users', user.uid, 'journalEntries');
-    const q = query(journalEntriesCollection, where("date", "==", selectedDateString));
+    // We can derive the current day's entry from the already fetched allJournalEntries
+    const entryForSelectedDate = allJournalEntries?.find(j => j.date === selectedDateString);
 
-    getDocs(q).then(snapshot => {
-      if (!snapshot.empty) {
-        const doc = snapshot.docs[0];
-        setJournalEntry((doc.data() as JournalEntry).summary || '');
-        setJournalDoc({ id: doc.id, ref: doc.ref });
-      } else {
-        setJournalEntry('');
-        setJournalDoc(null);
-      }
-    }).catch(error => {
-        const permissionError = new FirestorePermissionError({
-            path: `users/${user.uid}/journalEntries`,
-            operation: 'list',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    });
+    if (entryForSelectedDate) {
+      const entryDocRef = doc(firestore, 'users', user.uid, 'journalEntries', entryForSelectedDate.id!);
+      setJournalEntry(entryForSelectedDate.summary || '');
+      setJournalDoc({ id: entryForSelectedDate.id!, ref: entryDocRef });
+    } else {
+      setJournalEntry('');
+      setJournalDoc(null);
+    }
+  }, [user, firestore, selectedDateString, allJournalEntries]);
 
-  }, [user, firestore, selectedDateString]);
 
   // --- Bookmark Logic ---
   useEffect(() => {
-    const dates = new Set<string>();
-    allActivities?.forEach(a => a.date && dates.add(a.date));
-    allProblems?.forEach(p => p.date && dates.add(p.date));
-    allJournalEntries?.forEach(j => j.summary && dates.add(j.date));
-    setDatesWithEntries(Array.from(dates).map(d => parseISO(d)));
-  }, [allActivities, allProblems, allJournalEntries]);
+    if (allJournalEntries) {
+      const dates = new Set<string>();
+      allJournalEntries.forEach(j => {
+          if (j.summary) { // Only count entries with actual content
+              dates.add(j.date);
+          }
+      });
+      setDatesWithEntries(Array.from(dates).map(d => parseISO(d)));
+    }
+  }, [allJournalEntries]);
 
 
   const saveJournalEntry = useCallback(async (entryText: string) => {
@@ -135,7 +121,6 @@ export default function DiaryPage() {
     debouncedSave(e.target.value);
   };
   
-  const isLoading = isLoadingActivities || isLoadingProblems;
 
   return (
     <div className="container mx-auto py-6">
@@ -143,8 +128,8 @@ export default function DiaryPage() {
         <div className="diary-page p-8 rounded-lg relative">
           <div
             className={cn(
-              "absolute top-4 right-4 transition-colors duration-300 cursor-pointer",
-              isBookmarkMode ? 'text-yellow-500' : 'text-amber-800/50'
+              "absolute top-4 right-4 transition-all duration-300 cursor-pointer",
+              isBookmarkMode ? 'text-amber-500 drop-shadow-[0_2px_4px_rgba(255,193,7,0.5)]' : 'text-amber-800/50 hover:text-amber-800/80'
             )}
             onClick={() => setIsBookmarkMode(!isBookmarkMode)}
             title="Toggle Bookmark Mode"
