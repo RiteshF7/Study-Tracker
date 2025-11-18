@@ -176,6 +176,7 @@ export default function DiaryPage() {
                       date > new Date() || date < new Date("1900-01-01")
                     }
                     initialFocus
+                    className="diary-font"
                   />
                 </PopoverContent>
               </Popover>
