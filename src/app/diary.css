@@ -1,3 +1,4 @@
+
 .diary-page {
     background-color: #fdf5e6; /* A parchment-like color */
     background-image: linear-gradient(rgba(245, 222, 179, 0.2) 1px, transparent 1px),
@@ -38,4 +39,18 @@
 
 .dark .day-bookmarked::after {
      border-top-color: #f59e0b; /* A brighter gold for dark mode */
+}
+
+.diary-page .rdp-day_selected,
+.diary-page .rdp-day_selected:hover,
+.diary-page .rdp-day_selected:focus {
+    background-color: #daa520 !important;
+    color: #fff !important;
+}
+
+.dark .diary-page .rdp-day_selected,
+.dark .diary-page .rdp-day_selected:hover,
+.dark .diary-page .rdp-day_selected:focus {
+    background-color: #f59e0b !important;
+    color: #1c1917 !important;
 }

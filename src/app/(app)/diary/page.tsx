@@ -204,7 +204,9 @@ export default function DiaryPage() {
                     initialFocus
                     className="diary-font"
                     modifiers={isBookmarkMode ? { bookmarked: datesWithEntries } : {}}
-                    modifiersClassNames={isBookmarkMode ? { bookmarked: 'day-bookmarked' } : {}}
+                    modifiersClassNames={isBookmarkMode ? { bookmarked: 'day-bookmarked' } : {
+                      selected: 'rdp-day_selected',
+                    }}
                   />
                 </PopoverContent>
               </Popover>
