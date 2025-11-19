@@ -90,8 +90,8 @@ export default function LandingPage() {
         <main className="flex-1">
             <section className="w-full py-20 md:py-32 lg:py-40 bg-gradient-to-br from-background to-muted/30">
                 <div className="container px-4 md:px-6">
-                    <div className="grid gap-8 lg:grid-cols-2 lg:gap-16 items-center">
-                        <div className="flex flex-col justify-center space-y-6">
+                    <div className="grid gap-8 lg:grid-cols-1 lg:gap-16 items-center text-center">
+                        <div className="flex flex-col items-center justify-center space-y-6">
                             <div className="space-y-4">
                                 <div className="inline-block rounded-lg bg-primary/10 text-primary px-3 py-1 text-sm font-semibold">
                                     Your All-in-One Study Companion
@@ -99,7 +99,7 @@ export default function LandingPage() {
                                 <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl/none font-headline">
                                     Achieve Academic Excellence
                                 </h1>
-                                <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                                <p className="max-w-[600px] mx-auto text-muted-foreground md:text-xl">
                                     StudyTrack helps you monitor habits, optimize your schedule with AI, and organize your learning to hit your goals.
                                 </p>
                             </div>
@@ -112,16 +112,6 @@ export default function LandingPage() {
                                 </Button>
                                  <p className="text-xs text-muted-foreground mt-2 text-center">Free to use, sign up in seconds.</p>
                             </div>
-                        </div>
-                         <div className="hidden lg:flex items-center justify-center">
-                            <img
-                                src="https://picsum.photos/seed/hero-image-main/600/500"
-                                width="600"
-                                height="500"
-                                alt="Student studying with charts"
-                                data-ai-hint="study analytics dashboard"
-                                className="mx-auto aspect-[6/5] overflow-hidden rounded-xl object-cover shadow-2xl"
-                            />
                         </div>
                     </div>
                 </div>
