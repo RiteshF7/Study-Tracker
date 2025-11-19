@@ -53,14 +53,6 @@ export default function LandingPage() {
     }
   }, [user, isUserLoading, router]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsCarouselOpen(true);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   const handleGoogleSignIn = () => {
     if (auth) {
         initiateGoogleSignIn(auth);
