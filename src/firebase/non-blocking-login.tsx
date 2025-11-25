@@ -9,36 +9,23 @@ import {
   // Assume getAuth and app are initialized elsewhere
 } from 'firebase/auth';
 
-/** Initiate anonymous sign-in (non-blocking). */
-export function initiateAnonymousSignIn(authInstance: Auth): void {
-  // CRITICAL: Call signInAnonymously directly. Do NOT use 'await signInAnonymously(...)'.
-  signInAnonymously(authInstance);
-  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+/** Initiate anonymous sign-in. */
+export function initiateAnonymousSignIn(authInstance: Auth) {
+  return signInAnonymously(authInstance);
 }
 
-/** Initiate email/password sign-up (non-blocking). */
-export function initiateEmailSignUp(authInstance: Auth, email: string, password: string): void {
-  // CRITICAL: Call createUserWithEmailAndPassword directly. Do NOT use 'await createUserWithEmailAndPassword(...)'.
-  createUserWithEmailAndPassword(authInstance, email, password);
-  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+/** Initiate email/password sign-up. */
+export function initiateEmailSignUp(authInstance: Auth, email: string, password: string) {
+  return createUserWithEmailAndPassword(authInstance, email, password);
 }
 
-/** Initiate email/password sign-in (non-blocking). */
-export function initiateEmailSignIn(authInstance: Auth, email: string, password: string): void {
-  // CRITICAL: Call signInWithEmailAndPassword directly. Do NOT use 'await signInWithEmailAndPassword(...)'.
-  signInWithEmailAndPassword(authInstance, email, password);
-  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+/** Initiate email/password sign-in. */
+export function initiateEmailSignIn(authInstance: Auth, email: string, password: string) {
+  return signInWithEmailAndPassword(authInstance, email, password);
 }
 
-/** Initiate Google sign-in (non-blocking). */
-export function initiateGoogleSignIn(authInstance: Auth): void {
+/** Initiate Google sign-in. */
+export function initiateGoogleSignIn(authInstance: Auth) {
   const provider = new GoogleAuthProvider();
-  // Non-blocking: do not await
-  signInWithPopup(authInstance, provider).catch(error => {
-    // This error occurs when the user closes the popup.
-    // It's safe to ignore, as it's a user action, not a bug.
-    if (error.code !== 'auth/popup-closed-by-user') {
-      console.error("Google Sign-In Error:", error);
-    }
-  });
+  return signInWithPopup(authInstance, provider);
 }

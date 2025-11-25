@@ -6,6 +6,7 @@ import { useAuth, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { BookOpenCheck, BarChart3, BrainCircuit, CalendarClock, ListTodo, User } from 'lucide-react';
 import { TrafficLight } from '@/components/icons/traffic-light';
 import { FcGoogle } from 'react-icons/fc';
@@ -42,118 +43,144 @@ const features = [
 ];
 
 export default function LandingPage() {
-  const auth = useAuth();
-  const { user, isUserLoading } = useUser();
-  const router = useRouter();
-  const [isCarouselOpen, setIsCarouselOpen] = useState(false);
+    const auth = useAuth();
+    const { user, isUserLoading } = useUser();
+    const router = useRouter();
+    const [isCarouselOpen, setIsCarouselOpen] = useState(false);
+    const { toast } = useToast();
+    const [isSigningIn, setIsSigningIn] = useState(false);
 
-  useEffect(() => {
-    if (!isUserLoading && user) {
-      router.push('/home');
-    }
-  }, [user, isUserLoading, router]);
+    useEffect(() => {
+        if (!isUserLoading && user) {
+            router.push('/home');
+        }
+    }, [user, isUserLoading, router]);
 
-  const handleGoogleSignIn = () => {
-    if (auth) {
-        initiateGoogleSignIn(auth);
-    }
-  };
+    const handleGoogleSignIn = async () => {
+        if (auth) {
+            try {
+                setIsSigningIn(true);
+                await initiateGoogleSignIn(auth);
+            } catch (error: any) {
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    toast({
+                        variant: "destructive",
+                        title: "Sign In Error",
+                        description: error.message || "An error occurred during sign in.",
+                    });
+                }
+            } finally {
+                setIsSigningIn(false);
+            }
+        }
+    };
 
-  const handleAnonymousSignIn = () => {
-      if (auth) {
-          initiateAnonymousSignIn(auth);
-      }
-  };
+    const handleAnonymousSignIn = async () => {
+        if (auth) {
+            try {
+                setIsSigningIn(true);
+                await initiateAnonymousSignIn(auth);
+            } catch (error: any) {
+                toast({
+                    variant: "destructive",
+                    title: "Sign In Error",
+                    description: error.message || "An error occurred during guest sign in.",
+                });
+            } finally {
+                setIsSigningIn(false);
+            }
+        }
+    };
 
-  return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-        <FeatureCarousel open={isCarouselOpen} onOpenChange={setIsCarouselOpen} />
-        <header className="px-4 lg:px-6 h-16 flex items-center shadow-sm">
-            <Link href="/" className="flex items-center justify-center gap-2" prefetch={false}>
-                <BookOpenCheck className="h-7 w-7 text-primary" />
-                <span className="font-bold text-2xl font-headline">StudyTrack</span>
-            </Link>
-            <nav className="ml-auto flex gap-4 sm:gap-6">
-                <Button variant="ghost" onClick={() => setIsCarouselOpen(true)}>Features</Button>
-                <Button variant="ghost">Pricing</Button>
-                <Button variant="ghost">Contact</Button>
-            </nav>
-        </header>
-        <main className="flex-1">
-            <section className="w-full py-20 md:py-32 lg:py-40 bg-gradient-to-br from-background to-muted/30">
-                <div className="container px-4 md:px-6">
-                    <div className="grid gap-8 lg:grid-cols-1 lg:gap-16 items-center text-center">
-                        <div className="flex flex-col items-center justify-center space-y-6">
-                            <div className="space-y-4">
-                                <div className="inline-block rounded-lg bg-primary/10 text-primary px-3 py-1 text-sm font-semibold">
-                                    Your All-in-One Study Companion
+    return (
+        <div className="flex flex-col min-h-screen bg-background text-foreground">
+            <FeatureCarousel open={isCarouselOpen} onOpenChange={setIsCarouselOpen} />
+            <header className="px-4 lg:px-6 h-16 flex items-center shadow-sm">
+                <Link href="/" className="flex items-center justify-center gap-2" prefetch={false}>
+                    <BookOpenCheck className="h-7 w-7 text-primary" />
+                    <span className="font-bold text-2xl font-headline">StudyTrack</span>
+                </Link>
+                <nav className="ml-auto flex gap-4 sm:gap-6">
+                    <Button variant="ghost" onClick={() => setIsCarouselOpen(true)}>Features</Button>
+                    <Button variant="ghost">Pricing</Button>
+                    <Button variant="ghost">Contact</Button>
+                </nav>
+            </header>
+            <main className="flex-1">
+                <section className="w-full py-20 md:py-32 lg:py-40 bg-gradient-to-br from-background to-muted/30">
+                    <div className="container px-4 md:px-6">
+                        <div className="grid gap-8 lg:grid-cols-1 lg:gap-16 items-center text-center">
+                            <div className="flex flex-col items-center justify-center space-y-6">
+                                <div className="space-y-4">
+                                    <div className="inline-block rounded-lg bg-primary/10 text-primary px-3 py-1 text-sm font-semibold">
+                                        Your All-in-One Study Companion
+                                    </div>
+                                    <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl/none font-headline">
+                                        Achieve Academic Excellence
+                                    </h1>
+                                    <p className="max-w-[600px] mx-auto text-muted-foreground md:text-xl">
+                                        StudyTrack helps you monitor habits, optimize your schedule with AI, and organize your learning to hit your goals.
+                                    </p>
                                 </div>
-                                <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl/none font-headline">
-                                    Achieve Academic Excellence
-                                </h1>
-                                <p className="max-w-[600px] mx-auto text-muted-foreground md:text-xl">
-                                    StudyTrack helps you monitor habits, optimize your schedule with AI, and organize your learning to hit your goals.
+                                <div className="w-full max-w-sm space-y-2">
+                                    <Button onClick={handleGoogleSignIn} size="lg" variant="outline" className="w-full text-lg py-6 border-2 border-border hover:bg-primary/10 hover:border-primary" disabled={isUserLoading || isSigningIn}>
+                                        <FcGoogle className="mr-3 h-6 w-6" /> Get Started with Google
+                                    </Button>
+                                    <Button onClick={handleAnonymousSignIn} size="lg" variant="secondary" className="w-full text-lg py-6" disabled={isUserLoading || isSigningIn}>
+                                        <User className="mr-3 h-6 w-6" /> Try as Guest
+                                    </Button>
+                                    <p className="text-xs text-muted-foreground mt-2 text-center">Free to use, sign up in seconds.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="features" className="w-full py-20 md:py-24 lg:py-32 bg-background">
+                    <div className="container px-4 md:px-6">
+                        <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
+                            <div className="space-y-2">
+                                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl font-headline">Everything You Need to Succeed</h2>
+                                <p className="max-w-[900px] text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed">
+                                    From activity tracking to AI-powered recommendations, StudyTrack provides the tools to enhance your learning journey.
                                 </p>
                             </div>
-                            <div className="w-full max-w-sm space-y-2">
-                                <Button onClick={handleGoogleSignIn} size="lg" variant="outline" className="w-full text-lg py-6 border-2 border-border hover:bg-primary/10 hover:border-primary" disabled={isUserLoading}>
-                                    <FcGoogle className="mr-3 h-6 w-6" /> Get Started with Google
-                                </Button>
-                                <Button onClick={handleAnonymousSignIn} size="lg" variant="secondary" className="w-full text-lg py-6" disabled={isUserLoading}>
-                                    <User className="mr-3 h-6 w-6" /> Try as Guest
-                                </Button>
-                                 <p className="text-xs text-muted-foreground mt-2 text-center">Free to use, sign up in seconds.</p>
-                            </div>
+                        </div>
+                        <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3">
+                            {features.map((feature) => (
+                                <Card key={feature.title} className="hover:shadow-lg transition-shadow">
+                                    <CardContent className="p-6 text-center">
+                                        <div className="flex justify-center items-center mb-4">
+                                            <div className="bg-primary/10 p-4 rounded-full">
+                                                {feature.icon}
+                                            </div>
+                                        </div>
+                                        <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+                                        <p className="text-sm text-muted-foreground">{feature.description}</p>
+                                    </CardContent>
+                                </Card>
+                            ))}
                         </div>
                     </div>
+                </section>
+            </main>
+            <footer className="bg-muted/40 border-t">
+                <div className="container flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6">
+                    <p className="text-xs text-muted-foreground">&copy; 2024 StudyTrack. All rights reserved.</p>
+                    <nav className="sm:ml-auto flex gap-4 sm:gap-6">
+                        <Button variant='link' asChild className="text-xs hover:underline underline-offset-4">
+                            <Link href="#features" prefetch={false}>
+                                Features
+                            </Link>
+                        </Button>
+                        <Button variant='link' className='text-xs'>
+                            Pricing
+                        </Button>
+                        <Button variant='link' className='text-xs'>
+                            Contact
+                        </Button>
+                    </nav>
                 </div>
-            </section>
-            <section id="features" className="w-full py-20 md:py-24 lg:py-32 bg-background">
-                <div className="container px-4 md:px-6">
-                    <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
-                        <div className="space-y-2">
-                            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl font-headline">Everything You Need to Succeed</h2>
-                            <p className="max-w-[900px] text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed">
-                                From activity tracking to AI-powered recommendations, StudyTrack provides the tools to enhance your learning journey.
-                            </p>
-                        </div>
-                    </div>
-                    <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3">
-                        {features.map((feature) => (
-                            <Card key={feature.title} className="hover:shadow-lg transition-shadow">
-                                <CardContent className="p-6 text-center">
-                                    <div className="flex justify-center items-center mb-4">
-                                      <div className="bg-primary/10 p-4 rounded-full">
-                                        {feature.icon}
-                                      </div>
-                                    </div>
-                                    <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                                    <p className="text-sm text-muted-foreground">{feature.description}</p>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </div>
-            </section>
-        </main>
-        <footer className="bg-muted/40 border-t">
-          <div className="container flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6">
-              <p className="text-xs text-muted-foreground">&copy; 2024 StudyTrack. All rights reserved.</p>
-              <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-                  <Button variant='link' asChild className="text-xs hover:underline underline-offset-4">
-                      <Link href="#features" prefetch={false}>
-                          Features
-                      </Link>
-                  </Button>
-                  <Button variant='link' className='text-xs'>
-                    Pricing
-                  </Button>
-                  <Button variant='link' className='text-xs'>
-                    Contact
-                  </Button>
-              </nav>
-          </div>
-        </footer>
-    </div>
-  );
+            </footer>
+        </div>
+    );
 }

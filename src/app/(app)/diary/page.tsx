@@ -5,7 +5,7 @@ import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, setDoc, Timestamp, getDocs } from 'firebase/firestore';
 import type { JournalEntry } from '@/lib/types';
 import { format, startOfDay, parseISO } from 'date-fns';
-import { BookCopy, Feather, Calendar as CalendarIcon } from 'lucide-react';
+import { BookCopy, Bookmark, Calendar as CalendarIcon } from 'lucide-react';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { debounce } from 'lodash';
@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 export default function DiaryPage() {
   const { user, firestore } = useFirebase();
   const [journalEntry, setJournalEntry] = useState('');
-  const [journalDoc, setJournalDoc] = useState<{id: string, ref: any} | null>(null);
+  const [journalDoc, setJournalDoc] = useState<{ id: string, ref: any } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [isBookmarkMode, setIsBookmarkMode] = useState(false);
@@ -60,9 +60,9 @@ export default function DiaryPage() {
     if (allJournalEntries) {
       const dates = new Set<string>();
       allJournalEntries.forEach(j => {
-          if (j.summary) { // Only count entries with actual content
-              dates.add(j.date);
-          }
+        if (j.summary) { // Only count entries with actual content
+          dates.add(j.date);
+        }
       });
       setDatesWithEntries(Array.from(dates).map(d => parseISO(d)));
     }
@@ -72,7 +72,7 @@ export default function DiaryPage() {
   const saveJournalEntry = useCallback(async (entryText: string) => {
     if (!user || !firestore) return;
     setIsSaving(true);
-    
+
     const collectionRef = collection(firestore, 'users', user.uid, 'journalEntries');
     let docRef;
 
@@ -90,7 +90,7 @@ export default function DiaryPage() {
       userId: user.uid,
       updatedAt: Timestamp.now(),
     };
-    
+
     if (!journalDoc) {
       data.createdAt = Timestamp.now();
     }
@@ -120,7 +120,7 @@ export default function DiaryPage() {
     setIsSaving(true);
     debouncedSave(e.target.value);
   };
-  
+
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
       setSelectedDate(startOfDay(date));
@@ -132,28 +132,28 @@ export default function DiaryPage() {
   return (
     <div className="container mx-auto py-6">
       <div className="max-w-3xl mx-auto">
-        <div className="diary-page p-8 rounded-lg relative">
+        <div className="diary-page p-8 rounded-lg relative transition-all duration-500">
           <div
             className={cn(
-              "absolute top-4 right-4 transition-all duration-300 cursor-pointer",
-              isBookmarkMode ? 'text-amber-500 drop-shadow-[0_2px_4px_rgba(255,193,7,0.5)]' : 'text-amber-800/50 hover:text-amber-800/80'
+              "absolute top-0 right-8 transition-all duration-300 cursor-pointer p-2 rounded-b-md",
+              isBookmarkMode ? 'text-red-600 drop-shadow-[0_2px_4px_rgba(220,38,38,0.5)]' : 'text-amber-800/40 hover:text-red-500/70'
             )}
             onClick={() => setIsBookmarkMode(!isBookmarkMode)}
             title="Toggle Bookmark Mode"
           >
-            <Feather className="w-10 h-10" />
+            <Bookmark className={cn("w-12 h-12 transition-transform", isBookmarkMode && "scale-110")} fill={isBookmarkMode ? "currentColor" : "none"} />
           </div>
-          <header className="mb-8 border-b-2 border-amber-700/20 pb-4">
-            <h1 className="diary-font text-5xl text-amber-900/80">The Daily Log</h1>
+          <header className="mb-8 border-b-2 border-amber-700/20 pb-4 mt-4">
+            <h1 className="diary-font text-5xl text-amber-900/80 drop-shadow-sm">The Daily Log</h1>
             <div className="flex items-center gap-4 mt-2">
               <p className="text-lg text-amber-800/70 diary-font mt-1">
                 {format(selectedDate, "EEEE, MMMM do, yyyy")}
               </p>
-               <Popover>
+              <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
-                    className="w-auto pl-3 text-left font-normal bg-amber-50/50 hover:bg-amber-50 border-amber-700/20 diary-font"
+                    className="w-auto pl-3 text-left font-normal bg-amber-50/50 hover:bg-amber-50 border-amber-700/20 diary-font shadow-sm hover:shadow-md transition-all"
                   >
                     <span>Pick a date</span>
                     <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
@@ -178,7 +178,7 @@ export default function DiaryPage() {
           </header>
 
           {isLoading && (
-            <div className="text-center text-amber-800/60 diary-font text-2xl">
+            <div className="text-center text-amber-800/60 diary-font text-2xl animate-pulse">
               Flipping to the right page...
             </div>
           )}
@@ -196,7 +196,7 @@ export default function DiaryPage() {
                 value={journalEntry}
                 onChange={handleJournalChange}
                 placeholder="Start writing your thoughts for the day..."
-                className="diary-font text-3xl text-stone-700/90 leading-relaxed bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-96 resize-none"
+                className="diary-font lined-paper text-3xl text-stone-700/90 leading-relaxed bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-96 resize-none"
               />
             </section>
           </div>
