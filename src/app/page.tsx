@@ -23,16 +23,51 @@ const faqs = [
         answer: "Yes, StudyTrack is completely free for students. You can sign in with Google or try it as a guest to access all features without any cost."
     },
     {
-        question: "Can I use it offline?",
-        answer: "Currently, StudyTrack requires an internet connection to sync your data securely to the cloud and provide AI-powered features."
+        question: "Can I use it on my phone?",
+        answer: "Absolutely! StudyTrack is fully responsive and optimized for mobile browsers, so you can track your progress and manage your schedule on the go."
+    },
+    {
+        question: "What happens if I miss a scheduled study session?",
+        answer: "No stress. Our AI Planner detects missed tasks and intelligently suggests a rescheduled plan to keep you on track without the guilt."
     },
     {
         question: "How does the AI Planner work?",
-        answer: "Our AI analyzes your study habits, available time, and subject confidence levels to suggest an optimized schedule that maximizes your productivity and helps you reach your academic goals."
+        answer: "Our AI analyzes your study habits, available time, and subject confidence levels to suggest an optimized schedule that maximizes your productivity."
     },
     {
         question: "Is my data private?",
-        answer: "Absolutely. We prioritize your privacy and only use your data to provide the features you use. We do not sell your personal information to third parties."
+        answer: "Your privacy is our priority. Your journal entries and personal data are encrypted and stored securely. We do not sell your information."
+    },
+    {
+        question: "Can I use it offline?",
+        answer: "Currently, StudyTrack requires an internet connection to sync your data securely to the cloud and provide AI-powered features."
+    }
+];
+
+const capabilities = [
+    {
+        title: "Magical Diary",
+        subtitle: "Reflect & Release",
+        description: "A private sanctuary to declutter your mind. Capture thoughts in a distraction-free environment to boost mental clarity.",
+        delay: false
+    },
+    {
+        title: "Dynamic Planner",
+        subtitle: "Fluid Scheduling",
+        description: "Life happens. Your schedule adapts automatically to your changing day, ensuring you never fall behind.",
+        delay: true
+    },
+    {
+        title: "Smart Sorting",
+        subtitle: "Targeted Focus",
+        description: "Stop guessing what to study. Instantly identify and attack your weakest subjects with confidence-based sorting.",
+        delay: false
+    },
+    {
+        title: "Visual Analytics",
+        subtitle: "See the Win",
+        description: "Turn effort into visible progress. Insightful graphs and streaks keep you motivated to push further.",
+        delay: true
     }
 ];
 
@@ -134,7 +169,34 @@ export default function LandingPage() {
                         </div>
                     </div>
                 </section>
-                <section id="faqs" className="w-full py-20 md:py-24 lg:py-32 bg-background">
+
+                <section className="w-full py-20 bg-background overflow-hidden">
+                    <div className="container px-4 md:px-6">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl font-headline mb-4">Unlock Your Potential</h2>
+                            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                                Powerful tools designed to elevate your study game.
+                            </p>
+                        </div>
+                        <div className="grid gap-8 md:grid-cols-2 lg:gap-12 max-w-5xl mx-auto">
+                            {capabilities.map((cap, index) => (
+                                <div
+                                    key={cap.title}
+                                    className={`relative p-8 rounded-2xl bg-card border shadow-lg hover:shadow-xl transition-shadow ${cap.delay ? 'animate-float-delayed' : 'animate-float'}`}
+                                >
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent rounded-t-2xl opacity-80"></div>
+                                    <h3 className="text-2xl font-bold mb-2">{cap.title}</h3>
+                                    <p className="text-sm font-semibold text-primary mb-4 uppercase tracking-wide">{cap.subtitle}</p>
+                                    <p className="text-muted-foreground leading-relaxed">
+                                        {cap.description}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                <section id="faqs" className="w-full py-20 md:py-24 lg:py-32 bg-muted/30">
                     <div className="container px-4 md:px-6">
                         <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                             <div className="space-y-2">
