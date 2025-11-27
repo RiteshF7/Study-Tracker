@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { BookOpenCheck, User } from 'lucide-react';
+import { BookOpenCheck, User, Mail, Check, Lock } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
 import Link from 'next/link';
 import {
@@ -71,6 +71,45 @@ const capabilities = [
     }
 ];
 
+const pricingPackages = [
+    {
+        title: "Student Starter",
+        price: "Free",
+        description: "Essential tools for every student.",
+        features: ["Activity Tracking", "Basic Analytics", "3 Subjects"]
+    },
+    {
+        title: "Scholar Plus",
+        price: "$4.99",
+        description: "Advanced AI limits and custom themes.",
+        features: ["Unlimited Subjects", "AI Planner (Basic)", "Dark Mode"]
+    },
+    {
+        title: "Academic Pro",
+        price: "$9.99",
+        description: "Unlimited AI, detailed analytics, and priority support.",
+        features: ["Advanced AI Planner", "Full Analytics", "Priority Support"]
+    },
+    {
+        title: "Study Group",
+        price: "$19.99",
+        description: "Collaborative features for up to 5 students.",
+        features: ["Shared Schedules", "Group Chat", "File Sharing"]
+    },
+    {
+        title: "Institution",
+        price: "Custom",
+        description: "Admin dashboard and bulk management for schools.",
+        features: ["Admin Dashboard", "Bulk User Mgmt", "SSO"]
+    },
+    {
+        title: "Lifetime Learner",
+        price: "$199",
+        description: "Pay once, own it forever. All Pro features included.",
+        features: ["Lifetime Access", "All Pro Features", "Early Access"]
+    }
+];
+
 export default function LandingPage() {
     const auth = useAuth();
     const { user, isUserLoading } = useUser();
@@ -120,8 +159,8 @@ export default function LandingPage() {
         }
     };
 
-    const scrollToFaqs = () => {
-        const element = document.getElementById('faqs');
+    const scrollToSection = (id: string) => {
+        const element = document.getElementById(id);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
         }
@@ -129,15 +168,15 @@ export default function LandingPage() {
 
     return (
         <div className="flex flex-col min-h-screen bg-background text-foreground">
-            <header className="px-4 lg:px-6 h-16 flex items-center shadow-sm">
+            <header className="px-4 lg:px-6 h-16 flex items-center shadow-sm sticky top-0 bg-background/80 backdrop-blur-md z-50">
                 <Link href="/" className="flex items-center justify-center gap-2" prefetch={false}>
                     <BookOpenCheck className="h-7 w-7 text-primary" />
                     <span className="font-bold text-2xl font-headline">StudyTrack</span>
                 </Link>
                 <nav className="ml-auto flex gap-4 sm:gap-6">
-                    <Button variant="ghost" onClick={scrollToFaqs}>FAQs</Button>
-                    <Button variant="ghost">Pricing</Button>
-                    <Button variant="ghost">Contact</Button>
+                    <Button variant="ghost" onClick={() => scrollToSection('faqs')}>FAQs</Button>
+                    <Button variant="ghost" onClick={() => scrollToSection('pricing')}>Pricing</Button>
+                    <Button variant="ghost" onClick={() => scrollToSection('contact')}>Contact</Button>
                 </nav>
             </header>
             <main className="flex-1">
@@ -220,6 +259,68 @@ export default function LandingPage() {
                         </div>
                     </div>
                 </section>
+
+                <section id="pricing" className="w-full py-20 md:py-24 lg:py-32 bg-background">
+                    <div className="container px-4 md:px-6">
+                        <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
+                            <div className="space-y-2">
+                                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl font-headline">Simple Pricing</h2>
+                                <p className="max-w-[900px] text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed">
+                                    Choose the plan that fits your academic journey.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+                            {pricingPackages.map((pkg, index) => (
+                                <div key={index} className="relative flex flex-col p-6 bg-card text-card-foreground rounded-lg border shadow-sm overflow-hidden group">
+                                    {/* Coming Soon Overlay */}
+                                    <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] z-10 flex items-center justify-center opacity-100 transition-opacity">
+                                        <div className="bg-primary/90 text-primary-foreground px-4 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+                                            <Lock className="w-4 h-4" /> Coming Soon
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2 mb-4 opacity-50">
+                                        <h3 className="text-2xl font-bold">{pkg.title}</h3>
+                                        <div className="text-3xl font-bold">{pkg.price}</div>
+                                        <p className="text-muted-foreground text-sm">{pkg.description}</p>
+                                    </div>
+                                    <ul className="space-y-2 mb-6 flex-1 opacity-50">
+                                        {pkg.features.map((feature, i) => (
+                                            <li key={i} className="flex items-center gap-2 text-sm">
+                                                <Check className="w-4 h-4 text-primary" />
+                                                {feature}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <Button className="w-full mt-auto opacity-50 cursor-not-allowed" disabled>Choose Plan</Button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                <section id="contact" className="w-full py-20 md:py-24 lg:py-32 bg-muted/30">
+                    <div className="container px-4 md:px-6">
+                        <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                            <div className="space-y-2">
+                                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl font-headline">Get in Touch</h2>
+                                <p className="max-w-[600px] text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed">
+                                    Have questions or feedback? We'd love to hear from you.
+                                </p>
+                            </div>
+                            <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center items-center mt-8">
+                                <a
+                                    href="mailto:priyanshurao369@gmail.com"
+                                    className="inline-flex h-12 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 gap-2"
+                                >
+                                    <Mail className="w-5 h-5" />
+                                    priyanshurao369@gmail.com
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </main>
             <footer className="bg-muted/40 border-t">
                 <div className="container flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6">
@@ -230,11 +331,15 @@ export default function LandingPage() {
                                 FAQs
                             </Link>
                         </Button>
-                        <Button variant='link' className='text-xs'>
-                            Pricing
+                        <Button variant='link' asChild className="text-xs hover:underline underline-offset-4">
+                            <Link href="#pricing" prefetch={false}>
+                                Pricing
+                            </Link>
                         </Button>
-                        <Button variant='link' className='text-xs'>
-                            Contact
+                        <Button variant='link' asChild className="text-xs hover:underline underline-offset-4">
+                            <Link href="#contact" prefetch={false}>
+                                Contact
+                            </Link>
                         </Button>
                     </nav>
                 </div>
