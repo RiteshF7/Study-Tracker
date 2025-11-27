@@ -7,38 +7,32 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { BookOpenCheck, BarChart3, BrainCircuit, CalendarClock, ListTodo, User } from 'lucide-react';
-import { TrafficLight } from '@/components/icons/traffic-light';
+import { BookOpenCheck, User } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
-import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
-import { FeatureCarousel } from '@/components/feature-carousel';
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion"
 
-const features = [
+const faqs = [
     {
-        icon: <ListTodo className="w-8 h-8 text-primary" />,
-        title: "Activity Tracking",
-        description: "Log study sessions, classes, and breaks to get a clear picture of your academic life.",
+        question: "Is StudyTrack free to use?",
+        answer: "Yes, StudyTrack is completely free for students. You can sign in with Google or try it as a guest to access all features without any cost."
     },
     {
-        icon: <BrainCircuit className="w-8 h-8 text-primary" />,
-        title: "AI-Powered Planner",
-        description: "Let our intelligent assistant create an optimized study schedule based on your habits.",
+        question: "Can I use it offline?",
+        answer: "Currently, StudyTrack requires an internet connection to sync your data securely to the cloud and provide AI-powered features."
     },
     {
-        icon: <TrafficLight className="w-8 h-8 text-primary" />,
-        title: "Subject Sorting",
-        description: "Categorize subjects by confidence level to focus your efforts where they're needed most.",
+        question: "How does the AI Planner work?",
+        answer: "Our AI analyzes your study habits, available time, and subject confidence levels to suggest an optimized schedule that maximizes your productivity and helps you reach your academic goals."
     },
     {
-        icon: <BarChart3 className="w-8 h-8 text-primary" />,
-        title: 'Progress Analytics',
-        description: 'Visualize your study data with insightful charts and graphs to track your progress over time.',
-    },
-    {
-        icon: <CalendarClock className="w-8 h-8 text-primary" />,
-        title: 'Deadline Tracking',
-        description: 'Never miss a deadline again with our integrated calendar and to-do list functionality.',
+        question: "Is my data private?",
+        answer: "Absolutely. We prioritize your privacy and only use your data to provide the features you use. We do not sell your personal information to third parties."
     }
 ];
 
@@ -46,7 +40,6 @@ export default function LandingPage() {
     const auth = useAuth();
     const { user, isUserLoading } = useUser();
     const router = useRouter();
-    const [isCarouselOpen, setIsCarouselOpen] = useState(false);
     const { toast } = useToast();
     const [isSigningIn, setIsSigningIn] = useState(false);
 
@@ -92,16 +85,22 @@ export default function LandingPage() {
         }
     };
 
+    const scrollToFaqs = () => {
+        const element = document.getElementById('faqs');
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return (
         <div className="flex flex-col min-h-screen bg-background text-foreground">
-            <FeatureCarousel open={isCarouselOpen} onOpenChange={setIsCarouselOpen} />
             <header className="px-4 lg:px-6 h-16 flex items-center shadow-sm">
                 <Link href="/" className="flex items-center justify-center gap-2" prefetch={false}>
                     <BookOpenCheck className="h-7 w-7 text-primary" />
                     <span className="font-bold text-2xl font-headline">StudyTrack</span>
                 </Link>
                 <nav className="ml-auto flex gap-4 sm:gap-6">
-                    <Button variant="ghost" onClick={() => setIsCarouselOpen(true)}>Features</Button>
+                    <Button variant="ghost" onClick={scrollToFaqs}>FAQs</Button>
                     <Button variant="ghost">Pricing</Button>
                     <Button variant="ghost">Contact</Button>
                 </nav>
@@ -135,30 +134,27 @@ export default function LandingPage() {
                         </div>
                     </div>
                 </section>
-                <section id="features" className="w-full py-20 md:py-24 lg:py-32 bg-background">
+                <section id="faqs" className="w-full py-20 md:py-24 lg:py-32 bg-background">
                     <div className="container px-4 md:px-6">
                         <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                             <div className="space-y-2">
-                                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl font-headline">Everything You Need to Succeed</h2>
+                                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl font-headline">Frequently Asked Questions</h2>
                                 <p className="max-w-[900px] text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed">
-                                    From activity tracking to AI-powered recommendations, StudyTrack provides the tools to enhance your learning journey.
+                                    Got questions? We've got answers.
                                 </p>
                             </div>
                         </div>
-                        <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3">
-                            {features.map((feature) => (
-                                <Card key={feature.title} className="hover:shadow-lg transition-shadow">
-                                    <CardContent className="p-6 text-center">
-                                        <div className="flex justify-center items-center mb-4">
-                                            <div className="bg-primary/10 p-4 rounded-full">
-                                                {feature.icon}
-                                            </div>
-                                        </div>
-                                        <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                                        <p className="text-sm text-muted-foreground">{feature.description}</p>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                        <div className="mx-auto max-w-3xl">
+                            <Accordion type="single" collapsible className="w-full">
+                                {faqs.map((faq, index) => (
+                                    <AccordionItem key={index} value={`item-${index}`}>
+                                        <AccordionTrigger className="text-left text-lg font-semibold">{faq.question}</AccordionTrigger>
+                                        <AccordionContent className="text-muted-foreground text-base">
+                                            {faq.answer}
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
                         </div>
                     </div>
                 </section>
@@ -168,8 +164,8 @@ export default function LandingPage() {
                     <p className="text-xs text-muted-foreground">&copy; 2024 StudyTrack. All rights reserved.</p>
                     <nav className="sm:ml-auto flex gap-4 sm:gap-6">
                         <Button variant='link' asChild className="text-xs hover:underline underline-offset-4">
-                            <Link href="#features" prefetch={false}>
-                                Features
+                            <Link href="#faqs" prefetch={false}>
+                                FAQs
                             </Link>
                         </Button>
                         <Button variant='link' className='text-xs'>
