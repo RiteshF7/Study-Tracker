@@ -29,6 +29,7 @@ import { Button } from "./ui/button";
 import { useAuth, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { doc } from "firebase/firestore";
+import { InstallPrompt } from "./install-prompt";
 
 const navItems = [
   {
@@ -71,7 +72,7 @@ export function AppNav() {
   // Load user profile doc for fallback name if displayName is missing
   const userDocRef = useMemoFirebase((fs) =>
     user ? doc(fs, "users", user.uid) : null,
-  [user]);
+    [user]);
   const { data: userProfile } = useDoc<{ name?: string; photoURL?: string }>(userDocRef);
 
   const handleLogout = () => {
@@ -97,8 +98,8 @@ export function AppNav() {
               <Link href={item.href} passHref>
                 <SidebarMenuButton
                   isActive={pathname.startsWith(item.href)}
-                  className={cn("w-full justify-start text-base", { 
-                    "bg-primary/10 text-primary hover:bg-primary/20 font-semibold": 
+                  className={cn("w-full justify-start text-base", {
+                    "bg-primary/10 text-primary hover:bg-primary/20 font-semibold":
                       pathname.startsWith(item.href),
                   })}
                   tooltip={item.label}
@@ -129,22 +130,23 @@ export function AppNav() {
           </div>
         )}
         <SidebarMenu>
-           <SidebarMenuItem>
-             <Link href="/settings" passHref>
-                <SidebarMenuButton
-                  isActive={pathname === "/settings"}
-                  className="w-full justify-start text-muted-foreground"
-                  tooltip="Settings"
-                >
-                  <Settings className="mr-2 h-5 w-5" />
-                  <span>Settings</span>
-                </SidebarMenuButton>
-              </Link>
-          </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton 
+            <Link href="/settings" passHref>
+              <SidebarMenuButton
+                isActive={pathname === "/settings"}
+                className="w-full justify-start text-muted-foreground"
+                tooltip="Settings"
+              >
+                <Settings className="mr-2 h-5 w-5" />
+                <span>Settings</span>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+          <InstallPrompt />
+          <SidebarMenuItem>
+            <SidebarMenuButton
               onClick={handleLogout}
-              className="w-full justify-start text-muted-foreground hover:text-destructive" 
+              className="w-full justify-start text-muted-foreground hover:text-destructive"
               tooltip="Logout"
             >
               <LogOut className="mr-2 h-5 w-5" />
