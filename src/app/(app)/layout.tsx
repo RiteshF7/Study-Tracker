@@ -1,5 +1,16 @@
 "use client";
 
+import React from "react";
+
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarInset,
+  SidebarTrigger,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import { AppNav } from "@/components/app-nav";
+import { ManualEntryDialog } from "@/components/manual-entry-dialog";
 import { ProfileDialog } from "@/components/profile-dialog";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
