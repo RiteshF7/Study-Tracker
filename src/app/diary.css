@@ -1,14 +1,13 @@
-
 .diary-page {
     background-color: #fdf5e6;
-    background-image: 
+    background-image:
         linear-gradient(rgba(245, 222, 179, 0.4) 1px, transparent 1px),
         linear-gradient(90deg, rgba(245, 222, 179, 0.4) 1px, transparent 1px),
         radial-gradient(#e6d2b5 1px, transparent 0);
     background-size: 20px 20px, 20px 20px, 10px 10px;
     border: 1px solid #d2b48c;
-    box-shadow: 
-        0 0 15px rgba(0,0,0,0.2),
+    box-shadow:
+        0 0 15px rgba(0, 0, 0, 0.2),
         inset 0 0 50px rgba(160, 82, 45, 0.1);
     border-radius: 8px;
     position: relative;
@@ -17,12 +16,12 @@
 
 .dark .diary-page {
     background-color: #2a231c;
-    background-image: 
+    background-image:
         linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     border-color: #4a3f30;
-    box-shadow: 
-        0 0 20px rgba(0,0,0,0.5),
+    box-shadow:
+        0 0 20px rgba(0, 0, 0, 0.5),
         inset 0 0 60px rgba(0, 0, 0, 0.3);
 }
 
@@ -34,25 +33,34 @@
 .lined-paper {
     background-attachment: local;
     background-image:
-        linear-gradient(to right, rgba(0,0,0,0) 10px, transparent 10px),
-        linear-gradient(to left, rgba(0,0,0,0) 10px, transparent 10px),
+        linear-gradient(to right, rgba(0, 0, 0, 0) 10px, transparent 10px),
+        linear-gradient(to left, rgba(0, 0, 0, 0) 10px, transparent 10px),
         repeating-linear-gradient(transparent, transparent 2.5rem, rgba(0, 0, 0, 0.1) 2.5rem, rgba(0, 0, 0, 0.1) 2.5625rem);
     line-height: 2.5625rem;
-    padding-top: 0.3rem; /* Align text with lines */
+    padding-top: 0.3rem;
+    /* Align text with lines */
 }
 
 .dark .lined-paper {
     background-image:
-        linear-gradient(to right, rgba(255,255,255,0) 10px, transparent 10px),
-        linear-gradient(to left, rgba(255,255,255,0) 10px, transparent 10px),
+        linear-gradient(to right, rgba(255, 255, 255, 0) 10px, transparent 10px),
+        linear-gradient(to left, rgba(255, 255, 255, 0) 10px, transparent 10px),
         repeating-linear-gradient(transparent, transparent 2.5rem, rgba(255, 255, 255, 0.05) 2.5rem, rgba(255, 255, 255, 0.05) 2.5625rem);
 }
 
 /* Magical Glow Animation */
 @keyframes magical-pulse {
-    0% { box-shadow: 0 0 5px rgba(218, 165, 32, 0.4); }
-    50% { box-shadow: 0 0 20px rgba(218, 165, 32, 0.8), 0 0 10px rgba(255, 215, 0, 0.6); }
-    100% { box-shadow: 0 0 5px rgba(218, 165, 32, 0.4); }
+    0% {
+        box-shadow: 0 0 5px rgba(218, 165, 32, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(218, 165, 32, 0.8), 0 0 10px rgba(255, 215, 0, 0.6);
+    }
+
+    100% {
+        box-shadow: 0 0 5px rgba(218, 165, 32, 0.4);
+    }
 }
 
 .magical-glow {
@@ -68,14 +76,14 @@
 .day-bookmarked::after {
     content: '';
     position: absolute;
-    top: -3px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 0;
+    right: 0;
     width: 0;
     height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 8px solid #ef4444; /* Red for bookmark */
+    border-style: solid;
+    border-width: 0 12px 12px 0;
+    border-color: transparent #ef4444 transparent transparent;
+    z-index: 10;
 }
 
 .diary-page .rdp-day_selected,

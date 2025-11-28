@@ -151,13 +151,15 @@ export default function DiaryPage() {
               </p>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className="w-auto pl-3 text-left font-normal bg-amber-50/50 hover:bg-amber-50 border-amber-700/20 diary-font shadow-sm hover:shadow-md transition-all"
-                  >
-                    <span>Pick a date</span>
-                    <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
-                  </Button>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className="w-auto px-4 py-2 text-left font-medium bg-amber-100/80 hover:bg-amber-200/80 border-amber-700/30 diary-font shadow-sm hover:shadow-md transition-all text-amber-900"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
+                      <span>Change Date</span>
+                    </Button>
+                  </PopoverTrigger>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
