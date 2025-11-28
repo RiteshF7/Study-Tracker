@@ -9,6 +9,11 @@ import { ThemeProviderWrapper } from '@/components/theme-provider-wrapper';
 export const metadata: Metadata = {
   title: 'StudyTrack Journal',
   description: 'A journal tool for students to track their activities and progress.',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'StudyTrack',
+  },
 };
 
 export default function RootLayout({
