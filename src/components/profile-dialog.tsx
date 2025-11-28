@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useUser, useFirebase } from '@/firebase';
+import { useState, useRef } from 'react';
+import { useUser, useStorage } from '@/firebase';
 import { updateProfile } from 'firebase/auth';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -20,29 +21,51 @@ import { useToast } from '@/hooks/use-toast';
 
 export function ProfileDialog() {
     const { user } = useUser();
-    const { auth } = useFirebase(); // We need auth instance if we were doing more complex stuff, but user object from useUser might be enough if it's the auth user. 
-    // Actually useUser returns the User object from firebase/auth which has updateProfile.
-    // Wait, updateProfile is a function from 'firebase/auth' that takes the user object.
+    const storage = useStorage();
 
     const [isOpen, setIsOpen] = useState(false);
-    const [photoURL, setPhotoURL] = useState(user?.photoURL || '');
+    const [previewURL, setPreviewURL] = useState(user?.photoURL || '');
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setSelectedFile(file);
+            setPreviewURL(URL.createObjectURL(file));
+        }
+    };
 
     const handleSave = async () => {
         if (!user) return;
         setIsLoading(true);
         try {
-            await updateProfile(user, { photoURL: photoURL });
-            toast({
-                title: "Profile Updated",
-                description: "Your profile picture has been updated successfully.",
-            });
-            setIsOpen(false);
-            // Force a reload or state update might be needed if the UI doesn't react automatically, 
-            // but usually Firebase auth state listeners handle this.
-            window.location.reload(); // Simple way to ensure avatar updates everywhere
+            let photoURL = user.photoURL;
+
+            if (selectedFile) {
+                if (!storage) throw new Error("Storage not available");
+
+                const storageRef = ref(storage, `users/${user.uid}/profile-picture`);
+                await uploadBytes(storageRef, selectedFile);
+                photoURL = await getDownloadURL(storageRef);
+            }
+
+            if (photoURL !== user.photoURL) {
+                await updateProfile(user, { photoURL: photoURL });
+                toast({
+                    title: "Profile Updated",
+                    description: "Your profile picture has been updated successfully.",
+                });
+                // Force a reload to ensure avatar updates everywhere
+                window.location.reload();
+            } else {
+                setIsOpen(false);
+            }
+
         } catch (error: any) {
+            console.error(error);
             toast({
                 variant: "destructive",
                 title: "Error",
@@ -71,26 +94,27 @@ export function ProfileDialog() {
                 <DialogHeader>
                     <DialogTitle>Edit Profile</DialogTitle>
                     <DialogDescription>
-                        Update your profile picture. Enter a direct URL to an image.
+                        Update your profile picture. Upload an image from your device.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                     <div className="flex justify-center mb-4">
-                        <Avatar className="h-24 w-24 border-2 border-border">
-                            <AvatarImage src={photoURL} alt="Preview" />
+                        <Avatar className="h-24 w-24 border-2 border-border cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                            <AvatarImage src={previewURL} alt="Preview" />
                             <AvatarFallback>Preview</AvatarFallback>
                         </Avatar>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="photo-url" className="text-right">
-                            Photo URL
+                        <Label htmlFor="picture" className="text-right">
+                            Picture
                         </Label>
                         <Input
-                            id="photo-url"
-                            value={photoURL}
-                            onChange={(e) => setPhotoURL(e.target.value)}
+                            id="picture"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
                             className="col-span-3"
-                            placeholder="https://example.com/me.jpg"
+                            ref={fileInputRef}
                         />
                     </div>
                 </div>

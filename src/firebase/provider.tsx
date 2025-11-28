@@ -4,6 +4,7 @@ import React, { DependencyList, createContext, useContext, ReactNode, useMemo, u
 import { FirebaseApp } from 'firebase/app';
 import { Firestore, doc, serverTimestamp, getDocs, collection, writeBatch } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged, reload } from 'firebase/auth';
+import { FirebaseStorage } from 'firebase/storage';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates'
 import { generateMockActivities, generateMockProblems } from '@/lib/mock-data';
@@ -13,6 +14,7 @@ interface FirebaseProviderProps {
   firebaseApp: FirebaseApp;
   firestore: Firestore;
   auth: Auth;
+  storage: FirebaseStorage;
 }
 
 // Internal state for user authentication
@@ -28,6 +30,7 @@ export interface FirebaseContextState {
   firebaseApp: FirebaseApp | null;
   firestore: Firestore | null;
   auth: Auth | null; // The Auth service instance
+  storage: FirebaseStorage | null;
   // User authentication state
   user: User | null;
   isUserLoading: boolean; // True during initial auth check
@@ -39,6 +42,7 @@ export interface FirebaseServicesAndUser {
   firebaseApp: FirebaseApp;
   firestore: Firestore;
   auth: Auth;
+  storage: FirebaseStorage;
   user: User | null;
   isUserLoading: boolean;
   userError: Error | null;
@@ -62,6 +66,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   firebaseApp,
   firestore,
   auth,
+  storage,
 }) => {
   const [userAuthState, setUserAuthState] = useState<UserAuthState>({
     user: null,
@@ -96,29 +101,29 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     if (!firestore) return;
     const currentUser = userAuthState.user;
     if (!currentUser) return;
-    
+
     const populateGuestData = async (user: User) => {
-        const activitiesCollection = collection(firestore, 'users', user.uid, 'activities');
-        const snapshot = await getDocs(activitiesCollection);
+      const activitiesCollection = collection(firestore, 'users', user.uid, 'activities');
+      const snapshot = await getDocs(activitiesCollection);
 
-        // Only populate if the user has no activities (i.e., is a new guest)
-        if (snapshot.empty) {
-            const batch = writeBatch(firestore);
-            const mockActivities = generateMockActivities(5);
-            const mockProblems = generateMockProblems(5);
+      // Only populate if the user has no activities (i.e., is a new guest)
+      if (snapshot.empty) {
+        const batch = writeBatch(firestore);
+        const mockActivities = generateMockActivities(5);
+        const mockProblems = generateMockProblems(5);
 
-            mockActivities.forEach(activity => {
-                const docRef = doc(collection(firestore, 'users', user.uid, 'activities'));
-                batch.set(docRef, {...activity, userId: user.uid});
-            });
+        mockActivities.forEach(activity => {
+          const docRef = doc(collection(firestore, 'users', user.uid, 'activities'));
+          batch.set(docRef, { ...activity, userId: user.uid });
+        });
 
-            mockProblems.forEach(problem => {
-                const docRef = doc(collection(firestore, 'users', user.uid, 'problems'));
-                batch.set(docRef, {...problem, userId: user.uid});
-            });
-            
-            await batch.commit();
-        }
+        mockProblems.forEach(problem => {
+          const docRef = doc(collection(firestore, 'users', user.uid, 'problems'));
+          batch.set(docRef, { ...problem, userId: user.uid });
+        });
+
+        await batch.commit();
+      }
     };
 
     const doUpsert = (u: User) => {
@@ -137,9 +142,9 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
         },
         { merge: true }
       );
-      
+
       if (isAnonymous) {
-          populateGuestData(u);
+        populateGuestData(u);
       }
     };
 
@@ -151,17 +156,18 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
 
   // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {
-    const servicesAvailable = !!(firebaseApp && firestore && auth);
+    const servicesAvailable = !!(firebaseApp && firestore && auth && storage);
     return {
       areServicesAvailable: servicesAvailable,
       firebaseApp: servicesAvailable ? firebaseApp : null,
       firestore: servicesAvailable ? firestore : null,
       auth: servicesAvailable ? auth : null,
+      storage: servicesAvailable ? storage : null,
       user: userAuthState.user,
       isUserLoading: userAuthState.isUserLoading,
       userError: userAuthState.userError,
     };
-  }, [firebaseApp, firestore, auth, userAuthState]);
+  }, [firebaseApp, firestore, auth, storage, userAuthState]);
 
   return (
     <FirebaseContext.Provider value={contextValue}>
@@ -182,7 +188,7 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     throw new Error('useFirebase must be used within a FirebaseProvider.');
   }
 
-  if (!context.areServicesAvailable || !context.firebaseApp || !context.firestore || !context.auth) {
+  if (!context.areServicesAvailable || !context.firebaseApp || !context.firestore || !context.auth || !context.storage) {
     throw new Error('Firebase core services not available. Check FirebaseProvider props.');
   }
 
@@ -190,6 +196,7 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     firebaseApp: context.firebaseApp,
     firestore: context.firestore,
     auth: context.auth,
+    storage: context.storage,
     user: context.user,
     isUserLoading: context.isUserLoading,
     userError: context.userError,
@@ -214,6 +221,12 @@ export const useFirebaseApp = (): FirebaseApp => {
   return firebaseApp;
 };
 
+/** Hook to access Firebase Storage instance. */
+export const useStorage = (): FirebaseStorage => {
+  const { storage } = useFirebase();
+  return storage;
+};
+
 /**
  * Memoizes a Firestore query or document reference.
  *
@@ -222,15 +235,15 @@ export const useFirebaseApp = (): FirebaseApp => {
  * @returns The memoized query or reference.
  */
 export function useMemoFirebase<T>(factory: (firestore: Firestore) => T, deps: DependencyList): T | null {
-    const { firestore } = useContext(FirebaseContext);
+  const { firestore } = useContext(FirebaseContext);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const memoized = useMemo(() => {
-        if (!firestore) return null;
-        return factory(firestore);
-    }, [firestore, ...deps]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const memoized = useMemo(() => {
+    if (!firestore) return null;
+    return factory(firestore);
+  }, [firestore, ...deps]);
 
-    return memoized;
+  return memoized;
 }
 
 /**
