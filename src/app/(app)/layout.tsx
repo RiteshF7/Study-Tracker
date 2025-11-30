@@ -13,6 +13,8 @@ import { AppNav } from "@/components/app-nav";
 import { ManualEntryDialog } from "@/components/manual-entry-dialog";
 import { ProfileDialog } from "@/components/profile-dialog";
 
+import { MobileNav } from "@/components/mobile-nav";
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
@@ -30,7 +32,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <ProfileDialog />
         </header>
-        <main className="p-4 sm:px-6 sm:py-0">{children}</main>
+        <main className="p-4 sm:px-6 sm:py-0 pb-20 md:pb-4">{children}</main>
+        <MobileNav />
       </SidebarInset>
     </SidebarProvider>
   );

@@ -1,68 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Link from "next/link";
-import {
-  BrainCircuit,
-  LayoutDashboard,
-  ListTodo,
-  Target,
-  BookOpenCheck,
-  LogOut,
-  CalendarDays,
-  Settings,
-  Home,
-  ScrollText,
-} from "lucide-react";
-import { TrafficLight } from "@/components/icons/traffic-light";
-import {
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarContent,
-  SidebarFooter,
-  SidebarSeparator,
-} from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
-import { Button } from "./ui/button";
-import { useAuth, useFirebase, useMemoFirebase, useDoc } from "@/firebase";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { doc } from "firebase/firestore";
-import { InstallPrompt } from "./install-prompt";
 
-const navItems = [
-  {
-    href: "/home",
-    icon: Home,
-    label: "Home",
-  },
-  {
-    href: "/dashboard",
-    icon: LayoutDashboard,
-    label: "Dashboard",
-  },
-  {
-    href: "/activities",
-    icon: ListTodo,
-    label: "Track",
-  },
-  {
-    href: "/scheduler",
-    icon: BrainCircuit,
-    label: "AI Planner",
-  },
-  {
-    href: "/sorting",
-    icon: TrafficLight,
-    label: "Sorting",
-  },
-  {
-    href: "/diary",
-    icon: ScrollText,
-    label: "Diary",
-  }
-];
+import { navItems } from "@/constants/nav-items";
 
 export function AppNav() {
   const pathname = usePathname();
