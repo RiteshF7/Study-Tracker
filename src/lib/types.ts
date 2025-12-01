@@ -11,6 +11,7 @@ export type Activity = {
   startTime: string; // HH:MM
   createdAt: Timestamp;
   userId: string;
+  tags?: string[];
 };
 
 export type Problem = {
@@ -25,12 +26,12 @@ export type Problem = {
 };
 
 export type JournalEntry = {
-    id?: string;
-    userId: string;
-    date: string; // YYYY-MM-DD
-    summary: string;
-    createdAt: Timestamp;
-    updatedAt: Timestamp;
+  id?: string;
+  userId: string;
+  date: string; // YYYY-MM-DD
+  summary: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 };
 
 export type ProblemCategory = {
@@ -60,4 +61,4 @@ export type Todo = {
 export const activityTypes = ["Study", "Class", "Break", "Other", "RED", "YELLOW", "GREEN"];
 
 
-    
+

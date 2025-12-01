@@ -12,6 +12,8 @@ import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { XP_PER_MINUTE, calculateLevel, checkBadges, Badge } from "@/lib/gamification";
 
 const formatTime = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
@@ -32,39 +34,7 @@ interface ActivityTimerProps {
   initialDuration: number; // in minutes
   onSessionEnd: () => void;
 }
-"use client";
 
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import type { Activity } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { Square, TimerOff, Sparkles, Play, Pause } from "lucide-react";
-import { useFirebase } from "@/firebase";
-import { collection, serverTimestamp } from "firebase/firestore";
-import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
-
-const formatTime = (totalSeconds: number) => {
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  return [hours, minutes, seconds]
-    .map(v => v < 10 ? "0" + v : v)
-    .join(":");
-};
-
-type TimerMode = 'timer' | 'stopwatch';
-
-interface ActivityTimerProps {
-  mode: TimerMode;
-  initialActivityName: string;
-  initialActivityType: Activity['type'];
-  initialCategory?: string;
-  initialDuration: number; // in minutes
-  onSessionEnd: () => void;
-}
 
 const CIRCLE_RADIUS = 125;
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
@@ -87,35 +57,40 @@ const MatrixRain = () => {
     canvas.width = 300;
     canvas.height = 300;
 
-    const columns = Math.floor(canvas.width / 10);
+    const columns = Math.floor(canvas.width / 15); // Slightly wider columns
     const drops: number[] = [];
     for (let i = 0; i < columns; i++) {
-      drops[i] = 1;
+      drops[i] = Math.random() * -100; // Random start positions
     }
 
+    let animationFrameId: number;
+
     const draw = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      // Semi-transparent black to create trail effect
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = '#0F0';
-      ctx.font = '10px monospace';
+      ctx.fillStyle = '#00FF41'; // Matrix Green
+      ctx.font = '14px monospace';
 
       for (let i = 0; i < drops.length; i++) {
         const text = String.fromCharCode(0x30A0 + Math.random() * 96);
-        ctx.fillText(text, i * 10, drops[i] * 10);
+        ctx.fillText(text, i * 15, drops[i] * 15);
 
-        if (drops[i] * 10 > canvas.height && Math.random() > 0.975) {
+        if (drops[i] * 15 > canvas.height && Math.random() > 0.975) {
           drops[i] = 0;
         }
         drops[i]++;
       }
+      animationFrameId = requestAnimationFrame(draw);
     };
 
-    const interval = setInterval(draw, 50);
-    return () => clearInterval(interval);
+    draw();
+
+    return () => cancelAnimationFrame(animationFrameId);
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 rounded-full opacity-30 pointer-events-none" />;
+  return <canvas ref={canvasRef} className="absolute inset-0 rounded-full opacity-60 pointer-events-none mix-blend-screen" />;
 };
 
 const DisneySparkles = () => {
@@ -271,55 +246,6 @@ export function ActivityTimer({
     } else {
       clearTimer();
     }
-    return clearTimer;
-  }, [isTiming, startTime, initialDuration, initialActivityName, mode, clearTimer, playSound, toast]);
-
-
-  const handleStop = (save: boolean) => {
-    clearTimer();
-
-    if (save && activitiesCollection && user && startTime) {
-      let durationInMinutes = 0;
-      if (mode === 'timer') {
-        const elapsedSeconds = initialDuration * 60 - remainingTime;
-        durationInMinutes = Math.round(elapsedSeconds / 60);
-      } else { // stopwatch
-        durationInMinutes = Math.round(elapsedTime / 60);
-      }
-
-      if (durationInMinutes > 0) {
-        const newActivity: Omit<Activity, 'id' | 'createdAt'> = {
-          name: initialActivityName,
-          type: initialActivityType,
-          category: initialCategory,
-          duration: durationInMinutes,
-          date: new Date().toISOString().split("T")[0],
-          startTime: new Date(startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
-          userId: user.uid,
-        };
-
-        addDocumentNonBlocking(activitiesCollection, { ...newActivity, createdAt: serverTimestamp() });
-
-        toast({
-          title: "Activity Logged!",
-          description: `${initialActivityName} for ${durationInMinutes} ${durationInMinutes > 1 ? 'minutes' : 'minute'} has been saved.`,
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Activity Not Logged",
-          description: "Duration was zero. No activity was saved.",
-        });
-      }
-    }
-
-    onSessionEnd();
-  };
-
-  const displayTime = mode === 'timer' ? remainingTime : elapsedTime;
-  const totalSecondsInDuration = mode === 'timer' ? initialDuration * 60 : 0;
-
-  const progress = useMemo(() => {
     if (mode === 'stopwatch' || totalSecondsInDuration === 0) return 0;
     return (totalSecondsInDuration - remainingTime) / totalSecondsInDuration;
   }, [mode, totalSecondsInDuration, remainingTime]);
@@ -400,7 +326,7 @@ export function ActivityTimer({
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <p className={cn(
               "font-mono text-6xl font-bold tabular-nums tracking-wider drop-shadow-lg",
-              theme === 'matrix-dark' && "animate-glitch text-green-500",
+              theme === 'matrix-dark' && "animate-glitch text-white drop-shadow-[0_0_5px_rgba(0,255,65,0.8)]",
               theme === 'latte' && "font-serif text-amber-900"
             )}>
               {formatTime(displayTime)}
