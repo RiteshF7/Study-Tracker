@@ -32,11 +32,48 @@ interface ActivityTimerProps {
   initialDuration: number; // in minutes
   onSessionEnd: () => void;
 }
+"use client";
+
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import type { Activity } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Square, TimerOff, Sparkles, Play, Pause } from "lucide-react";
+import { useFirebase } from "@/firebase";
+import { collection, serverTimestamp } from "firebase/firestore";
+import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
+
+const formatTime = (totalSeconds: number) => {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return [hours, minutes, seconds]
+    .map(v => v < 10 ? "0" + v : v)
+    .join(":");
+};
+
+type TimerMode = 'timer' | 'stopwatch';
+
+interface ActivityTimerProps {
+  mode: TimerMode;
+  initialActivityName: string;
+  initialActivityType: Activity['type'];
+  initialCategory?: string;
+  initialDuration: number; // in minutes
+  onSessionEnd: () => void;
+}
 
 const CIRCLE_RADIUS = 125;
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 // --- Visual Effects ---
+
+const GreenAurora = () => (
+  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-500/30 via-emerald-500/30 to-teal-500/30 opacity-30 blur-xl animate-aurora pointer-events-none" />
+);
 
 const MatrixRain = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -313,6 +350,7 @@ export function ActivityTimer({
           {theme === 'disney-dark' && <DisneySparkles />}
           {theme === 'violet-dark' && <AuroraEffect />}
           {theme === 'sunset' && <HeatHazeEffect />}
+          {(theme === 'peazehub' || theme === 'dark') && <GreenAurora />}
           {(mode === 'stopwatch' && isTiming) || theme === 'latte' ? <SmokeEffect /> : null}
 
           {/* Interactive Overlay Hint */}
@@ -370,20 +408,22 @@ export function ActivityTimer({
           </div>
         </div>
 
-        {isFinished ? (
-          <Button size="lg" variant="default" onClick={() => handleStop(true)} className="w-full py-6 text-xl">
-            <Square className="mr-4 h-6 w-6" /> Save Session
-          </Button>
-        ) : (
-          <Button size="lg" variant="destructive" onClick={() => handleStop(true)} className="w-full py-6 text-xl">
-            <Square className="mr-4 h-6 w-6" /> Stop & Save
-          </Button>
-        )}
+        {
+          isFinished ? (
+            <Button size="lg" variant="default" onClick={() => handleStop(true)} className="w-full py-6 text-xl">
+              <Square className="mr-4 h-6 w-6" /> Save Session
+            </Button>
+          ) : (
+            <Button size="lg" variant="destructive" onClick={() => handleStop(true)} className="w-full py-6 text-xl">
+              <Square className="mr-4 h-6 w-6" /> Stop & Save
+            </Button>
+          )
+        }
         <Button variant="ghost" onClick={() => handleStop(false)}>
           <TimerOff className="mr-2 h-4 w-4" />
           Cancel Session
         </Button>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
