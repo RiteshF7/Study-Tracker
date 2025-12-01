@@ -17,7 +17,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { BookOpenCheck, Settings, LogOut } from "lucide-react";
+import { BookOpenCheck, Settings, LogOut, Sparkles } from "lucide-react";
 import { InstallPrompt } from "@/components/install-prompt";
 
 export function AppNav() {
@@ -40,11 +40,11 @@ export function AppNav() {
   return (
     <>
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2 p-2">
-          <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
-            <BookOpenCheck className="w-5 h-5 text-white" />
-          </div>
-          <h1 className="text-xl font-semibold font-headline group-data-[collapsible=icon]:hidden">StudyTrack</h1>
+        <div className="flex items-center gap-2 p-2 group-data-[collapsible=icon]:justify-center">
+          <Sparkles className="h-6 w-6 text-violet-600 fill-violet-600/20" />
+          <h1 className="text-xl font-bold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
+            StudyTrack
+          </h1>
         </div>
       </SidebarHeader>
       <SidebarContent className="p-2">
