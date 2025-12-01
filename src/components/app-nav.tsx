@@ -1,8 +1,24 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-
+import { cn } from "@/lib/utils";
 import { navItems } from "@/constants/nav-items";
+import { useAuth, useFirebase, useMemoFirebase } from "@/firebase/provider";
+import { useDoc } from "@/firebase/firestore/use-doc";
+import { doc } from "firebase/firestore";
+import {
+  SidebarHeader,
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarFooter,
+  SidebarSeparator,
+} from "@/components/ui/sidebar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { BookOpenCheck, Settings, LogOut } from "lucide-react";
+import { InstallPrompt } from "@/components/install-prompt";
 
 export function AppNav() {
   const pathname = usePathname();
