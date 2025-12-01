@@ -5,12 +5,13 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { Activity } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Square, TimerOff } from "lucide-react";
+import { Square, TimerOff, Sparkles, Play, Pause } from "lucide-react";
 import { useFirebase } from "@/firebase";
 import { collection, serverTimestamp } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 const formatTime = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
@@ -35,9 +36,81 @@ interface ActivityTimerProps {
 const CIRCLE_RADIUS = 125;
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
-const SmokeEffect = () => {
-  const particles = Array.from({ length: 12 }); // Generate 12 smoke particles
+// --- Visual Effects ---
 
+const MatrixRain = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = 300;
+    canvas.height = 300;
+
+    const columns = Math.floor(canvas.width / 10);
+    const drops: number[] = [];
+    for (let i = 0; i < columns; i++) {
+      drops[i] = 1;
+    }
+
+    const draw = () => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#0F0';
+      ctx.font = '10px monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = String.fromCharCode(0x30A0 + Math.random() * 96);
+        ctx.fillText(text, i * 10, drops[i] * 10);
+
+        if (drops[i] * 10 > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    };
+
+    const interval = setInterval(draw, 50);
+    return () => clearInterval(interval);
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 rounded-full opacity-30 pointer-events-none" />;
+};
+
+const DisneySparkles = () => {
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      {[...Array(6)].map((_, i) => (
+        <Sparkles
+          key={i}
+          className="absolute text-yellow-400 animate-twinkle"
+          style={{
+            top: `${Math.random() * 80 + 10}%`,
+            left: `${Math.random() * 80 + 10}%`,
+            width: `${Math.random() * 20 + 10}px`,
+            height: `${Math.random() * 20 + 10}px`,
+            animationDelay: `${Math.random() * 2}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+const AuroraEffect = () => (
+  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-20 blur-xl animate-aurora pointer-events-none" />
+);
+
+const HeatHazeEffect = () => (
+  <div className="absolute inset-0 rounded-full bg-gradient-to-t from-orange-500/20 to-transparent animate-heat-haze pointer-events-none" />
+);
+
+const SmokeEffect = () => {
+  const particles = Array.from({ length: 12 });
   return (
     <div className="absolute inset-0 overflow-hidden rounded-full pointer-events-none z-0">
       {particles.map((_, i) => (
@@ -45,15 +118,17 @@ const SmokeEffect = () => {
           key={i}
           className="absolute bottom-0 w-16 h-16 bg-primary/20 rounded-full blur-xl animate-smoke"
           style={{
-            left: `${Math.random() * 80 + 10}%`, // Random horizontal position 10-90%
-            animationDelay: `${Math.random() * 2}s`, // Random delay 0-2s
-            animationDuration: `${2 + Math.random() * 2}s`, // Random duration 2-4s
+            left: `${Math.random() * 80 + 10}%`,
+            animationDelay: `${Math.random() * 2}s`,
+            animationDuration: `${2 + Math.random() * 2}s`,
           }}
         />
       ))}
     </div>
   );
 };
+
+// --- Main Component ---
 
 export function ActivityTimer({
   mode,
@@ -66,6 +141,7 @@ export function ActivityTimer({
   const { firestore, user } = useFirebase();
   const router = useRouter();
   const { toast } = useToast();
+  const { theme } = useTheme();
 
   const activitiesCollection = useMemo(() =>
     user ? collection(firestore, "users", user.uid, "activities") : null
@@ -117,7 +193,16 @@ export function ActivityTimer({
     }
   }, [mode, initialDuration]);
 
-  // Auto-start the timer when the component mounts
+  const toggleTimer = () => {
+    if (isFinished) return;
+    setIsTiming(!isTiming);
+    if (!isTiming) {
+      // Resuming
+      setStartTime(Date.now() - (mode === 'stopwatch' ? elapsedTime * 1000 : (initialDuration * 60 - remainingTime) * 1000));
+    }
+  };
+
+  // Auto-start
   useEffect(() => {
     handleStart();
   }, [handleStart]);
@@ -216,14 +301,38 @@ export function ActivityTimer({
         <p className="text-xl text-muted-foreground">{isFinished ? "Session Finished!" : `Timing session for:`}</p>
         <h1 className="text-5xl font-bold font-headline">{initialActivityName}</h1>
 
-        <div className={cn("relative w-[300px] h-[300px]", mode === 'stopwatch' && isTiming && 'animate-pulse')}>
-          {mode === 'stopwatch' && isTiming && <SmokeEffect />}
+        <div
+          className={cn(
+            "relative w-[300px] h-[300px] group cursor-pointer transition-transform duration-300 hover:scale-105",
+            mode === 'stopwatch' && isTiming && 'animate-pulse'
+          )}
+          onClick={toggleTimer}
+        >
+          {/* Theme Specific Backgrounds */}
+          {theme === 'matrix-dark' && <MatrixRain />}
+          {theme === 'disney-dark' && <DisneySparkles />}
+          {theme === 'violet-dark' && <AuroraEffect />}
+          {theme === 'sunset' && <HeatHazeEffect />}
+          {(mode === 'stopwatch' && isTiming) || theme === 'latte' ? <SmokeEffect /> : null}
+
+          {/* Interactive Overlay Hint */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-black/20 rounded-full backdrop-blur-[2px]">
+            {isTiming ? <Pause className="w-12 h-12 text-white" /> : <Play className="w-12 h-12 text-white" />}
+          </div>
+
           <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 300 300">
             <defs>
               <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="hsl(var(--primary))" />
                 <stop offset="100%" stopColor="hsl(var(--accent))" />
               </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
             </defs>
             <circle
               className="text-border"
@@ -243,14 +352,19 @@ export function ActivityTimer({
               r={CIRCLE_RADIUS}
               cx="150"
               cy="150"
+              filter={theme === 'violet-dark' || theme === 'disney-dark' ? "url(#glow)" : undefined}
               style={{
                 strokeDasharray: CIRCLE_CIRCUMFERENCE,
                 strokeDashoffset: strokeDashoffset,
               }}
             />
           </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="font-mono text-6xl font-bold tabular-nums tracking-wider drop-shadow-lg">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <p className={cn(
+              "font-mono text-6xl font-bold tabular-nums tracking-wider drop-shadow-lg",
+              theme === 'matrix-dark' && "animate-glitch text-green-500",
+              theme === 'latte' && "font-serif text-amber-900"
+            )}>
               {formatTime(displayTime)}
             </p>
           </div>
