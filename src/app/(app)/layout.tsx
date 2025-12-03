@@ -2,14 +2,7 @@
 
 import React from "react";
 
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarInset,
-  SidebarTrigger,
-  SidebarRail,
-} from "@/components/ui/sidebar";
-import { AppNav } from "@/components/app-nav";
+import { RadialMenu } from "@/components/radial-menu";
 import { ManualEntryDialog } from "@/components/manual-entry-dialog";
 import { ProfileDialog } from "@/components/profile-dialog";
 
@@ -17,24 +10,16 @@ import { MobileNav } from "@/components/mobile-nav";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider>
-      <Sidebar collapsible="icon">
-        <SidebarRail />
-        <AppNav />
-      </Sidebar>
-      <SidebarInset>
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-4">
-          <div className="flex items-center gap-2 mt-8">
-            <SidebarTrigger className="shadow-[0_0_15px_hsl(var(--glow)/0.5)] hover:shadow-[0_0_20px_hsl(var(--glow)/0.7)]" />
-          </div>
-          <div className="relative ml-auto flex items-center gap-2 md:grow-0">
-            <ManualEntryDialog />
-          </div>
+    <div className="min-h-screen bg-background relative">
+      <RadialMenu />
+      <header className="fixed top-0 right-0 z-30 flex items-center gap-2 p-4 pointer-events-none">
+        <div className="pointer-events-auto flex items-center gap-2">
+          <ManualEntryDialog />
           <ProfileDialog />
-        </header>
-        <main className="p-4 sm:px-6 sm:py-0 pb-20 md:pb-4">{children}</main>
-        <MobileNav />
-      </SidebarInset>
-    </SidebarProvider>
+        </div>
+      </header>
+      <main className="p-4 sm:px-6 py-16 md:py-8">{children}</main>
+      <MobileNav />
+    </div>
   );
 }
