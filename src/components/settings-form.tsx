@@ -47,21 +47,22 @@ const profileSchema = z.object({
 });
 
 type UserProfile = {
-    name?: string;
-    learningGoals?: string;
-    targetHours?: number;
+  name?: string;
+  learningGoals?: string;
+  targetHours?: number;
 }
 
 export function SettingsForm() {
   const { user } = useUser();
   const { toast } = useToast();
   const [course, setCourse] = useLocalStorage('selected-course', 'JEE');
+  const [year, setYear] = useLocalStorage('selected-year', '11th');
 
 
-  const userDocRef = useMemoFirebase((firestore) => 
+  const userDocRef = useMemoFirebase((firestore) =>
     user ? doc(firestore, "users", user.uid) : null
-  , [user]);
-  
+    , [user]);
+
   const { data: userProfile } = useDoc<UserProfile>(userDocRef);
 
   const form = useForm<z.infer<typeof profileSchema>>({
@@ -75,10 +76,10 @@ export function SettingsForm() {
 
   useEffect(() => {
     if (user && userProfile) {
-      form.reset({ 
-          name: userProfile?.name || user.displayName || "",
-          learningGoals: userProfile?.learningGoals || "",
-          targetHours: userProfile?.targetHours || 150,
+      form.reset({
+        name: userProfile?.name || user.displayName || "",
+        learningGoals: userProfile?.learningGoals || "",
+        targetHours: userProfile?.targetHours || 150,
       });
     }
   }, [user, userProfile, form]);
@@ -86,20 +87,20 @@ export function SettingsForm() {
 
   function onSubmit(values: z.infer<typeof profileSchema>) {
     if (!userDocRef || !user) {
-        toast({
-            variant: "destructive",
-            title: "Error",
-            description: "You must be logged in to update your profile.",
-        });
-        return;
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "You must be logged in to update your profile.",
+      });
+      return;
     }
-    
-    setDocumentNonBlocking(userDocRef, { 
-        name: values.name,
-        learningGoals: values.learningGoals,
-        targetHours: values.targetHours,
-        email: user.email,
-        id: user.uid,
+
+    setDocumentNonBlocking(userDocRef, {
+      name: values.name,
+      learningGoals: values.learningGoals,
+      targetHours: values.targetHours,
+      email: user.email,
+      id: user.uid,
     }, { merge: true });
 
     toast({
@@ -119,23 +120,55 @@ export function SettingsForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
-             <FormItem>
-                <FormLabel>Course Focus</FormLabel>
-                <Select onValueChange={setCourse} value={course}>
-                    <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select your course focus" />
-                        </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                        <SelectItem value="JEE">JEE</SelectItem>
-                        <SelectItem value="NEET">NEET</SelectItem>
-                    </SelectContent>
+            <FormItem>
+              <FormLabel>Course Focus</FormLabel>
+              <div className="flex gap-4">
+                <Select onValueChange={(val) => {
+                  setCourse(val);
+                  // Reset year when course changes to avoid invalid states
+                  setYear(val === 'BPT' ? '1st Year' : '11th');
+                }} value={course}>
+                  <FormControl>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select course" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="JEE">JEE</SelectItem>
+                    <SelectItem value="NEET">NEET</SelectItem>
+                    <SelectItem value="BPT">BPT</SelectItem>
+                  </SelectContent>
                 </Select>
-                <FormDescription>
-                    This will tailor parts of the app to your curriculum.
-                </FormDescription>
-              </FormItem>
+
+                <Select onValueChange={setYear} value={year}>
+                  <FormControl>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select year" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {course === 'BPT' ? (
+                      <>
+                        <SelectItem value="1st Year">1st Year</SelectItem>
+                        <SelectItem value="2nd Year">2nd Year</SelectItem>
+                        <SelectItem value="3rd Year">3rd Year</SelectItem>
+                        <SelectItem value="4th Year">4th Year</SelectItem>
+                        <SelectItem value="5th Year">5th Year</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="11th">11th</SelectItem>
+                        <SelectItem value="12th">12th</SelectItem>
+                        <SelectItem value="Dropper">Dropper</SelectItem>
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <FormDescription>
+                Select your course and current year/class to customize the syllabus.
+              </FormDescription>
+            </FormItem>
             <FormField
               control={form.control}
               name="name"
@@ -156,20 +189,20 @@ export function SettingsForm() {
                 <FormItem>
                   <FormLabel>Daily Motivation</FormLabel>
                   <FormControl>
-                    <Textarea 
-                        placeholder="e.g., 'Focus on the process, not just the outcome'" 
-                        {...field}
-                        rows={2}
+                    <Textarea
+                      placeholder="e.g., 'Focus on the process, not just the outcome'"
+                      {...field}
+                      rows={2}
                     />
                   </FormControl>
-                   <FormDescription>
+                  <FormDescription>
                     A motivational quote that will appear on your dashboard.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-             <FormField
+            <FormField
               control={form.control}
               name="targetHours"
               render={({ field }) => (
@@ -178,7 +211,7 @@ export function SettingsForm() {
                   <FormControl>
                     <Input type="number" placeholder="e.g., 150" {...field} />
                   </FormControl>
-                   <FormDescription>
+                  <FormDescription>
                     Set a target number of hours for your progress tracking.
                   </FormDescription>
                   <FormMessage />
