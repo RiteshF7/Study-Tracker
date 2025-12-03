@@ -36,20 +36,16 @@ export function RadialMenu() {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, []);
 
-    // Calculate active index based on mouse angle relative to center
-    const handleMouseMove = (e: React.MouseEvent) => {
+    // Calculate active index based on mouse/touch angle relative to center
+    const handleMove = (clientX: number, clientY: number) => {
         if (!menuRef.current) return;
 
         const rect = menuRef.current.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
 
-        // Calculate angle in degrees (0-360)
-        // Math.atan2(y, x) returns angle in radians. 
-        // We adjust x and y to match standard circle (0 deg at 3 o'clock)
-        // But for our menu, we might want 0 at 12 o'clock.
-        const x = e.clientX - centerX;
-        const y = e.clientY - centerY;
+        const x = clientX - centerX;
+        const y = clientY - centerY;
 
         // Distance check to avoid selecting when too close to center
         const distance = Math.sqrt(x * x + y * y);
@@ -59,26 +55,27 @@ export function RadialMenu() {
         }
 
         let angle = Math.atan2(y, x) * (180 / Math.PI);
-        // Convert to 0-360 positive
         if (angle < 0) angle += 360;
-
-        // Adjust so that the angle aligns with our items
-        // We have N items distributed over 360 degrees.
-        // Each item takes up 360/N degrees.
-        // We need to map the mouse angle to the closest item index.
 
         const segmentSize = 360 / navItems.length;
         // Offset angle by -90 (to start from top) and half segment to center the hit area
-        // Actually, let's just map it directly.
-        // 0 degrees is 3 o'clock.
-        // We position items starting from -90 deg (12 o'clock).
-
-        // Let's normalize angle to start from -90 (12 o'clock)
         let normalizedAngle = angle + 90 + (segmentSize / 2);
         if (normalizedAngle >= 360) normalizedAngle -= 360;
 
         const index = Math.floor(normalizedAngle / segmentSize);
         setActiveIndex(index % navItems.length);
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        handleMove(e.clientX, e.clientY);
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        // Prevent scrolling while dragging on the menu
+        // e.preventDefault(); // React synthetic events might not support this directly in all cases, but let's try or rely on CSS touch-action
+        if (e.touches.length > 0) {
+            handleMove(e.touches[0].clientX, e.touches[0].clientY);
+        }
     };
 
     return (
@@ -94,15 +91,16 @@ export function RadialMenu() {
             {/* Overlay */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200"
+                    className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200 touch-none"
                     onClick={() => setIsOpen(false)}
                     onMouseMove={handleMouseMove}
+                    onTouchMove={handleTouchMove}
                 >
                     {/* Menu Container */}
                     <div
                         ref={menuRef}
                         className="relative w-[400px] h-[400px] rounded-full flex items-center justify-center"
-                        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the wheel
+                        onClick={(e) => e.stopPropagation()}
                     >
                         {/* Center Circle - Current Page */}
                         <div className="absolute z-10 w-24 h-24 rounded-full bg-card border-4 border-primary flex items-center justify-center shadow-[0_0_30px_hsl(var(--primary)/0.3)]">
@@ -119,10 +117,9 @@ export function RadialMenu() {
                             { href: "#logout", icon: LogOut, label: "Logout", action: handleLogout }
                         ].map((item, index, array) => {
                             const totalItems = array.length;
-                            const angle = (index * (360 / totalItems)) - 90; // Start at -90 (12 o'clock)
-                            const radius = 140; // Distance from center
+                            const angle = (index * (360 / totalItems)) - 90;
+                            const radius = 140;
 
-                            // Convert polar to cartesian
                             const x = radius * Math.cos((angle * Math.PI) / 180);
                             const y = radius * Math.sin((angle * Math.PI) / 180);
 
@@ -139,47 +136,50 @@ export function RadialMenu() {
                                 </>
                             );
 
-                            const className = cn(
-                                "absolute flex flex-col items-center justify-center w-16 h-16 rounded-full transition-all duration-300",
-                                "hover:scale-125 hover:-translate-y-2", // Lift up effect
+                            const innerClassName = cn(
+                                "flex flex-col items-center justify-center w-16 h-16 rounded-full transition-all duration-300",
+                                "hover:scale-125 hover:-translate-y-2",
                                 isActive
                                     ? "bg-primary text-primary-foreground scale-125 shadow-[0_0_20px_hsl(var(--primary))]"
                                     : "bg-secondary text-secondary-foreground hover:bg-primary/20"
                             );
 
-                            const style = {
-                                transform: `translate(${x}px, ${y}px)`,
+                            const animationStyle = {
                                 animation: `float 3s ease-in-out infinite ${index * 0.5}s`
                             };
 
-                            // @ts-ignore
-                            if (item.action) {
-                                return (
-                                    <button
-                                        key={item.label}
-                                        onClick={() => {
-                                            // @ts-ignore
-                                            item.action();
-                                            setIsOpen(false);
-                                        }}
-                                        className={className}
-                                        style={style}
-                                    >
-                                        {content}
-                                    </button>
-                                );
-                            }
-
+                            // Wrapper div handles positioning
                             return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    onClick={() => setIsOpen(false)}
-                                    className={className}
-                                    style={style}
+                                <div
+                                    key={item.label}
+                                    className="absolute w-16 h-16 flex items-center justify-center"
+                                    style={{
+                                        transform: `translate(${x}px, ${y}px)`,
+                                    }}
                                 >
-                                    {content}
-                                </Link>
+                                    {/* Inner element handles animation and interaction */}
+                                    {item.action ? (
+                                        <button
+                                            onClick={() => {
+                                                item.action!();
+                                                setIsOpen(false);
+                                            }}
+                                            className={innerClassName}
+                                            style={animationStyle}
+                                        >
+                                            {content}
+                                        </button>
+                                    ) : (
+                                        <Link
+                                            href={item.href}
+                                            onClick={() => setIsOpen(false)}
+                                            className={innerClassName}
+                                            style={animationStyle}
+                                        >
+                                            {content}
+                                        </Link>
+                                    )}
+                                </div>
                             );
                         })}
                     </div>
@@ -188,9 +188,9 @@ export function RadialMenu() {
 
             <style jsx global>{`
         @keyframes float {
-          0% { transform: translate(var(--tw-translate-x), var(--tw-translate-y)) translateY(0px); }
-          50% { transform: translate(var(--tw-translate-x), var(--tw-translate-y)) translateY(-5px); }
-          100% { transform: translate(var(--tw-translate-x), var(--tw-translate-y)) translateY(0px); }
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-5px); }
+          100% { transform: translateY(0px); }
         }
       `}</style>
         </>
