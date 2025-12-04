@@ -131,7 +131,7 @@ export default function LibraryPage() {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {resources.NCERT.map((item, i) => (
-                                            <ResourceCard key={i} title={item.title} type="PDF" />
+                                            <ResourceCard key={i} title={item.title} type="PDF" url={item.url} />
                                         ))}
                                     </div>
                                 </section>
@@ -144,7 +144,7 @@ export default function LibraryPage() {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {resources.Exemplar.map((item, i) => (
-                                            <ResourceCard key={i} title={item.title} type="PDF" />
+                                            <ResourceCard key={i} title={item.title} type="PDF" url={item.url} />
                                         ))}
                                     </div>
                                 </section>
@@ -157,7 +157,7 @@ export default function LibraryPage() {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {resources.Solutions.map((item, i) => (
-                                            <ResourceCard key={i} title={item.title} type="PDF" />
+                                            <ResourceCard key={i} title={item.title} type="PDF" url={item.url} />
                                         ))}
                                     </div>
                                 </section>
@@ -178,20 +178,22 @@ export default function LibraryPage() {
     );
 }
 
-function ResourceCard({ title, type }: { title: string; type: string }) {
+function ResourceCard({ title, type, url }: { title: string; type: string; url: string }) {
     return (
-        <Card className="hover:shadow-md transition-shadow cursor-pointer group">
-            <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                        <span className="text-xs font-bold text-primary">{type}</span>
+        <a href={url} target="_blank" rel="noopener noreferrer" className="block">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer group h-full">
+                <CardContent className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                            <span className="text-xs font-bold text-primary">{type}</span>
+                        </div>
+                        <span className="font-medium truncate">{title}</span>
                     </div>
-                    <span className="font-medium truncate">{title}</span>
-                </div>
-                <Button variant="ghost" size="icon" className="shrink-0">
-                    <FileText className="w-4 h-4" />
-                </Button>
-            </CardContent>
-        </Card>
+                    <Button variant="ghost" size="icon" className="shrink-0">
+                        <FileText className="w-4 h-4" />
+                    </Button>
+                </CardContent>
+            </Card>
+        </a>
     );
 }
