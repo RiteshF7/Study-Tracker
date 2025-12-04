@@ -4,6 +4,7 @@ import {
     ListTodo,
     Home,
     ScrollText,
+    Library,
 } from "lucide-react";
 import { TrafficLight } from "@/components/icons/traffic-light";
 
@@ -37,5 +38,10 @@ export const navItems = [
         href: "/diary",
         icon: ScrollText,
         label: "Diary",
+    },
+    {
+        href: "/library",
+        icon: Library,
+        label: "Library",
     }
 ];
