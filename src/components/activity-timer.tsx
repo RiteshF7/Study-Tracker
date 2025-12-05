@@ -214,6 +214,110 @@ export function ActivityTimer({
     }
   };
 
+  const totalSecondsInDuration = useMemo(() => initialDuration * 60, [initialDuration]);
+
+  const displayTime = useMemo(() => {
+    return mode === 'timer' ? remainingTime : elapsedTime;
+  }, [mode, remainingTime, elapsedTime]);
+
+  const progress = useMemo(() => {
+    if (mode === 'stopwatch' || totalSecondsInDuration === 0) return 0;
+    return (totalSecondsInDuration - remainingTime) / totalSecondsInDuration;
+  }, [mode, totalSecondsInDuration, remainingTime]);
+
+  const handleStop = async (save: boolean) => {
+    setIsTiming(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    if (save && user) {
+      try {
+        const durationMinutes = mode === 'timer'
+          ? (initialDuration * 60 - remainingTime) / 60
+          : elapsedTime / 60;
+
+        // Minimum 1 minute to save
+        if (durationMinutes < 0.1) {
+          toast({
+            title: "Session too short",
+            description: "Activity must be at least a few seconds to save.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        const xpEarned = Math.floor(durationMinutes * XP_PER_MINUTE);
+
+        // 1. Save Activity
+        await addDocumentNonBlocking("users", user.uid, "activities", {
+          name: initialActivityName,
+          type: initialActivityType,
+          category: initialCategory || "General",
+          duration: Math.round(durationMinutes),
+          timestamp: serverTimestamp(),
+          xp: xpEarned
+        });
+
+        // 2. Update User XP & Level
+        const userRef = doc(firestore, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          const currentXP = (userData.xp || 0) + xpEarned;
+          const newLevel = calculateLevel(currentXP);
+
+          // Check for level up
+          if (newLevel > (userData.level || 1)) {
+            toast({
+              title: "Level Up! 🎉",
+              description: `You've reached Level ${newLevel}!`,
+              className: "bg-yellow-500 text-black border-none"
+            });
+          }
+
+          // Check for Badges
+          const newBadges = checkBadges({ ...userData, xp: currentXP, level: newLevel }, {
+            type: initialActivityType,
+            duration: Math.round(durationMinutes)
+          });
+
+          if (newBadges.length > 0) {
+            newBadges.forEach((badge: Badge) => {
+              toast({
+                title: `New Badge Unlocked: ${badge.name}! 🏆`,
+                description: badge.description,
+                className: "bg-purple-600 text-white border-none"
+              });
+            });
+          }
+
+          await setDoc(userRef, {
+            xp: currentXP,
+            level: newLevel,
+            badges: [...(userData.badges || []), ...newBadges]
+          }, { merge: true });
+        }
+
+        toast({
+          title: "Session Saved",
+          description: `You earned ${xpEarned} XP!`,
+        });
+        onSessionEnd();
+      } catch (error) {
+        console.error("Error saving session:", error);
+        toast({
+          title: "Error",
+          description: "Failed to save session.",
+          variant: "destructive",
+        });
+      }
+    } else {
+      onSessionEnd();
+    }
+  };
+
   // Auto-start
   useEffect(() => {
     handleStart();
@@ -225,7 +329,7 @@ export function ActivityTimer({
       intervalRef.current = setInterval(() => {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
         if (mode === 'timer') {
-          const remaining = initialDuration * 60 - elapsed;
+          const remaining = totalSecondsInDuration - elapsed;
           if (remaining <= 0) {
             setRemainingTime(0);
             setIsTiming(false);
@@ -246,9 +350,8 @@ export function ActivityTimer({
     } else {
       clearTimer();
     }
-    if (mode === 'stopwatch' || totalSecondsInDuration === 0) return 0;
-    return (totalSecondsInDuration - remainingTime) / totalSecondsInDuration;
-  }, [mode, totalSecondsInDuration, remainingTime]);
+    return () => clearTimer();
+  }, [isTiming, startTime, mode, totalSecondsInDuration, initialActivityName, playSound, toast, clearTimer]);
 
   const strokeDashoffset = useMemo(() => {
     const elapsedRatio = mode === 'stopwatch'
