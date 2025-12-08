@@ -32,12 +32,14 @@ export default function HomePage() {
     activityType: Activity['type'];
     category?: string;
     duration: number;
+    tags?: string[];
   }>({
     mode: 'timer',
     activityName: '',
     activityType: 'Study',
     category: '',
     duration: 25,
+    tags: [],
   });
 
   const [userProfile, setUserProfile] = useState<{ xp: number; level: number; badges: Badge[]; dailyGoal?: number } | null>(null);
@@ -148,8 +150,29 @@ export default function HomePage() {
     setIsTiming(true);
   };
 
+  const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
+  const [newGoal, setNewGoal] = useState(60);
+
+  // Calculate Daily Progress
+  const dailyProgress = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const todayActivities = activities.filter(a => a.date === today);
+    return todayActivities.reduce((acc, curr) => acc + curr.duration, 0);
+  }, [activities]);
+
+  const dailyGoal = userProfile?.dailyGoal || 60;
+  const dailyGoalProgress = Math.min((dailyProgress / dailyGoal) * 100, 100);
+
   const handleSessionEnd = () => {
     setIsTiming(false);
+  };
+
+  const handleSaveGoal = async () => {
+    if (!user) return;
+    const profileRef = doc(firestore, "users", user.uid, "profile", "stats");
+    await setDoc(profileRef, { dailyGoal: newGoal }, { merge: true });
+    setIsGoalDialogOpen(false);
+    toast({ title: "Goal Updated", description: `Daily goal set to ${newGoal} minutes.` });
   };
 
   if (isTiming) {
@@ -165,27 +188,6 @@ export default function HomePage() {
       />
     );
   }
-
-  const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
-  const [newGoal, setNewGoal] = useState(60);
-
-  // Calculate Daily Progress
-  const dailyProgress = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const todayActivities = activities.filter(a => a.date === today);
-    return todayActivities.reduce((acc, curr) => acc + curr.duration, 0);
-  }, [activities]);
-
-  const dailyGoal = userProfile?.dailyGoal || 60;
-  const dailyGoalProgress = Math.min((dailyProgress / dailyGoal) * 100, 100);
-
-  const handleSaveGoal = async () => {
-    if (!user) return;
-    const profileRef = doc(firestore, "users", user.uid, "profile", "stats");
-    await setDoc(profileRef, { dailyGoal: newGoal }, { merge: true });
-    setIsGoalDialogOpen(false);
-    toast({ title: "Goal Updated", description: `Daily goal set to ${newGoal} minutes.` });
-  };
 
   return (
     <div className="container mx-auto py-8 px-4 space-y-8">

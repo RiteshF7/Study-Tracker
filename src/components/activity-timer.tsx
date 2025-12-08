@@ -32,6 +32,7 @@ interface ActivityTimerProps {
   initialActivityType: Activity['type'];
   initialCategory?: string;
   initialDuration: number; // in minutes
+  tags?: string[];
   onSessionEnd: () => void;
 }
 
@@ -148,6 +149,7 @@ export function ActivityTimer({
   initialActivityType,
   initialCategory,
   initialDuration,
+  tags,
   onSessionEnd
 }: ActivityTimerProps) {
   const { firestore, user } = useFirebase();
