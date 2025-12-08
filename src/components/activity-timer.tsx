@@ -159,8 +159,15 @@ export function ActivityTimer({
     user ? collection(firestore, "users", user.uid, "activities") : null
     , [firestore, user]);
 
+  // Ensure initialDuration is a valid number
+  const safeInitialDuration = useMemo(() => {
+    return (typeof initialDuration === 'number' && !isNaN(initialDuration) && initialDuration > 0) ? initialDuration : 25;
+  }, [initialDuration]);
+
+  const totalSecondsInDuration = useMemo(() => safeInitialDuration * 60, [safeInitialDuration]);
+
   const [isTiming, setIsTiming] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(initialDuration * 60);
+  const [remainingTime, setRemainingTime] = useState(totalSecondsInDuration);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [isFinished, setIsFinished] = useState(false);
@@ -195,26 +202,34 @@ export function ActivityTimer({
   }, []);
 
   const handleStart = useCallback(() => {
+    console.log("Starting Timer...", { mode, safeInitialDuration });
     setIsTiming(true);
     setStartTime(Date.now());
     setIsFinished(false);
     if (mode === 'timer') {
-      setRemainingTime(initialDuration * 60);
+      setRemainingTime(safeInitialDuration * 60);
     } else {
       setElapsedTime(0);
     }
-  }, [mode, initialDuration]);
+  }, [mode, safeInitialDuration]);
 
   const toggleTimer = () => {
     if (isFinished) return;
-    setIsTiming(!isTiming);
-    if (!isTiming) {
+
+    if (isTiming) {
+      // Pausing
+      console.log("Pausing Timer");
+      setIsTiming(false);
+      // No need to update startTime when pausing, just stop the interval (handled by effect)
+    } else {
       // Resuming
-      setStartTime(Date.now() - (mode === 'stopwatch' ? elapsedTime * 1000 : (initialDuration * 60 - remainingTime) * 1000));
+      console.log("Resuming Timer");
+      setIsTiming(true);
+      // Calculate new start time to account for elapsed time
+      const currentElapsed = mode === 'stopwatch' ? elapsedTime : (totalSecondsInDuration - remainingTime);
+      setStartTime(Date.now() - (currentElapsed * 1000));
     }
   };
-
-  const totalSecondsInDuration = useMemo(() => initialDuration * 60, [initialDuration]);
 
   const displayTime = useMemo(() => {
     return mode === 'timer' ? remainingTime : elapsedTime;
@@ -226,18 +241,17 @@ export function ActivityTimer({
   }, [mode, totalSecondsInDuration, remainingTime]);
 
   const handleStop = async (save: boolean) => {
+    console.log("Stopping Timer", { save });
     setIsTiming(false);
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
+    clearTimer();
 
     if (save && user) {
       try {
         const durationMinutes = mode === 'timer'
-          ? (initialDuration * 60 - remainingTime) / 60
+          ? (totalSecondsInDuration - remainingTime) / 60
           : elapsedTime / 60;
 
-        // Minimum 1 minute to save
+        // Minimum 0.1 minute (6 seconds) to save
         if (durationMinutes < 0.1) {
           toast({
             title: "Session too short",
@@ -326,10 +340,14 @@ export function ActivityTimer({
 
   useEffect(() => {
     if (isTiming && startTime) {
+      console.log("Interval Started");
       intervalRef.current = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const now = Date.now();
+        const elapsedMs = now - startTime;
+        const elapsedSeconds = Math.floor(elapsedMs / 1000);
+
         if (mode === 'timer') {
-          const remaining = totalSecondsInDuration - elapsed;
+          const remaining = totalSecondsInDuration - elapsedSeconds;
           if (remaining <= 0) {
             setRemainingTime(0);
             setIsTiming(false);
@@ -344,7 +362,7 @@ export function ActivityTimer({
             setRemainingTime(remaining);
           }
         } else { // Stopwatch
-          setElapsedTime(elapsed);
+          setElapsedTime(elapsedSeconds);
         }
       }, 1000);
     } else {
