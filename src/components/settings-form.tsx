@@ -36,7 +36,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { Sparkles } from "lucide-react";
 
 const profileSchema = z.object({
   name: z.string().min(2, {
@@ -57,6 +59,7 @@ export function SettingsForm() {
   const { toast } = useToast();
   const [course, setCourse] = useLocalStorage('selected-course', 'JEE');
   const [year, setYear] = useLocalStorage('selected-year', '11th');
+  const [isAnimationsEnabled, setIsAnimationsEnabled] = useLocalStorage('st-animations-enabled', 'true');
 
 
   const userDocRef = useMemoFirebase((firestore) =>
@@ -207,17 +210,38 @@ export function SettingsForm() {
               name="targetHours"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Target Hours</FormLabel>
+                  <FormLabel>Target Study Hours</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="e.g., 150" {...field} />
+                    <Input type="number" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Set a target number of hours for your progress tracking.
+                    Your total study goal for the year.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <div className="space-y-4 pt-4 border-t">
+               <h3 className="text-lg font-medium flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  App Preferences
+               </h3>
+               <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Click Animations</FormLabel>
+                    <FormDescription>
+                      Enable particle effects when clicking.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={isAnimationsEnabled === 'true'}
+                      onCheckedChange={(checked) => setIsAnimationsEnabled(checked ? 'true' : 'false')}
+                    />
+                  </FormControl>
+                </div>
+            </div>
           </CardContent>
           <CardFooter className="border-t px-6 py-4">
             <Button type="submit" disabled={form.formState.isSubmitting}>

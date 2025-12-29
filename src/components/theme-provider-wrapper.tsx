@@ -3,6 +3,7 @@
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { type ReactNode, useState, useEffect } from "react";
+import { GlobalClickOverlay } from "@/components/ui/global-click-overlay";
 
 export function ThemeProviderWrapper({ children }: { children: ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
@@ -24,6 +25,7 @@ export function ThemeProviderWrapper({ children }: { children: ReactNode }) {
       themes={['light', 'dark', 'peazehub', 'violet-dark', 'matrix-dark', 'disney-dark', 'cn-dark', 'sunset', 'latte']}
     >
       {children}
+      <GlobalClickOverlay />
     </ThemeProvider>
   );
 }
